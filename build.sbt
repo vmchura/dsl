@@ -12,14 +12,22 @@ lazy val server = (project in file("server"))
       "com.vmunier" %% "scalajs-scripts" % "1.1.4",
       // https://mvnrepository.com/artifact/org.reactivemongo/play2-reactivemongo
       "org.reactivemongo" %% "play2-reactivemongo" % "0.20.11-play28",
-      "com.mohiva" %% "play-silhouette" % "6.1.1",
-      "com.mohiva" %% "play-silhouette-password-bcrypt" % "6.1.1",
-      "com.mohiva" %% "play-silhouette-persistence" % "6.1.1",
-      "com.mohiva" %% "play-silhouette-crypto-jca" % "6.1.1",
-      "com.mohiva" %% "play-silhouette-totp" % "6.1.1",
+      "org.reactivemongo" %% "reactivemongo-play-json-compat" %  "0.20.11-play28",
+      "com.mohiva" %% "play-silhouette" % "6.1.0",
+      "com.mohiva" %% "play-silhouette-password-bcrypt" % "6.1.0",
+      "com.mohiva" %% "play-silhouette-persistence" % "6.1.0",
+      "com.mohiva" %% "play-silhouette-crypto-jca" % "6.1.0",
+      "com.mohiva" %% "play-silhouette-totp" % "6.1.0",
+      "com.iheart" %% "ficus" % "1.4.7",
+      // https://mvnrepository.com/artifact/com.enragedginger/akka-quartz-scheduler
+      "com.enragedginger" %% "akka-quartz-scheduler" % "1.8.4-akka-2.6.x",
+      // https://mvnrepository.com/artifact/net.codingwell/scala-guice
+      "net.codingwell" %% "scala-guice" % "4.2.10",
 
 
-      ehcache,
+
+
+        ehcache,
         guice,
       specs2 % Test
     )
