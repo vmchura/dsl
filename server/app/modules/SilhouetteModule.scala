@@ -126,10 +126,13 @@ class SilhouetteModule extends AbstractModule with ScalaModule {
    */
   @Provides
   def provideSocialProviderRegistry(
-                                     facebookProvider: FacebookProvider): SocialProviderRegistry = {
+                                     facebookProvider: FacebookProvider
+                                     //,discordProvider: DiscordProvider
+                                   ): SocialProviderRegistry = {
 
     SocialProviderRegistry(Seq(
-      facebookProvider
+      facebookProvider,
+      //discordProvider
     ))
   }
 
@@ -354,6 +357,8 @@ class SilhouetteModule extends AbstractModule with ScalaModule {
   def provideTotpProvider(passwordHasherRegistry: PasswordHasherRegistry): GoogleTotpProvider = {
     new GoogleTotpProvider(passwordHasherRegistry)
   }
+
+
 
   /**
    * Provides the Facebook provider.
