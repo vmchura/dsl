@@ -4,7 +4,7 @@ import com.mohiva.play.silhouette.api.LoginInfo
 import com.mohiva.play.silhouette.api.util.HTTPLayer
 import com.mohiva.play.silhouette.impl.exceptions.ProfileRetrievalException
 import com.mohiva.play.silhouette.impl.providers._
-import com.mohiva.play.silhouette.impl.providers.oauth2.FacebookProvider._
+import DiscordProvider._
 import play.api.libs.json.{ JsObject, JsValue }
 import scala.concurrent.Future
 
@@ -12,7 +12,7 @@ trait BaseDiscordProvider extends OAuth2Provider {
 
   override type Content = JsValue
 
-  override val id = ID
+  override val id: String = ID
 
   override protected val urls = Map("api" -> settings.apiURL.getOrElse(API))
 
@@ -67,7 +67,7 @@ class DiscordProvider(
 }
 
 object DiscordProvider{
-  val specifiedProfileError = "[Silhouette][%s] Error retrieving profile information. Error message: %s, type: %s, code: %s"
+  val SpecifiedProfileError = "[Silhouette][%s] Error retrieving profile information. Error message: %s, type: %s, code: %s"
 
   val ID = "discord"
   val API = "https://discord.com/api/v6"
