@@ -1,5 +1,20 @@
-@(socialProviders: com.mohiva.play.silhouette.impl.providers.SocialProviderRegistry)(implicit request: RequestHeader)
+@import play.api.i18n.Messages
+@import play.api.mvc.RequestHeader
+@import controllers.AssetsFinder
+@import com.mohiva.play.silhouette.impl.providers.SocialProviderRegistry
+@this()(implicit assets: AssetsFinder)
+@(socialProviders: SocialProviderRegistry)(implicit request: RequestHeader, messages: Messages)
 
 @main("Regístrate con tu cuenta de Discord!"){
     <h2>Este es el contenido para registrarse</h2>
+    @if(socialProviders.providers.nonEmpty) {
+        <div class="social-providers">
+            <p>@messages("or.use.social")</p>
+            <div>
+            @for(p <- socialProviders.providers) {
+                <a href="@controllers.routes.SocialAuthController.authenticate(p.id)" class="provider @p.id" title="@messages(p.id)"><img src="@assets.path(s"images/providers/${p.id}.png")" width="64px" height="64px" alt="@messages(p.id)"></a>
+            }
+            </div>
+        </div>
+    }
 }
