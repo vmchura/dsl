@@ -126,13 +126,12 @@ class SilhouetteModule extends AbstractModule with ScalaModule {
    */
   @Provides
   def provideSocialProviderRegistry(
-                                     facebookProvider: FacebookProvider
-                                     //,discordProvider: DiscordProvider
-                                   ): SocialProviderRegistry = {
+                                     facebookProvider: FacebookProvider,
+                                     discordProvider: DiscordProvider): SocialProviderRegistry = {
 
     SocialProviderRegistry(Seq(
       facebookProvider,
-      //discordProvider
+      discordProvider
     ))
   }
 
@@ -358,7 +357,22 @@ class SilhouetteModule extends AbstractModule with ScalaModule {
     new GoogleTotpProvider(passwordHasherRegistry)
   }
 
+  /**
+   * Provides the Discord provider.
+   *
+   * @param httpLayer The HTTP layer implementation.
+   * @param socialStateHandler The social state handler implementation.
+   * @param configuration The Play configuration.
+   * @return The Facebook provider.
+   */
+  @Provides
+  def provideDiscordProvider(
+                               httpLayer: HTTPLayer,
+                               socialStateHandler: SocialStateHandler,
+                               configuration: Configuration): DiscordProvider = {
 
+    new DiscordProvider(httpLayer, socialStateHandler, configuration.underlying.as[OAuth2Settings]("silhouette.discord"))
+  }
 
   /**
    * Provides the Facebook provider.
