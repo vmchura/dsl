@@ -7,7 +7,7 @@ GET        /                                    controllers.Application.index
 # SINGIN / LOGIN
 GET        /signin                              controllers.SignInController.view
 GET        /authenticate/:provider              controllers.SocialAuthController.authenticate(provider)
-
+GET        /welcome                             controllers.Application.welcomeAuthenticated
 
 # Prefix must match `play.assets.urlPrefix`
 GET        /assets/*file                        controllers.Assets.at(file)

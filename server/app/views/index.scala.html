@@ -1,5 +1,8 @@
-@()
+@import play.api.i18n.Messages
+@import play.api.mvc.RequestHeader
+@import controllers.AssetsFinder
 
+@this()(implicit assets: AssetsFinder)
+@()(implicit request: RequestHeader, messages: Messages)
 
-<h2>Hola</h2>
-
+<h2>hola</h2>
