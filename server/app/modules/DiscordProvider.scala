@@ -17,10 +17,10 @@ trait BaseDiscordProvider extends OAuth2Provider {
   override protected val urls = Map("api" -> settings.apiURL.getOrElse(API))
 
   override protected def buildProfile(authInfo: OAuth2Info): Future[Profile] = {
-    val u: httpLayer.Request = httpLayer.url(urls("api"))
-    val v = u.withHttpHeaders("Authorization" -> s"Bearer ${authInfo.accessToken}")
-    println(v)
-    v.get().flatMap { response =>
+
+    httpLayer.url(urls("api")).
+      withHttpHeaders("Authorization" -> s"Bearer ${authInfo.accessToken}").
+      get().flatMap { response =>
       println(response)
 
       val json = response.json
@@ -41,23 +41,18 @@ trait BaseDiscordProvider extends OAuth2Provider {
 class DiscordProfileParser extends SocialProfileParser[JsValue, CommonSocialProfile, OAuth2Info] {
 
   override def parse(json: JsValue, authInfo: OAuth2Info): Future[CommonSocialProfile] = {
-    println(json)
-    println(authInfo)
     Future.successful{
       val userID = (json \ "id").as[String]
-      val firstName = (json \ "first_name").asOpt[String]
-      val lastName = (json \ "last_name").asOpt[String]
-      val fullName = (json \ "name").asOpt[String]
-      val avatarURL = (json \ "picture" \ "data" \ "url").asOpt[String]
-      val email = (json \ "email").asOpt[String]
+      val fullName = (json \ "username").asOpt[String]
+      val avatarURL = (json \ "avatar").asOpt[String].map(avatarhash => s"https://cdn.discordapp.com/avatars/$userID/$avatarhash.png")
 
       CommonSocialProfile(
         loginInfo = LoginInfo(ID, userID),
-        firstName = firstName,
-        lastName = lastName,
+        firstName = None,
+        lastName = None,
         fullName = fullName,
         avatarURL = avatarURL,
-        email = email)
+        email = None)
     }
   }
 }
