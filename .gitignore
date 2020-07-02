@@ -30,3 +30,6 @@ shared/.jvm
 .cache
 .target
 bin/
+
+#secret keys
+server/conf/secretkeys.conf
