@@ -17,8 +17,14 @@ trait BaseDiscordProvider extends OAuth2Provider {
   override protected val urls = Map("api" -> settings.apiURL.getOrElse(API))
 
   override protected def buildProfile(authInfo: OAuth2Info): Future[Profile] = {
-    httpLayer.url(urls("api").format(authInfo.accessToken)).get().flatMap { response =>
+    val u: httpLayer.Request = httpLayer.url(urls("api"))
+    val v = u.withHttpHeaders("Authorization" -> s"Bearer ${authInfo.accessToken}")
+    println(v)
+    v.get().flatMap { response =>
+      println(response)
+
       val json = response.json
+
       (json \ "error").asOpt[JsObject] match {
         case Some(error) =>
           val errorMsg = (error \ "message").as[String]
@@ -34,21 +40,25 @@ trait BaseDiscordProvider extends OAuth2Provider {
 
 class DiscordProfileParser extends SocialProfileParser[JsValue, CommonSocialProfile, OAuth2Info] {
 
-  override def parse(json: JsValue, authInfo: OAuth2Info): Future[CommonSocialProfile] = Future.successful{
-    val userID = (json \ "id").as[String]
-    val firstName = (json \ "first_name").asOpt[String]
-    val lastName = (json \ "last_name").asOpt[String]
-    val fullName = (json \ "name").asOpt[String]
-    val avatarURL = (json \ "picture" \ "data" \ "url").asOpt[String]
-    val email = (json \ "email").asOpt[String]
+  override def parse(json: JsValue, authInfo: OAuth2Info): Future[CommonSocialProfile] = {
+    println(json)
+    println(authInfo)
+    Future.successful{
+      val userID = (json \ "id").as[String]
+      val firstName = (json \ "first_name").asOpt[String]
+      val lastName = (json \ "last_name").asOpt[String]
+      val fullName = (json \ "name").asOpt[String]
+      val avatarURL = (json \ "picture" \ "data" \ "url").asOpt[String]
+      val email = (json \ "email").asOpt[String]
 
-    CommonSocialProfile(
-      loginInfo = LoginInfo(ID, userID),
-      firstName = firstName,
-      lastName = lastName,
-      fullName = fullName,
-      avatarURL = avatarURL,
-      email = email)
+      CommonSocialProfile(
+        loginInfo = LoginInfo(ID, userID),
+        firstName = firstName,
+        lastName = lastName,
+        fullName = fullName,
+        avatarURL = avatarURL,
+        email = email)
+    }
   }
 }
 
@@ -70,5 +80,5 @@ object DiscordProvider{
   val SpecifiedProfileError = "[Silhouette][%s] Error retrieving profile information. Error message: %s, type: %s, code: %s"
 
   val ID = "discord"
-  val API = "https://discord.com/api/v6"
+  val API = "https://discord.com/api/users/@me"
 }
