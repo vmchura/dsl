@@ -1,6 +1,6 @@
 package models.services
 
-import shared.DiscordUser
+import models.DiscordUser
 
 import scala.concurrent.Future
 
