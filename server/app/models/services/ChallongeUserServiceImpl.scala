@@ -14,7 +14,7 @@ import scala.concurrent.ExecutionContext.Implicits.global
 class ChallongeUserServiceImpl extends ChallongeUserService with Logger {
   implicit val sttpBackend: SttpBackend[Future, Nothing, WebSocketHandler] = AsyncHttpClientFutureBackend()
 
-  override def findChallongeTournament(challongeUserName: String, challongeApiKey: String)(discordServerID: String)(tournamentUrlID: String): Future[Option[ChallongeTournament]] = {
+  override def findChallongeTournament(challongeApiKey: String)(discordServerID: String)(tournamentUrlID: String): Future[Option[ChallongeTournament]] = {
 
     val responseFut = basicRequest.get(uri"https://api.challonge.com/v1/tournaments/$tournamentUrlID.json?api_key=$challongeApiKey&include_participants=1&include_matches=1").send()
     responseFut.map{ _.body match {
