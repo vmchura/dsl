@@ -15,7 +15,7 @@ class DiscordUserServiceImpl extends DiscordUserService with Logger{
   override def findMembersOnGuild(bot_token: String)(guildID: String): Future[Seq[DiscordUser]] = {
     val responseFut = basicRequest.header("Authorization",s"Bot $bot_token").get(uri"https://discord.com/api/guilds/$guildID/members").send()
 
-    responseFut.map { response =>  response.body match
+    responseFut.map { _.body match
       {
         case Left(errorMessage) =>
           logger.error(s"Error on findMembersOnGuild: $errorMessage")

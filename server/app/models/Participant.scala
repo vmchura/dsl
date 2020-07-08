@@ -4,7 +4,7 @@ import java.util.UUID
 import play.api.libs.json._
 
 
-case class ParticipantPK(tournamentID: UUID,chaNameID: String)
+case class ParticipantPK(tournamentID: UUID,chaNameID: Long)
 object ParticipantPK{
   implicit val jsonFormat: OFormat[ParticipantPK] = Json.format[ParticipantPK]
 }
