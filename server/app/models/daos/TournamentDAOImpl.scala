@@ -6,6 +6,7 @@ import javax.inject.Inject
 import models.Tournament
 import play.api.libs.json.Json
 import play.modules.reactivemongo.ReactiveMongoApi
+import reactivemongo.api.Cursor
 import reactivemongo.play.json.collection.JSONCollection
 
 import scala.concurrent.ExecutionContext.Implicits.global
@@ -25,4 +26,9 @@ class TournamentDAOImpl  @Inject() (val reactiveMongoApi: ReactiveMongoApi) exte
     collection.flatMap(_.find(query,Option.empty[Tournament]).one[Tournament])
 
   }
+
+  override def all(): Future[Seq[Tournament]] =
+    collection.flatMap(_.find(Json.obj(),Option.empty[Tournament]).cursor[Tournament]().collect[List](-1,Cursor.FailOnError[List[Tournament]]()))
+
+
 }
