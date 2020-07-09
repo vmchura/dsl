@@ -9,5 +9,7 @@ import scala.concurrent.Future
 trait ParticipantDAO {
   def find(participantPK: ParticipantPK): Future[Option[Participant]]
   def save(participant: Participant): Future[Boolean]
-  def find(tournamentID: UUID): Future[Seq[Participant]]
+  def findByTournamentID(tournamentID: UUID): Future[Seq[Participant]]
+  def findByUserID(userID: UUID): Future[Seq[Participant]]
+
 }

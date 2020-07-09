@@ -4,7 +4,7 @@ import java.util.UUID
 
 import javax.inject.Inject
 import models.{Participant, ParticipantPK}
-import play.api.libs.json.Json
+import play.api.libs.json.{JsObject, Json}
 import play.modules.reactivemongo.ReactiveMongoApi
 import reactivemongo.api.Cursor
 import reactivemongo.play.json.collection.JSONCollection
@@ -28,8 +28,17 @@ class ParticipantDAOImpl  @Inject() (val reactiveMongoApi: ReactiveMongoApi) ext
 
   }
 
-  override def find(tournamentID: UUID): Future[Seq[Participant]] = {
-    val query = Json.obj("participantPK.tournamentID" -> tournamentID)
+  private def getParticipantsByQuery(query: JsObject) = {
     collection.flatMap(_.find(query,Option.empty[Participant]).cursor[Participant]().collect[List](-1,Cursor.FailOnError[List[Participant]]()))
+
+  }
+  override def findByTournamentID(tournamentID: UUID): Future[Seq[Participant]] = {
+    val query = Json.obj("participantPK.tournamentID" -> tournamentID)
+    getParticipantsByQuery(query)
+  }
+
+  override def findByUserID(userID: UUID): Future[Seq[Participant]] = {
+    val query = Json.obj("userID" -> Some(userID))
+    getParticipantsByQuery(query)
   }
 }

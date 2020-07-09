@@ -64,6 +64,21 @@ class ParticipantsServiceImplTest extends PlaySpec with GuiceOneAppPerSuite{
       queryExecution
     }
 
+    "return a valid result using userID" in {
+      val primaryKeyToInsert = ParticipantPK(UUID.randomUUID(),1L)
+      val userID = UUID.randomUUID()
+      val queryExecution = for{
+        pk <- Future.successful(primaryKeyToInsert)
+        participant <- Future.successful(Participant(pk,Some("vmchq"),Some(userID)))
+        insertion <- service.saveParticipant(participant)
+        retrieveByUserID <- if(insertion) service.loadParticipantByUserID(userID) else Future.failed(new IllegalStateException("Not inserted nor  updated"))
+      }yield{
+        assertResult(List(primaryKeyToInsert))(retrieveByUserID.map(_.participantPK))
+      }
+      Await.result(queryExecution,5 seconds)
+      queryExecution
+    }
+
   }
 
 }
