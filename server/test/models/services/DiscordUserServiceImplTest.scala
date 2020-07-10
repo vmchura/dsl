@@ -1,6 +1,5 @@
 package models.services
 import models.DiscordUser
-import org.scalatest.AsyncFlatSpec
 import org.scalatestplus.play.PlaySpec
 import org.scalatestplus.play.guice.GuiceOneAppPerSuite
 import scala.concurrent.ExecutionContext.Implicits.global
