@@ -28,8 +28,8 @@ class TournamentServiceImpl @Inject() (tournamentDAO: TournamentDAO, participant
 
   override def findAllTournamentsByPlayer(userID: UUID): Future[Seq[Tournament]] = findTournamentByPlayer(userID,loadTournament)
 
-  override def findAllActiveTournamentsByPlayer(userID: UUID): Future[Seq[Tournament]] = findTournamentByPlayer(userID,loadTournament andThen(_.map(_.flatMap(t => if(t.active) Some(t) else None))))
+  private def findTournamentIfActive(tournamentID: UUID) = loadTournament(tournamentID).map(_.flatMap(t => if(t.active) Some(t) else None))
+  override def findAllActiveTournamentsByPlayer(userID: UUID): Future[Seq[Tournament]] = findTournamentByPlayer(userID,findTournamentIfActive)
 
-
-
+  override def dropTournament(tournamentID: UUID): Future[Boolean] = tournamentDAO.remove(tournamentID)
 }

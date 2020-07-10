@@ -13,4 +13,5 @@ trait TournamentService {
   def loadTournament(tournamentID: UUID): Future[Option[Tournament]]
   def findAllTournamentsByPlayer(userID: UUID): Future[Seq[Tournament]]
   def findAllActiveTournamentsByPlayer(userID: UUID): Future[Seq[Tournament]]
+  def dropTournament(tournamentID: UUID): Future[Boolean]
 }

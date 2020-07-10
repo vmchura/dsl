@@ -30,5 +30,8 @@ class TournamentDAOImpl  @Inject() (val reactiveMongoApi: ReactiveMongoApi) exte
   override def all(): Future[Seq[Tournament]] =
     collection.flatMap(_.find(Json.obj(),Option.empty[Tournament]).cursor[Tournament]().collect[List](-1,Cursor.FailOnError[List[Tournament]]()))
 
-
+  override def remove(tournamentID: UUID): Future[Boolean] = {
+    val query = Json.obj("tournamentID" -> tournamentID)
+    collection.flatMap(_.delete(ordered=true).one(query).map(_.ok))
+  }
 }
