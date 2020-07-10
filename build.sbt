@@ -55,6 +55,9 @@ lazy val shared = crossProject(JSPlatform, JVMPlatform)
   .crossType(CrossType.Pure)
   .in(file("shared"))
   .settings(commonSettings)
+  .settings(
+    libraryDependencies += "org.scalatest" %%% "scalatest" % "3.2.0" % "test"
+  )
   .jsConfigure(_.enablePlugins(ScalaJSWeb))
 
 
