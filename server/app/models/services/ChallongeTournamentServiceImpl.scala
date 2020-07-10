@@ -9,12 +9,13 @@ import sttp.client.asynchttpclient.WebSocketHandler
 import sttp.client.asynchttpclient.future.AsyncHttpClientFutureBackend
 import utils.Logger
 import play.api.libs.json._
-
+import javax.inject.Inject
+import play.api.Configuration
 import scala.concurrent.ExecutionContext.Implicits.global
-class ChallongeUserServiceImpl extends ChallongeUserService with Logger {
+class ChallongeTournamentServiceImpl @Inject()(configuration: Configuration) extends ChallongeTournamentService with Logger {
   implicit val sttpBackend: SttpBackend[Future, Nothing, WebSocketHandler] = AsyncHttpClientFutureBackend()
-
-  override def findChallongeTournament(challongeApiKey: String)(discordServerID: String)(tournamentUrlID: String): Future[Option[ChallongeTournament]] = {
+  override protected val challongeApiKey: String = configuration.get[String]("challonge.apikey")
+  override def findChallongeTournament(discordServerID: String)(tournamentUrlID: String): Future[Option[ChallongeTournament]] = {
 
     val responseFut = basicRequest.get(uri"https://api.challonge.com/v1/tournaments/$tournamentUrlID.json?api_key=$challongeApiKey&include_participants=1&include_matches=1").send()
     responseFut.map{ _.body match {

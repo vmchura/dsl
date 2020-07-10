@@ -83,6 +83,7 @@ class TournamentServiceImplTest extends PlaySpec with GuiceOneAppPerSuite{
         tActive2 <- service.findAllActiveTournamentsByPlayer(disuser2)
         _ <- service.dropTournament(tournamentActive.tournamentID)
         _ <- service.dropTournament(tournamentNotActive.tournamentID)
+        deletion <- Future.sequence(List(player1_active,player1_notactive,player2_active,player2_notactive).map(_.participantPK).map(participantService.dropParticipant))
       }yield{
         assert(allTournaments(tAll1))
         assert(allTournaments(tAll2))
@@ -90,6 +91,7 @@ class TournamentServiceImplTest extends PlaySpec with GuiceOneAppPerSuite{
         assert(allActiveTournaments(tActive1))
         assert(allActiveTournaments(tActive2))
 
+        assert(deletion.forall(i => i))
       }
       Await.result(queryExecution,5 seconds)
       queryExecution
