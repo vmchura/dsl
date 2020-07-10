@@ -27,8 +27,10 @@ class ParticipantsServiceImplTest extends PlaySpec with GuiceOneAppPerSuite{
         participant <- Future.successful(Participant(pk,None,None))
         insertion <- service.saveParticipant(participant)
         retrieve <- if(insertion) service.loadParticipant(pk) else Future.failed(new IllegalStateException("Not inserted"))
+        deletion <- service.dropParticipant(pk)
       }yield{
         assertResult(Some(primaryKeyToInsert))(retrieve.map(_.participantPK))
+        assert(deletion)
       }
       Await.result(queryExecution,5 seconds)
       queryExecution
@@ -41,8 +43,10 @@ class ParticipantsServiceImplTest extends PlaySpec with GuiceOneAppPerSuite{
         participant <- Future.successful(Participant(pk,None,None))
         insertion <- service.saveParticipant(participant)
         retrieve <- if(insertion) service.loadParticipantsWithNoRelation(primaryKeyToInsert.tournamentID) else Future.failed(new IllegalStateException("Not inserted"))
+        deletion <- service.dropParticipant(pk)
       }yield{
         assertResult(List(primaryKeyToInsert))(retrieve.map(_.participantPK))
+        assert(deletion)
       }
       Await.result(queryExecution,5 seconds)
       queryExecution
@@ -56,9 +60,11 @@ class ParticipantsServiceImplTest extends PlaySpec with GuiceOneAppPerSuite{
         update <- service.updateParticipantRelation(participant.copy(discordUserID = Some("vmchq"), userID = Some(UUID.randomUUID())))
         retrieveByTournament <- if(insertion && update) service.loadParticipantsWithNoRelation(primaryKeyToInsert.tournamentID) else Future.failed(new IllegalStateException("Not inserted nor  updated"))
         retrieveByPK <- if(insertion && update) service.loadParticipant(primaryKeyToInsert) else Future.failed(new IllegalStateException("Not inserted nor updated"))
+        deletion <- service.dropParticipant(pk)
       }yield{
         assertResult(List.empty[String])(retrieveByTournament.map(_.discordUserID))
         assertResult(Some("vmchq"))(retrieveByPK.flatMap(_.discordUserID))
+        assert(deletion)
       }
       Await.result(queryExecution,5 seconds)
       queryExecution
@@ -72,8 +78,10 @@ class ParticipantsServiceImplTest extends PlaySpec with GuiceOneAppPerSuite{
         participant <- Future.successful(Participant(pk,Some("vmchq"),Some(userID)))
         insertion <- service.saveParticipant(participant)
         retrieveByUserID <- if(insertion) service.loadParticipantByUserID(userID) else Future.failed(new IllegalStateException("Not inserted nor  updated"))
+        deletion <- service.dropParticipant(pk)
       }yield{
         assertResult(List(primaryKeyToInsert))(retrieveByUserID.map(_.participantPK))
+        assert(deletion)
       }
       Await.result(queryExecution,5 seconds)
       queryExecution

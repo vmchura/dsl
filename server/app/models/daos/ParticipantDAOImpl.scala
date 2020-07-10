@@ -41,4 +41,9 @@ class ParticipantDAOImpl  @Inject() (val reactiveMongoApi: ReactiveMongoApi) ext
     val query = Json.obj("userID" -> Some(userID))
     getParticipantsByQuery(query)
   }
+
+  override def drop(participantPK: ParticipantPK): Future[Boolean] = {
+    val query = Json.obj("participantPK" -> participantPK)
+    collection.flatMap(_.delete(ordered = true).one(query).map(_.ok))
+  }
 }

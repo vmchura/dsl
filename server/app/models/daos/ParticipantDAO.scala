@@ -11,5 +11,6 @@ trait ParticipantDAO {
   def save(participant: Participant): Future[Boolean]
   def findByTournamentID(tournamentID: UUID): Future[Seq[Participant]]
   def findByUserID(userID: UUID): Future[Seq[Participant]]
+  def drop(participantPK: ParticipantPK): Future[Boolean]
 
 }
