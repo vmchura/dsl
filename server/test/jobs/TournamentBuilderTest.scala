@@ -19,15 +19,15 @@ class TournamentBuilderTest extends PlaySpec with GuiceOneAppPerSuite {
         creation          <- job.buildTournament("728442814832312372","DeathfateStarLeague")
         tournamentLoaded <- creation match {
           case Left(_) => Future.successful(None)
-          case Right((tournament, _)) => tournamentService.loadTournament(tournament.challongeID)
+          case Right((tournament, _, _)) => tournamentService.loadTournament(tournament.challongeID)
         }
         tournamentRemove  <- creation match {
           case Left(_) => Future.successful(false)
-          case Right((tournament, _)) => tournamentService.dropTournament(tournament.challongeID)
+          case Right((tournament, _, _)) => tournamentService.dropTournament(tournament.challongeID)
         }
         participantsRemove <- creation match {
           case Left(_) => Future.successful(false)
-          case Right((_, particpants)) => Future.sequence(particpants.map(_._1.participantPK).map(participantsService.dropParticipant)).map(_.forall(q => q))
+          case Right((_, particpants, _)) => Future.sequence(particpants.map(_.participantPK).map(participantsService.dropParticipant)).map(_.forall(q => q))
         }
       }yield {
         assert(tournamentRemove)
@@ -50,17 +50,17 @@ class TournamentBuilderTest extends PlaySpec with GuiceOneAppPerSuite {
         creation          <- job.buildTournament("728442814832312372","DeathfateStarLeague")
         tournamentLoaded <- creation match {
           case Left(_) => Future.successful(None)
-          case Right((tournament, _)) => tournamentService.loadTournament(tournament.challongeID)
+          case Right((tournament, _, _)) => tournamentService.loadTournament(tournament.challongeID)
         }
 
         participantsRemove <- creation match {
           case Left(_) => Future.successful(false)
-          case Right((_, particpants)) => Future.sequence(particpants.map(_._1.participantPK).map(participantsService.dropParticipant)).map(_.forall(q => q))
+          case Right((_, particpants,_)) => Future.sequence(particpants.map(_.participantPK).map(participantsService.dropParticipant)).map(_.forall(q => q))
         }
         creation2          <- job.buildTournament("728442814832312372","DeathfateStarLeague")
         tournamentRemove  <- creation match {
           case Left(_) => Future.successful(false)
-          case Right((tournament, _)) => tournamentService.dropTournament(tournament.challongeID)
+          case Right((tournament, _, _)) => tournamentService.dropTournament(tournament.challongeID)
         }
       }yield {
         assert(tournamentRemove)

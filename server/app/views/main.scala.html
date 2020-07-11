@@ -1,3 +1,101 @@
-@(title: String)(content: Html)
-<h1> @title </h1>
-@content
+@import play.api.i18n.Messages
+@import play.api.mvc.RequestHeader
+@import play.twirl.api.Html
+@import controllers.AssetsFinder
+
+
+
+@(title: String,user: Option[models.User] = None)(content: Html)(implicit request: RequestHeader, messages: Messages, assets: AssetsFinder)
+
+
+<!DOCTYPE html>
+
+<html>
+    <head>
+
+
+        <meta charset="utf-8">
+        <meta http-equiv="X-UA-Compatible" content="IE=edge">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <link rel="shortcut icon" type="image/png" href="@controllers.routes.Assets.versioned("images/favicon.png")">
+        <title>@title</title>
+
+        @*ICONS*@
+        <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+            <!-- HTML5 shim and Respond.js IE8 support of HTML5 elements and media queries -->
+            <!--[if lt IE 9]>
+            <script src="https://oss.maxcdn.com/libs/html5shiv/3.7.0/html5shiv.js"></script>
+            <script src="https://oss.maxcdn.com/libs/respond.js/1.4.2/respond.min.js"></script>
+            <![endif]-->
+
+        <link rel="stylesheet" media="screen" href="@controllers.routes.Assets.versioned("styles/main.css")">
+        <link rel="stylesheet" media="screen" href="@controllers.routes.Assets.versioned("styles/ghpages-materialize.css")">
+            <!-- Compiled and minified CSS -->
+            <!--
+      <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/materialize/1.0.0/css/materialize.min.css">
+        -->
+            <!-- Compiled and minified JavaScript -->
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/materialize/1.0.0/js/materialize.min.js"></script>
+
+        @*Java Script router*@
+        @*
+        <script type="text/javascript" src="@routes.JavaScriptRouter.javascriptRoutes()"></script>
+        <script src="@assets.path("javascripts/JSUtil.js")"></script>
+            *@
+        @*Client javascript made by Scala.js*@
+        @scalajs.html.scripts("client", controllers.routes.Assets.versioned(_).toString, name => getClass.getResource(s"/public/$name") != null)
+
+
+    </head>
+    <body>
+
+        <header>
+
+            <div class="container"><a href="#" data-target="nav-mobile" class="top-nav sidenav-trigger waves-effect waves-light circle hide-on-large-only"><i class="material-icons">menu</i></a></div>
+            <ul id="nav-mobile" class="sidenav sidenav-fixed">
+
+                <li><div class="user-view">
+                    @*<div class="background"><img src="images/office.jpg"></div>*@
+                    <img class="circle" src="@controllers.routes.Assets.versioned("guesthome/img/IRILogo.svg")" alt="Logo">
+                    <span class="name text-black">@user.flatMap(_.fullName).getOrElse("Invitado")</span>
+
+                </div></li>
+                <div class="divider"></div>
+                <li class="no-padding">
+                    <ul class="collapsible collapsible-accordion">
+                    @* @sidebar.sidebar(sideBar) *@
+                    </ul>
+
+                    <div class="divider"></div>
+                @user.map{ u  =>
+                        @*
+                <li class="bold"><a href="@celacontrollers.routes.ApplicationController.guestHome" class="waves-effect waves-teal"><i class="material-icons">featured_play_list</i>Ventajas</a></li>
+                <li class="bold"><a href="@celacontrollers.routes.ApplicationController.signOut" class="waves-effect waves-teal"><i class="material-icons">keyboard_backspace</i>Salir</a></li>
+                            *@
+                }.getOrElse{
+                    @*
+
+                    <li class="bold"><a href="@celacontrollers.routes.ApplicationController.guestHome" class="waves-effect waves-teal"><i class="material-icons">featured_play_list</i>Ventajas</a></li>
+                    <li class="bold"><a href="@celacontrollers.authlayer.routes.SignInController.view" class="waves-effect waves-teal"><i class="material-icons">arrow_forward</i>Ingresa</a></li>
+                    <li class="bold"><a href="@celacontrollers.authlayer.routes.SignUpController.view" class="waves-effect waves-teal"><i class="material-icons">arrow_black</i>Regístrate</a></li>
+                    *@
+                }
+                </li>
+            </ul>
+
+
+
+        </header>
+
+
+
+        <main>
+            @content
+            @*Print form helper CSRF*@
+            <form method="post" id="myForm" action="#">   @helper.CSRF.formField  </form>
+            <script>M.AutoInit();</script>
+        </main>
+
+
+    </body>
+</html>

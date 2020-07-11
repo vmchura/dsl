@@ -46,7 +46,16 @@ lazy val client = (project in file("client"))
     scalaJSUseMainModuleInitializer := true,
     libraryDependencies ++= Seq(
       "org.scala-js" %%% "scalajs-dom" % "1.0.0"
-    )
+    ),
+    scalacOptions ++= {
+      import Ordering.Implicits._
+      if (VersionNumber(scalaVersion.value).numbers >= Seq(2L, 13L)) {
+        Seq("-Ymacro-annotations")
+      } else {
+        Nil
+      }
+    },
+    libraryDependencies += "org.lrng.binding" %%% "html" % "1.0.3+6-55950506"
   )
   .enablePlugins(ScalaJSPlugin, ScalaJSWeb)
   .dependsOn(shared.js)
@@ -56,7 +65,10 @@ lazy val shared = crossProject(JSPlatform, JVMPlatform)
   .in(file("shared"))
   .settings(commonSettings)
   .settings(
-    libraryDependencies += "org.scalatest" %%% "scalatest" % "3.2.0" % "test"
+    libraryDependencies += "org.scalatest" %%% "scalatest" % "3.2.0" % "test",
+    // https://mvnrepository.com/artifact/com.lihaoyi/upickle
+    libraryDependencies += "com.lihaoyi" %%% "upickle" % "1.1.0"
+
   )
   .jsConfigure(_.enablePlugins(ScalaJSWeb))
 

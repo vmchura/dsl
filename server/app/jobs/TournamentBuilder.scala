@@ -3,7 +3,6 @@ package jobs
 import javax.inject.Inject
 import models.services.{ChallongeTournamentService, DiscordUserService, ParticipantsService, TournamentService}
 import models.{DiscordUser, Participant, Tournament}
-import shared.utils.Util
 
 import scala.concurrent.Future
 import scala.concurrent.ExecutionContext.Implicits.global
@@ -12,7 +11,7 @@ class TournamentBuilder @Inject() (tournamentService: TournamentService,
                                    participantsService: ParticipantsService,
                                    challongeTournamentService: ChallongeTournamentService,
                                    discordUserService: DiscordUserService) {
-  def buildTournament(discordID: String, challongeID: String): Future[Either[TournamentBuilderError,(Tournament,Seq[(Participant,DiscordUser)])]] = {
+  def buildTournament(discordID: String, challongeID: String): Future[Either[TournamentBuilderError,(Tournament,Seq[Participant],Seq[DiscordUser])]] = {
     implicit class opt2Future[A](opt: Option[A]) {
       def withFailure(f: TournamentBuilderError): Future[A] = opt match {
         case None => Future.failed(f)
@@ -33,7 +32,7 @@ class TournamentBuilder @Inject() (tournamentService: TournamentService,
       participantInsertion <- Future.sequence(challongeTournament.participants.map(participantsService.saveParticipant))
       _ <- Future.sequence(participantInsertion.zip(challongeTournament.participants).map{case (f,p) => f.withFailure(CannotAddSomeParticipant(p.toString))})
     }yield{
-      (challongeTournament.tournament,Util.sortByComparableLabel(challongeTournament.participants,discordUsers))
+      (challongeTournament.tournament,challongeTournament.participants,discordUsers)
     }
 
     tournamentCreation.map(v => Right(v)).recoverWith{

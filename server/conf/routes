@@ -9,6 +9,11 @@ GET        /signin                              controllers.SignInController.vie
 GET        /authenticate/:provider              controllers.SocialAuthController.authenticate(provider)
 GET        /welcome                             controllers.Application.welcomeAuthenticated
 
+# ADMIN
+GET         /tournament/create                   controllers.TournamentController.view()
+POST        /tournament/create                   controllers.TournamentController.post()
+
+
 # Prefix must match `play.assets.urlPrefix`
 GET        /assets/*file                        controllers.Assets.at(file)
 GET        /versionedAssets/*file               controllers.Assets.versioned(path="/public", file: Asset)

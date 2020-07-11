@@ -1,0 +1,17 @@
+@import play.api.i18n.Messages
+@import play.api.mvc.RequestHeader
+@import controllers.AssetsFinder
+@import upickle.default._
+@import shared.UtilParser
+@import shared.utils.BasicComparableByLabel
+@this()(implicit assets: AssetsFinder)
+@(tournament: Tournament, first: Seq[BasicComparableByLabel], second: Seq[BasicComparableByLabel])(implicit request: RequestHeader, messages: Messages)
+@main(tournament.tournamentName){
+
+    <div id="makePairsID"></div>
+    <script>
+            ts = new RelateChaDisUsers("@{UtilParser.safeJson2String(write(first))}","@{UtilParser.safeJson2String(write(second))}","makePairsID");
+            ts.showPanel();
+    </script>
+
+}

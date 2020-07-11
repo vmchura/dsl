@@ -1,0 +1,35 @@
+@import play.api.i18n.Messages
+@import play.api.mvc.RequestHeader
+@import controllers.AssetsFinder
+@import forms.CreateTournamentForm.Data
+@this()(implicit assets: AssetsFinder)
+@(createTournamentForm: Form[Data])(implicit request: RequestHeader, messages: Messages)
+
+@main("Crea un torneo: Discord + Challonge"){
+    <div class="card container-cela-form">
+        <div class="card-content">
+            <div class="card-title">@messages("tournament.create.title")</div>
+
+            @helper.form(action = routes.TournamentController.post()) {
+                @helper.CSRF.formField
+
+                <div class="input-field">
+                    <input id="discordGuildID" type="text" class="validate" name="discordGuildID" value="@createTournamentForm.value.fold("")(_.discordGuildID)" required="true">
+                    <label for="discordGuildID">@messages("discordGuildID")</label>
+                </div>
+                <div class="input-field">
+                    <input id="challongeID" type="text" class="validate" name="challongeID" value="@createTournamentForm.value.fold("")(_.challongeID)" required="true">
+                    <label for="challongeID">@messages("challongeID")</label>
+                </div>
+                <div class="row">
+                    <div class="col s6 offset-s6 right-align">
+                        <button type="submit" value="submit" class="btn waves-effect waves-light">@messages("tournament.create.submit")
+                            <i class="material-icons right">send</i>
+                        </button>
+                    </div>
+                </div>
+
+            }
+        </div>
+    </div>
+}
