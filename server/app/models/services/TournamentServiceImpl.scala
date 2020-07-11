@@ -14,12 +14,12 @@ class TournamentServiceImpl @Inject() (tournamentDAO: TournamentDAO, participant
 
   override def saveTournament(tournament: Tournament): Future[Boolean] = tournamentDAO.save(tournament)
 
-  override def loadTournament(tournamentID: UUID): Future[Option[Tournament]] = tournamentDAO.load(tournamentID)
+  override def loadTournament(challongeID: Long): Future[Option[Tournament]] = tournamentDAO.load(challongeID)
 
-  private def findTournamentByPlayer(userID: UUID, tournamentQuery: UUID => Future[Option[Tournament]]) = {
+  private def findTournamentByPlayer(userID: UUID, tournamentQuery: Long => Future[Option[Tournament]]) = {
     for {
       participants    <- participantDAO.findByUserID(userID)
-      tournamentsID   <- Future.successful(participants.map(_.participantPK.tournamentID).distinct)
+      tournamentsID   <- Future.successful(participants.map(_.participantPK.challongeID).distinct)
       tournaments     <- Future.sequence(tournamentsID.map(tournamentQuery))
     }yield{
       tournaments.flatten
@@ -28,8 +28,8 @@ class TournamentServiceImpl @Inject() (tournamentDAO: TournamentDAO, participant
 
   override def findAllTournamentsByPlayer(userID: UUID): Future[Seq[Tournament]] = findTournamentByPlayer(userID,loadTournament)
 
-  private def findTournamentIfActive(tournamentID: UUID) = loadTournament(tournamentID).map(_.flatMap(t => if(t.active) Some(t) else None))
+  private def findTournamentIfActive(challongeID: Long) = loadTournament(challongeID).map(_.flatMap(t => if(t.active) Some(t) else None))
   override def findAllActiveTournamentsByPlayer(userID: UUID): Future[Seq[Tournament]] = findTournamentByPlayer(userID,findTournamentIfActive)
 
-  override def dropTournament(tournamentID: UUID): Future[Boolean] = tournamentDAO.remove(tournamentID)
+  override def dropTournament(challongeID: Long): Future[Boolean] = tournamentDAO.remove(challongeID)
 }

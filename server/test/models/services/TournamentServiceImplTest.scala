@@ -13,26 +13,26 @@ class TournamentServiceImplTest extends PlaySpec with GuiceOneAppPerSuite{
   private val service: TournamentService = app.injector.instanceOf(classOf[TournamentService])
   private val participantService = app.injector.instanceOf(classOf[ParticipantsService])
 
-  private val tournamentActive = Tournament(UUID.randomUUID(),0L, "0L", "D0L", active = true)
-  private val tournamentNotActive = Tournament(UUID.randomUUID(),1L, "1L", "D1L", active = false)
+  private val tournamentActive = Tournament(0L, "0L", "D0L", active = true)
+  private val tournamentNotActive = Tournament(1L, "1L", "D1L", active = false)
 
   private val disuser1 = UUID.randomUUID()
   private val disuser2 = UUID.randomUUID()
 
-  private val player1_active   = Participant(ParticipantPK(tournamentActive.tournamentID, 0L),
+  private val player1_active   = Participant(ParticipantPK(tournamentActive.challongeID, 0L),
     "player1", Some("player1"), Some(disuser1) )
-  private val player1_notactive= Participant(ParticipantPK(tournamentNotActive.tournamentID, 1L),
+  private val player1_notactive= Participant(ParticipantPK(tournamentNotActive.challongeID, 1L),
     "player1", Some("player1"), Some(disuser1) )
 
 
-  private val player2_active   = Participant(ParticipantPK(tournamentActive.tournamentID, 2L),
+  private val player2_active   = Participant(ParticipantPK(tournamentActive.challongeID, 2L),
     "player2", Some("player2"), Some(disuser2) )
-  private val player2_notactive= Participant(ParticipantPK(tournamentNotActive.tournamentID, 3L),
+  private val player2_notactive= Participant(ParticipantPK(tournamentNotActive.challongeID, 3L),
     "player2", Some("player2"), Some(disuser2) )
 
 
   private def tournamentsSatisfiesPredicate(filter: Tournament => Boolean)(tournaments: Seq[Tournament]) = {
-    def sorted(t: Seq[Tournament]) = t.toList.filter(filter).sortBy(_.tournamentID)
+    def sorted(t: Seq[Tournament]) = t.toList.filter(filter).sortBy(_.challongeID)
     sorted(tournaments) == sorted(List(tournamentActive, tournamentNotActive))
   }
   private def allTournaments(tournaments: Seq[Tournament]) = tournamentsSatisfiesPredicate(_ => true)(tournaments)
@@ -40,7 +40,7 @@ class TournamentServiceImplTest extends PlaySpec with GuiceOneAppPerSuite{
 
   "A tournament service" should {
     "return an empty result of unknown tournament" in {
-      val pf = service.loadTournament(UUID.randomUUID())
+      val pf = service.loadTournament(1L)
       val queryExecution = pf.map(p =>  assert(p.isEmpty))
       Await.result(queryExecution,5 seconds)
       queryExecution
@@ -49,7 +49,7 @@ class TournamentServiceImplTest extends PlaySpec with GuiceOneAppPerSuite{
       val queryExecution = for {
         in1 <- service.saveTournament(tournamentActive)
         in2 <- service.saveTournament(tournamentActive)
-        removed <- service.dropTournament(tournamentActive.tournamentID)
+        removed <- service.dropTournament(tournamentActive.challongeID)
       } yield {
         assert(in1 && !in2 && removed)
       }
@@ -63,7 +63,7 @@ class TournamentServiceImplTest extends PlaySpec with GuiceOneAppPerSuite{
         _ <- service.saveTournament(tournamentNotActive)
         tournaments <- service.findAllTournaments()
         equals <- Future.successful(allTournaments(tournaments))
-        removed <- Future.sequence(List(tournamentActive,tournamentNotActive).map(_.tournamentID).map(service.dropTournament))
+        removed <- Future.sequence(List(tournamentActive,tournamentNotActive).map(_.challongeID).map(service.dropTournament))
       } yield {
         assert(removed.forall(q => q) && equals)
       }
@@ -77,7 +77,7 @@ class TournamentServiceImplTest extends PlaySpec with GuiceOneAppPerSuite{
         _ <- service.saveTournament(tournamentNotActive)
         tournaments <- service.findAllActiveTournaments()
         equals <- Future.successful(allActiveTournaments(tournaments))
-        removed <- Future.sequence(List(tournamentActive).map(_.tournamentID).map(service.dropTournament))
+        removed <- Future.sequence(List(tournamentActive).map(_.challongeID).map(service.dropTournament))
       } yield {
         assert(removed.forall(q => q) && equals)
       }
@@ -96,8 +96,8 @@ class TournamentServiceImplTest extends PlaySpec with GuiceOneAppPerSuite{
         tActive1 <- service.findAllActiveTournamentsByPlayer(disuser1)
         tAll2 <- service.findAllTournamentsByPlayer(disuser2)
         tActive2 <- service.findAllActiveTournamentsByPlayer(disuser2)
-        _ <- service.dropTournament(tournamentActive.tournamentID)
-        _ <- service.dropTournament(tournamentNotActive.tournamentID)
+        _ <- service.dropTournament(tournamentActive.challongeID)
+        _ <- service.dropTournament(tournamentNotActive.challongeID)
         deletion <- Future.sequence(List(player1_active,player1_notactive,player2_active,player2_notactive).map(_.participantPK).map(participantService.dropParticipant))
       }yield{
         assert(allTournaments(tAll1))

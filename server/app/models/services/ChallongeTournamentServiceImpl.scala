@@ -1,5 +1,4 @@
 package models.services
-import java.util.UUID
 
 import models.{ChallongeTournament, Match, MatchPK, Participant, ParticipantPK, Tournament}
 
@@ -26,13 +25,11 @@ class ChallongeTournamentServiceImpl @Inject()(configuration: Configuration) ext
         try{
           val tournament = Json.parse(body)("tournament")
           val chaID = tournament("id").as[Long]
-          val tournamentID = UUID.randomUUID()
-
           val name = tournament("name").as[String]
-          val tournamentModel = Tournament(tournamentID,chaID,discordServerID,name,active = false)
+          val tournamentModel = Tournament(chaID,discordServerID,name,active = false)
           case class ParticipantWithGroup(participant: Participant, groupIDs: Seq[Long])
           val participants = tournament("participants").as[JsArray].value.map(p => {
-            val participant = Participant(ParticipantPK(tournamentID,p("participant")("id").as[Long]),None,None)
+            val participant = Participant(ParticipantPK(chaID,p("participant")("id").as[Long]),p("participant")("name").as[String],None,None)
             val participan_group_ids = p("participant")("group_player_ids").as[JsArray].value.map(_.as[Long]).toSeq
             ParticipantWithGroup(participant,participan_group_ids)
           }).toSeq
@@ -42,7 +39,7 @@ class ChallongeTournamentServiceImpl @Inject()(configuration: Configuration) ext
             val match1v1 = m("match")
             val round = match1v1("round").as[Int]
             val group_id = match1v1("group_id").asOpt[Long]
-            val matchModel = Match(MatchPK(tournamentID,match1v1("id").as[Long]),match1v1("player1_id").as[Long],match1v1("player2_id").as[Long],"unknow")
+            val matchModel = Match(MatchPK(chaID,match1v1("id").as[Long]),match1v1("player1_id").as[Long],match1v1("player2_id").as[Long],"unknow")
             ChallongeMatch(matchModel,round, group_id)
           }).toSeq
 

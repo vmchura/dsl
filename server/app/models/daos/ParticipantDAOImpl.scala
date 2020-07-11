@@ -32,8 +32,8 @@ class ParticipantDAOImpl  @Inject() (val reactiveMongoApi: ReactiveMongoApi) ext
     collection.flatMap(_.find(query,Option.empty[Participant]).cursor[Participant]().collect[List](-1,Cursor.FailOnError[List[Participant]]()))
 
   }
-  override def findByTournamentID(tournamentID: UUID): Future[Seq[Participant]] = {
-    val query = Json.obj("participantPK.tournamentID" -> tournamentID)
+  override def findByTournamentID(challongeID: Long): Future[Seq[Participant]] = {
+    val query = Json.obj("participantPK.challongeID" -> challongeID)
     getParticipantsByQuery(query)
   }
 

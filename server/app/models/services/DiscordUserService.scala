@@ -5,9 +5,6 @@ import models.DiscordUser
 import scala.concurrent.Future
 
 trait DiscordUserService {
-//https://discord.com/api/guilds/728442814832312372/members
-  //header Authorization
-  // Bot BOt_token
   protected def bot_token: String
-  def findMembersOnGuild(guildID: String): Future[Seq[DiscordUser]]
+  def findMembersOnGuild(guildID: String): Future[Option[Seq[DiscordUser]]]
 }

@@ -9,6 +9,6 @@ import scala.concurrent.Future
 trait TournamentDAO {
   def all(): Future[Seq[Tournament]]
   def save(tournament: Tournament): Future[Boolean]
-  def load(tournamentID: UUID): Future[Option[Tournament]]
-  def remove(tournamentID: UUID): Future[Boolean]
+  def load(challongeID: Long): Future[Option[Tournament]]
+  def remove(challongeID: Long): Future[Boolean]
 }

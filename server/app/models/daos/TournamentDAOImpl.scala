@@ -1,7 +1,5 @@
 package models.daos
 
-import java.util.UUID
-
 import javax.inject.Inject
 import models.Tournament
 import play.api.libs.json.Json
@@ -17,18 +15,18 @@ class TournamentDAOImpl  @Inject() (val reactiveMongoApi: ReactiveMongoApi) exte
 
   override def save(tournament: Tournament): Future[Boolean] =
     for{
-      loaded <- load(tournament.tournamentID)
+      loaded <- load(tournament.challongeID)
       newInsertion <- loaded.fold(collection.
         flatMap(_.update(ordered=true).
-          one(Json.obj("tournamentID" -> tournament.tournamentID), tournament, upsert = true)).
+          one(Json.obj("challongeID" -> tournament.challongeID), tournament, upsert = true)).
         map(_.ok))(_ => Future.successful(false))
     }yield {
       newInsertion
     }
 
 
-  override def load(tournamentID: UUID): Future[Option[Tournament]] = {
-    val query = Json.obj("tournamentID" -> tournamentID)
+  override def load(challongeID: Long): Future[Option[Tournament]] = {
+    val query = Json.obj("challongeID" -> challongeID)
     collection.flatMap(_.find(query,Option.empty[Tournament]).one[Tournament])
 
   }
@@ -36,8 +34,8 @@ class TournamentDAOImpl  @Inject() (val reactiveMongoApi: ReactiveMongoApi) exte
   override def all(): Future[Seq[Tournament]] =
     collection.flatMap(_.find(Json.obj(),Option.empty[Tournament]).cursor[Tournament]().collect[List](-1,Cursor.FailOnError[List[Tournament]]()))
 
-  override def remove(tournamentID: UUID): Future[Boolean] = {
-    val query = Json.obj("tournamentID" -> tournamentID)
+  override def remove(challongeID: Long): Future[Boolean] = {
+    val query = Json.obj("challongeID" -> challongeID)
     collection.flatMap(_.delete(ordered=true).one(query).map(_.ok))
   }
 }

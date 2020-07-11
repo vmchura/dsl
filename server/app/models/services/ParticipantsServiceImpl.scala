@@ -13,7 +13,7 @@ class ParticipantsServiceImpl @Inject() (participantDAO: ParticipantDAO) extends
 
   override def loadParticipant(participantPK: ParticipantPK): Future[Option[Participant]] = participantDAO.find(participantPK)
 
-  override def loadParticipantsWithNoRelation(tournamentID: UUID): Future[Seq[Participant]] = participantDAO.findByTournamentID(tournamentID).map(_.filter(_.discordUserID.isEmpty))
+  override def loadParticipantsWithNoRelation(challongeID: Long): Future[Seq[Participant]] = participantDAO.findByTournamentID(challongeID).map(_.filter(_.discordUserID.isEmpty))
 
   override def updateParticipantRelation(participant: Participant): Future[Boolean] = participantDAO.save(participant)
 
