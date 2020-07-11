@@ -16,10 +16,16 @@ class TournamentDAOImpl  @Inject() (val reactiveMongoApi: ReactiveMongoApi) exte
   def collection: Future[JSONCollection] = reactiveMongoApi.database.map(_.collection("dsl.tournament"))
 
   override def save(tournament: Tournament): Future[Boolean] =
-    collection.
-      flatMap(_.update(ordered=true).
-      one(Json.obj("tournamentID" -> tournament.tournamentID), tournament, upsert = true)).
-      map(_.ok)
+    for{
+      loaded <- load(tournament.tournamentID)
+      newInsertion <- loaded.fold(collection.
+        flatMap(_.update(ordered=true).
+          one(Json.obj("tournamentID" -> tournament.tournamentID), tournament, upsert = true)).
+        map(_.ok))(_ => Future.successful(false))
+    }yield {
+      newInsertion
+    }
+
 
   override def load(tournamentID: UUID): Future[Option[Tournament]] = {
     val query = Json.obj("tournamentID" -> tournamentID)
