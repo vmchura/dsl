@@ -19,12 +19,16 @@ class TournamentServiceImplTest extends PlaySpec with GuiceOneAppPerSuite{
   private val disuser1 = UUID.randomUUID()
   private val disuser2 = UUID.randomUUID()
 
-  private val player1_active   = Participant(ParticipantPK(tournamentActive.tournamentID, 0L), Some("player1"), Some(disuser1) )
-  private val player1_notactive= Participant(ParticipantPK(tournamentNotActive.tournamentID, 1L), Some("player1"), Some(disuser1) )
+  private val player1_active   = Participant(ParticipantPK(tournamentActive.tournamentID, 0L),
+    "player1", Some("player1"), Some(disuser1) )
+  private val player1_notactive= Participant(ParticipantPK(tournamentNotActive.tournamentID, 1L),
+    "player1", Some("player1"), Some(disuser1) )
 
 
-  private val player2_active   = Participant(ParticipantPK(tournamentActive.tournamentID, 2L), Some("player2"), Some(disuser2) )
-  private val player2_notactive= Participant(ParticipantPK(tournamentNotActive.tournamentID, 3L), Some("player2"), Some(disuser2) )
+  private val player2_active   = Participant(ParticipantPK(tournamentActive.tournamentID, 2L),
+    "player2", Some("player2"), Some(disuser2) )
+  private val player2_notactive= Participant(ParticipantPK(tournamentNotActive.tournamentID, 3L),
+    "player2", Some("player2"), Some(disuser2) )
 
 
   private def tournamentsSatisfiesPredicate(filter: Tournament => Boolean)(tournaments: Seq[Tournament]) = {
@@ -38,6 +42,17 @@ class TournamentServiceImplTest extends PlaySpec with GuiceOneAppPerSuite{
     "return an empty result of unknown tournament" in {
       val pf = service.loadTournament(UUID.randomUUID())
       val queryExecution = pf.map(p =>  assert(p.isEmpty))
+      Await.result(queryExecution,5 seconds)
+      queryExecution
+    }
+    "return false after insertion of the same tournament" in {
+      val queryExecution = for {
+        in1 <- service.saveTournament(tournamentActive)
+        in2 <- service.saveTournament(tournamentActive)
+        removed <- service.dropTournament(tournamentActive.tournamentID)
+      } yield {
+        assert(in1 && !in2 && removed)
+      }
       Await.result(queryExecution,5 seconds)
       queryExecution
     }
