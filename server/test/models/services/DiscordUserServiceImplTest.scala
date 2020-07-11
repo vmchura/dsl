@@ -13,7 +13,7 @@ class DiscordUserServiceImplTest  extends PlaySpec with GuiceOneAppPerSuite{
   "A Discord User Service" should {
     "get correct users" in {
       val queryExecution = service.findMembersOnGuild("728442814832312372").map {
-        users => assertResult(Seq(DiscordUser("698648718999814165", "VmChQ")))(users)
+        users => assertResult(Some(Seq(DiscordUser("698648718999814165", "VmChQ"))))(users)
       }
       Await.result(queryExecution, 30 seconds)
 
