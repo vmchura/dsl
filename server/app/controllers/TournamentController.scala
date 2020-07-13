@@ -9,7 +9,7 @@ import play.api.i18n.I18nSupport
 import shared.utils.BasicComparableByLabel
 
 import scala.concurrent.{ExecutionContext, Future}
-
+import upickle.default._
 @Singleton
 class TournamentController @Inject()(scc: SilhouetteControllerComponents,
                                      createTournamentView: views.html.createtournament,
@@ -38,11 +38,13 @@ class TournamentController @Inject()(scc: SilhouetteControllerComponents,
           case Left(error) =>
             BadRequest(createTournamentView(CreateTournamentForm.form))
           case Right((tournament,participants, discordusers)) => Ok(matchpairs(tournament,
-            participants.map(p => BasicComparableByLabel(p.chaname,p.participantPK.challongeID.toString)),
-            discordusers.map(p => BasicComparableByLabel(p.userName, p.discordID))))
+            participants.map(p => BasicComparableByLabel(p.chaname,write(p.participantPK))),
+            discordusers.map(p => BasicComparableByLabel(p.userName, write(p.discordID)))))
         }
 
       }
     )
   }
+
+
 }

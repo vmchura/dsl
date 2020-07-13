@@ -10,9 +10,9 @@ GET        /authenticate/:provider              controllers.SocialAuthController
 GET        /welcome                             controllers.Application.welcomeAuthenticated
 
 # ADMIN
-GET         /tournament/create                   controllers.TournamentController.view()
-POST        /tournament/create                   controllers.TournamentController.post()
-
+GET         /tournament/create                  controllers.TournamentController.view()
+POST        /tournament/create                  controllers.TournamentController.post()
+POST        /participant/update                 controllers.ParticipantController.buildRelation()
 
 # Prefix must match `play.assets.urlPrefix`
 GET        /assets/*file                        controllers.Assets.at(file)
