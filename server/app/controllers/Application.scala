@@ -20,10 +20,10 @@ class Application @Inject()(scc: SilhouetteControllerComponents,
   ex: ExecutionContext
 )extends   AbstractAuthController(scc) with I18nSupport {
 
-  def index: Action[AnyContent] = Action { implicit request =>
+  def index(): Action[AnyContent] = Action { implicit request =>
     Ok(indexpage())
   }
-  def welcomeAuthenticated: Action[AnyContent] = silhouette.SecuredAction.async { implicit request: SecuredRequest[EnvType, AnyContent] =>
+  def welcomeAuthenticated(): Action[AnyContent] = silhouette.SecuredAction.async { implicit request: SecuredRequest[EnvType, AnyContent] =>
     tournamentService.findAllTournaments().map{ torneos =>
       Ok(welcomeauthenticated(request.identity, torneos.map(torneo =>
         TournamentMenu(torneo.tournamentName,

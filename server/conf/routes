@@ -6,17 +6,19 @@
 GET        /                                    controllers.Application.index
 # SINGIN / LOGIN
 GET        /signin                              controllers.SignInController.view
-GET        /authenticate/:provider              controllers.SocialAuthController.authenticate(provider)
+GET        /authenticate/:provider              controllers.SocialAuthController.authenticate(provider: String)
 GET        /welcome                             controllers.Application.welcomeAuthenticated
 
 # ADMIN
-GET         /tournament/create                  controllers.TournamentController.view()
-POST        /tournament/create                  controllers.TournamentController.post()
+GET         /tournament/create                  controllers.TournamentController.view
+POST        /tournament/create                  controllers.TournamentController.post
 POST        /participant/update                 controllers.ParticipantController.buildRelation()
 
 # TOURNAMENT
 GET         /tournament/showparticipantscorrelation/:tournamentID       controllers.TournamentController.showparticipantscorrelation(tournamentID: Long)
 GET         /tournament/showmatches/:challongeTournamentID              controllers.TournamentController.showMatches(challongeTournamentID: Long)
+# REPLAY
+POST        /replay/add/:tournamentID/:matchID  controllers.ReplayMatchController.addReplayToMatch(tournamentID: Long, matchID: Long)
 # Prefix must match `play.assets.urlPrefix`
 GET        /assets/*file                        controllers.Assets.at(file)
 GET        /versionedAssets/*file               controllers.Assets.versioned(path="/public", file: Asset)

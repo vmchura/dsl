@@ -1,6 +1,5 @@
 package controllers
 
-import akka.actor.Status.Success
 import com.mohiva.play.silhouette.api.actions.SecuredRequest
 import javax.inject._
 import jobs.ParticipantUpdater

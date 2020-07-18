@@ -16,7 +16,7 @@ class SignInController @Inject() (
                                    ex: ExecutionContext
                                  ) extends  AbstractAuthController(scc)with I18nSupport {
 
-  def view: Action[AnyContent] = silhouette.UnsecuredAction.async { implicit request =>
+  def view(): Action[AnyContent] = silhouette.UnsecuredAction.async { implicit request =>
     Future.successful(Ok(signIn(socialProviderRegistry)))
   }
 }
