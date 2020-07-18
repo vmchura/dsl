@@ -12,5 +12,6 @@ trait ParticipantsService {
   def loadParticipantsWithNoRelation(challongeID: Long): Future[Seq[Participant]]
   def updateParticipantRelation(participant: Participant): Future[Boolean]
   def loadParticipantByUserID(userID: UUID): Future[Seq[Participant]]
+  def loadParticipantByDiscordUserID(discordUserID: String): Future[Seq[Participant]]
   def dropParticipant(participantPK: ParticipantPK): Future[Boolean]
 }

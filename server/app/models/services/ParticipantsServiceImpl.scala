@@ -20,4 +20,6 @@ class ParticipantsServiceImpl @Inject() (participantDAO: ParticipantDAO) extends
   override def loadParticipantByUserID(userID: UUID): Future[Seq[Participant]] = participantDAO.findByUserID(userID)
 
   override def dropParticipant(participantPK: ParticipantPK): Future[Boolean] = participantDAO.drop(participantPK)
+
+  override def loadParticipantByDiscordUserID(discordUserID: String): Future[Seq[Participant]] = participantDAO.findByDiscordUserID(discordUserID)
 }

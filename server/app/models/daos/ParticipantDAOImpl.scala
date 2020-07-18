@@ -46,4 +46,9 @@ class ParticipantDAOImpl  @Inject() (val reactiveMongoApi: ReactiveMongoApi) ext
     val query = Json.obj("participantPK" -> participantPK)
     collection.flatMap(_.delete(ordered = true).one(query).map(_.ok))
   }
+
+  override def findByDiscordUserID(discordUserID: String): Future[Seq[Participant]] = {
+    val query = Json.obj("discordUserID" -> Some(discordUserID))
+    getParticipantsByQuery(query)
+  }
 }
