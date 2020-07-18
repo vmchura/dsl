@@ -39,7 +39,14 @@ class ChallongeTournamentServiceImpl @Inject()(configuration: Configuration) ext
             val match1v1 = m("match")
             val round = match1v1("round").as[Int]
             val group_id = match1v1("group_id").asOpt[Long]
-            val matchModel = Match(MatchPK(chaID,match1v1("id").as[Long]),match1v1("player1_id").as[Long],match1v1("player2_id").as[Long],"unknow")
+            val playerID1 = match1v1("player1_id").as[Long]
+            val playerID2 = match1v1("player2_id").as[Long]
+            val matchModel = Match(MatchPK(chaID,match1v1("id").as[Long]),
+              playerID1,
+              playerID2,"unknow",
+              participants.find(_.participant.participantPK.challongeID == playerID1).map(_.participant.chaname),
+              participants.find(_.participant.participantPK.challongeID == playerID2).map(_.participant.chaname)
+            )
             ChallongeMatch(matchModel,round, group_id)
           }).toSeq
 

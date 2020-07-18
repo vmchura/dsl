@@ -13,8 +13,8 @@ class TournamentServiceImplTest extends PlaySpec with GuiceOneAppPerSuite{
   private val service: TournamentService = app.injector.instanceOf(classOf[TournamentService])
   private val participantService = app.injector.instanceOf(classOf[ParticipantsService])
 
-  private val tournamentActive = Tournament(0L, "0L", "D0L", active = true)
-  private val tournamentNotActive = Tournament(1L, "1L", "D1L", active = false)
+  private val tournamentActive = Tournament(0L,"-", "0L", "D0L", active = true)
+  private val tournamentNotActive = Tournament(1L,"-", "1L", "D1L", active = false)
 
   private val disuser1 = UUID.randomUUID()
   private val disuser2 = UUID.randomUUID()

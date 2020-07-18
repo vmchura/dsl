@@ -31,8 +31,11 @@ lazy val server = (project in file("server"))
       "org.scalatestplus.play" %% "scalatestplus-play" % "5.0.0" % "test",
       //json play
       "com.softwaremill.sttp.client" %% "play-json" % "2.2.0",
+      // https://mvnrepository.com/artifact/com.dropbox.core/dropbox-core-sdk
+      "com.dropbox.core" % "dropbox-core-sdk" % "3.1.4",
 
-      ehcache,
+
+        ehcache,
         guice,
       specs2 % Test
     )
