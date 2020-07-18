@@ -55,7 +55,8 @@ lazy val client = (project in file("client"))
         Nil
       }
     },
-    libraryDependencies += "org.lrng.binding" %%% "html" % "1.0.3+6-55950506"
+    libraryDependencies += "org.lrng.binding" %%% "html" % "1.0.3+6-55950506",
+    libraryDependencies += "com.thoughtworks.binding" %%% "futurebinding" % "12.0.0"
   )
   .enablePlugins(ScalaJSPlugin, ScalaJSWeb)
   .dependsOn(shared.js)

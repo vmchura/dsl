@@ -1,0 +1,20 @@
+@import play.api.i18n.Messages
+@import play.api.mvc.RequestHeader
+@import controllers.AssetsFinder
+@import models.Match
+@this()(implicit assets: AssetsFinder)
+@(matches: Seq[Match])(implicit request: RequestHeader, messages: Messages)
+@main("Partidas del torneo",None,Nil){
+
+    <div id="makePairsID"></div>
+    <ol>
+    @for(m <- matches){
+        <li>
+            @m.firstChaNameID
+            @m.secondChaNameID
+            @m.round
+        </li>
+    }
+    </ol>
+
+}

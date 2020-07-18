@@ -5,7 +5,7 @@
 @this()(implicit assets: AssetsFinder)
 @(socialProviders: SocialProviderRegistry)(implicit request: RequestHeader, messages: Messages)
 
-@main("Regístrate con tu cuenta de Discord!"){
+@main("Regístrate con tu cuenta de Discord!",None, Nil){
     <h2>Este es el contenido para registrarse</h2>
     @if(socialProviders.providers.nonEmpty) {
         <div class="social-providers">

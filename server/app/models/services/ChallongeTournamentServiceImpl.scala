@@ -26,7 +26,7 @@ class ChallongeTournamentServiceImpl @Inject()(configuration: Configuration) ext
           val tournament = Json.parse(body)("tournament")
           val chaID = tournament("id").as[Long]
           val name = tournament("name").as[String]
-          val tournamentModel = Tournament(chaID,discordServerID,name,active = false)
+          val tournamentModel = Tournament(chaID,tournamentUrlID,discordServerID,name,active = false)
           case class ParticipantWithGroup(participant: Participant, groupIDs: Seq[Long])
           val participants = tournament("participants").as[JsArray].value.map(p => {
             val participant = Participant(ParticipantPK(chaID,p("participant")("id").as[Long]),p("participant")("name").as[String],None,None)

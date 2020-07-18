@@ -6,7 +6,7 @@
 @import shared.utils.BasicComparableByLabel
 @this()(implicit assets: AssetsFinder)
 @(tournament: Tournament, first: Seq[BasicComparableByLabel], second: Seq[BasicComparableByLabel])(implicit request: RequestHeader, messages: Messages)
-@main(tournament.tournamentName){
+@main(tournament.tournamentName,None,Nil){
 
     <div id="makePairsID"></div>
     <script>

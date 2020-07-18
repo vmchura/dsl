@@ -2,10 +2,10 @@
 @import play.api.mvc.RequestHeader
 @import play.twirl.api.Html
 @import controllers.AssetsFinder
+@import models.TournamentMenu
+@import views.html.menutorneo
 
-
-
-@(title: String,user: Option[models.User] = None)(content: Html)(implicit request: RequestHeader, messages: Messages, assets: AssetsFinder)
+@(title: String,user: Option[models.User] = None, torneos: Seq[TournamentMenu])(content: Html)(implicit request: RequestHeader, messages: Messages, assets: AssetsFinder)
 
 
 <!DOCTYPE html>
@@ -64,6 +64,7 @@
                 <li class="no-padding">
                     <ul class="collapsible collapsible-accordion">
                     @* @sidebar.sidebar(sideBar) *@
+                        @menutorneo(torneos)
                     </ul>
 
                     <div class="divider"></div>

@@ -5,7 +5,7 @@
 @this()(implicit assets: AssetsFinder)
 @(createTournamentForm: Form[Data])(implicit request: RequestHeader, messages: Messages)
 
-@main("Crea un torneo: Discord + Challonge"){
+@main("Crea un torneo: Discord + Challonge",None,Nil){
     <div class="card container-cela-form">
         <div class="card-content">
             <div class="card-title">@messages("tournament.create.title")</div>
