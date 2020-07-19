@@ -1,5 +1,6 @@
 package jobs
 import javax.inject.Inject
+import models.daos.ReplayMatchDAO
 import models.services.{ChallongeTournamentService, DiscordUserService, ParticipantsService, TournamentService}
 import models.{DiscordUser, Match, Participant, Tournament, User}
 
@@ -9,7 +10,8 @@ import scala.concurrent.ExecutionContext.Implicits.global
 class TournamentBuilder @Inject() (tournamentService: TournamentService,
                                    participantsService: ParticipantsService,
                                    challongeTournamentService: ChallongeTournamentService,
-                                   discordUserService: DiscordUserService) {
+                                   discordUserService: DiscordUserService,
+                                   replayMatchDAO: ReplayMatchDAO) {
 
   def formFuture[A](f: Future[A]): Future[Either[JobError,A]] = {
     convertToEither(s => UnknowTournamentBuilderError(s))(f)
@@ -51,7 +53,7 @@ class TournamentBuilder @Inject() (tournamentService: TournamentService,
   }
 
   def getMatches(challongeTournamentID: Long, userOpt: Option[User]): Future[Either[JobError,Seq[Match]]] = {
-    val tournamentCreation = for {
+    val matchesFromChallonge = for {
       tournamentFromDBOpt <- tournamentService.loadTournament(challongeTournamentID)
       tournamentDB <- tournamentFromDBOpt.withFailure(TournamentNotBuild(challongeTournamentID))
       challongeTournamentOpt <- challongeTournamentService.findChallongeTournament(tournamentDB.discordServerID)(tournamentDB.urlID)
@@ -62,7 +64,16 @@ class TournamentBuilder @Inject() (tournamentService: TournamentService,
         challongeTournament.matches.filter(m => participants.exists(p => p.participantPK.chaNameID == m.firstChaNameID || p.participantPK.chaNameID == m.secondChaNameID)))
 
     }
+    val replaysAttached = for{
+      matches <- matchesFromChallonge
+      replaysForTournament <- replayMatchDAO.loadAllByTournament(challongeTournamentID)
+    }yield{
+      matches.map{ m =>
+        m.withReplays(replaysForTournament.filter(_.matchID == m.matchPK.challongeMatchID))
 
-    formFuture(tournamentCreation)
+      }
+    }
+
+    formFuture(replaysAttached)
   }
 }

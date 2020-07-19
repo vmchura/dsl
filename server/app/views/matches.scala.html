@@ -11,8 +11,8 @@
     <ol>
     @for(m <- matches){
         <li>
-            @m.firstChaNameID
-            @m.secondChaNameID
+            @m.player1Name
+            @m.player2Name
             @m.round
             @form(routes.ReplayMatchController.addReplayToMatch(m.matchPK.challongeID,m.matchPK.challongeMatchID),
                 Symbol("enctype") -> "multipart/form-data") {
@@ -21,6 +21,14 @@
                 <input type="file" name="replay_file" id="replay_file"><br>
                 <input type="submit" value="Upload">
             }
+            <ol>
+                @for(r <- m.replaysAttached){
+                    <li>
+                        @r.matchName
+                    </li>
+                }
+            </ol>
+
         </li>
     }
     </ol>
