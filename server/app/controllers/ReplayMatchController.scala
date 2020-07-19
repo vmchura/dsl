@@ -18,7 +18,7 @@ class ReplayMatchController @Inject()(scc: SilhouetteControllerComponents,
 
   def addReplayToMatch(tournamentID: Long, matchID: Long): Action[MultipartFormData[Files.TemporaryFile]] = silhouette.SecuredAction.async(parse.multipartFormData) { implicit request =>
     request.body.file("replay_file").fold(Future.successful(Ok("error"))){ replay_file =>
-      replayPusher.pushReplay(tournamentID,matchID,replay_file.ref.toFile).map{ res =>
+      replayPusher.pushReplay(tournamentID,matchID,replay_file.ref.toFile, request.identity, replay_file.filename).map{ res =>
         Ok(s"$res")
       }
 
