@@ -1,21 +1,28 @@
 package controllers
-import com.mohiva.play.silhouette.api.actions.SecuredRequest
 import javax.inject._
+import jobs.ReplayPusher
 import play.api.mvc._
 import play.api.i18n.I18nSupport
+import play.api.libs.Files
 
 import scala.concurrent.{ExecutionContext, Future}
 
 @Singleton
-class ReplayMatchController @Inject()(scc: SilhouetteControllerComponents
+class ReplayMatchController @Inject()(scc: SilhouetteControllerComponents,
+                                      replayPusher: ReplayPusher
                                      )(
                                        implicit
                                        assets: AssetsFinder,
                                        ex: ExecutionContext
                                      )extends   AbstractAuthController(scc) with I18nSupport {
 
-  def addReplayToMatch(tournamentID: Long, matchID: Long): Action[AnyContent] = silhouette.SecuredAction.async { implicit request: SecuredRequest[EnvType, AnyContent] =>
-      Future.successful(Ok(""))
+  def addReplayToMatch(tournamentID: Long, matchID: Long): Action[MultipartFormData[Files.TemporaryFile]] = silhouette.SecuredAction.async(parse.multipartFormData) { implicit request =>
+    request.body.file("replay_file").fold(Future.successful(Ok("error"))){ replay_file =>
+      replayPusher.pushReplay(tournamentID,matchID,replay_file.ref.toFile).map{ res =>
+        Ok(s"$res")
+      }
+
+    }
 
   }
 

@@ -2,6 +2,7 @@
 @import play.api.mvc.RequestHeader
 @import controllers.AssetsFinder
 @import models.Match
+@import helper._
 @this()(implicit assets: AssetsFinder)
 @(matches: Seq[Match])(implicit request: RequestHeader, messages: Messages)
 @main("Partidas del torneo",None,Nil){
@@ -13,6 +14,13 @@
             @m.firstChaNameID
             @m.secondChaNameID
             @m.round
+            @form(routes.ReplayMatchController.addReplayToMatch(m.matchPK.challongeID,m.matchPK.challongeMatchID),
+                Symbol("enctype") -> "multipart/form-data") {
+                @CSRF.formField
+                <label for="replay_file">Replay:</label>
+                <input type="file" name="replay_file" id="replay_file"><br>
+                <input type="submit" value="Upload">
+            }
         </li>
     }
     </ol>

@@ -37,6 +37,7 @@ lazy val server = (project in file("server"))
 
         ehcache,
         guice,
+      filters,
       specs2 % Test
     )
   )

@@ -27,7 +27,7 @@ class TournamentBuilderTest extends PlaySpec with GuiceOneAppPerSuite {
         }
 
         participants <- creation match {
-          case Left(_) => Future.successful(Left(UnknowError("error creation tournament")))
+          case Left(_) => Future.successful(Left(UnknowTournamentBuilderError("error creation tournament")))
           case Right(tournament) => job.getParticipantsUsers(tournament.challongeID)
         }
 
@@ -59,7 +59,7 @@ class TournamentBuilderTest extends PlaySpec with GuiceOneAppPerSuite {
           case Right(tournament) => tournamentService.loadTournament(tournament.challongeID)
         }
         participants <- creation match {
-          case Left(_) => Future.successful(Left(UnknowError("error creation tournament")))
+          case Left(_) => Future.successful(Left(UnknowTournamentBuilderError("error creation tournament")))
           case Right(tournament) => job.getParticipantsUsers(tournament.challongeID)
         }
 

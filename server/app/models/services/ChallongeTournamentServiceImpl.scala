@@ -34,6 +34,10 @@ class ChallongeTournamentServiceImpl @Inject()(configuration: Configuration) ext
             ParticipantWithGroup(participant,participan_group_ids)
           }).toSeq
 
+          def findParticipantBySomeID(id: Long): Option[Participant] = {
+            participants.find(p => p.participant.participantPK.challongeID == id || p.groupIDs.contains(id)).map(_.participant)
+
+          }
           case class ChallongeMatch(match1v1: Match, round: Int, groupID: Option[Long])
           val matchesIncomplete = tournament("matches").as[JsArray].value.map(m => {
             val match1v1 = m("match")
@@ -44,8 +48,8 @@ class ChallongeTournamentServiceImpl @Inject()(configuration: Configuration) ext
             val matchModel = Match(MatchPK(chaID,match1v1("id").as[Long]),
               playerID1,
               playerID2,"unknow",
-              participants.find(_.participant.participantPK.challongeID == playerID1).map(_.participant.chaname),
-              participants.find(_.participant.participantPK.challongeID == playerID2).map(_.participant.chaname)
+              findParticipantBySomeID(playerID1).map(_.chaname),
+              findParticipantBySomeID(playerID2).map(_.chaname)
             )
             ChallongeMatch(matchModel,round, group_id)
           }).toSeq
