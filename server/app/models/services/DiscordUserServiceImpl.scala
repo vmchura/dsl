@@ -14,7 +14,7 @@ class DiscordUserServiceImpl @Inject()(configuration: Configuration) extends Dis
   implicit val sttpBackend: SttpBackend[Future, Nothing, WebSocketHandler] = AsyncHttpClientFutureBackend()
   override protected val bot_token: String = configuration.get[String]("discord.bottoken")
   override def findMembersOnGuild(guildID: String): Future[Option[Seq[DiscordUser]]] = {
-    val responseFut = basicRequest.header("Authorization",s"Bot $bot_token").get(uri"https://discord.com/api/guilds/$guildID/members").send()
+    val responseFut = basicRequest.header("Authorization",s"Bot $bot_token").get(uri"https://discord.com/api/guilds/$guildID/members?limit=1000").send()
 
     responseFut.map { _.body match
       {
