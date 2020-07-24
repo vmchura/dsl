@@ -65,7 +65,6 @@
                 <div class="divider"></div>
                 <li class="no-padding">
                     <ul class="collapsible collapsible-accordion">
-                    @* @sidebar.sidebar(sideBar) *@
                         @menutorneo(torneos)
                     </ul>
 
@@ -94,7 +93,6 @@
 
         <main>
             @content
-            @*Print form helper CSRF*@
             <form method="post" id="myForm" action="#">   @helper.CSRF.formField  </form>
             <script @{CSPNonce.attr} >
                     M.AutoInit();
