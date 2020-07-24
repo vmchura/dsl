@@ -32,3 +32,5 @@ shared/.jvm
 bin/
 
 #secret keys
+server/conf/secretkeys.conf
+server/conf/heroku.conf
