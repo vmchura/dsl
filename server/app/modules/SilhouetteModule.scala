@@ -121,16 +121,13 @@ class SilhouetteModule extends AbstractModule with ScalaModule {
   /**
    * Provides the social provider registry.
    *
-   * @param facebookProvider The Facebook provider implementation.
    * @return The Silhouette environment.
    */
   @Provides
   def provideSocialProviderRegistry(
-                                     facebookProvider: FacebookProvider,
                                      discordProvider: DiscordProvider): SocialProviderRegistry = {
 
     SocialProviderRegistry(Seq(
-      facebookProvider,
       discordProvider
     ))
   }
