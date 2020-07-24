@@ -32,4 +32,3 @@ shared/.jvm
 bin/
 
 #secret keys
-server/conf/secretkeys.conf
