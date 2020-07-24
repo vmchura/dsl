@@ -1,3 +1,4 @@
+import NativePackagerKeys._
 lazy val server = (project in file("server"))
   .settings(commonSettings)
   .settings(
