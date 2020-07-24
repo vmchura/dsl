@@ -92,7 +92,15 @@
 
 
         <main>
+            @request.flash.get("error").map { msg =>
+                <span class="new badge red">Error @msg</span>
+            }
+            @request.flash.get("success").map { msg =>
+                <span class="new badge green">Hecho! @msg</span>
+            }
+
             @content
+
             <form method="post" id="myForm" action="#">   @helper.CSRF.formField  </form>
             <script @{CSPNonce.attr} >
                     M.AutoInit();
