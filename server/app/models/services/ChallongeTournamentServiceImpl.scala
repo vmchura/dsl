@@ -39,19 +39,25 @@ class ChallongeTournamentServiceImpl @Inject()(configuration: Configuration) ext
 
           }
           case class ChallongeMatch(match1v1: Match, round: Int, groupID: Option[Long])
-          val matchesIncomplete = tournament("matches").as[JsArray].value.map(m => {
+          val matchesIncomplete = tournament("matches").as[JsArray].value.flatMap(m => {
             val match1v1 = m("match")
             val round = match1v1("round").as[Int]
             val group_id = match1v1("group_id").asOpt[Long]
-            val playerID1 = match1v1("player1_id").as[Long]
-            val playerID2 = match1v1("player2_id").as[Long]
-            val matchModel = Match(MatchPK(chaID,match1v1("id").as[Long]),
-              playerID1,
-              playerID2,"unknow",
-              findParticipantBySomeID(playerID1).map(_.chaname),
-              findParticipantBySomeID(playerID2).map(_.chaname)
-            )
-            ChallongeMatch(matchModel,round, group_id)
+            for{
+              playerID1 <- match1v1("player1_id").asOpt[Long]
+              playerID2 <- match1v1("player2_id").asOpt[Long]
+              match1v1ID <- match1v1("id").asOpt[Long]
+            }yield{
+              val matchModel = Match(MatchPK(chaID,match1v1ID),
+                playerID1,
+                playerID2,"unknow",
+                findParticipantBySomeID(playerID1).map(_.chaname),
+                findParticipantBySomeID(playerID2).map(_.chaname)
+              )
+              ChallongeMatch(matchModel,round, group_id)
+            }
+
+
           }).toSeq
 
           val mapGroup = matchesIncomplete.flatMap(_.groupID).distinct.sorted.zipWithIndex.map{
@@ -71,7 +77,8 @@ class ChallongeTournamentServiceImpl @Inject()(configuration: Configuration) ext
           Some(ChallongeTournament(tournamentModel,participants.map(_.participant),matches))
 
         }catch{
-          case _: Throwable =>
+          case e: Throwable =>
+            logger.error(s"error triggered: ${e.toString}")
             logger.error(s"$body is not a challonge tournament")
             None
         }

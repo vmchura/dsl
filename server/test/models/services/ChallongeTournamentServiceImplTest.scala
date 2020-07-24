@@ -14,13 +14,27 @@ class ChallongeTournamentServiceImplTest extends PlaySpec with GuiceOneAppPerSui
   "A Challonge Tournament Service" should {
     "get correct tournament" in {
       val queryExecution = service.findChallongeTournament("-")("DeathfateStarLeague").map {
-        tournament =>{
+        tournament => {
           assertResult(Some(8415514))(tournament.map(_.tournament.challongeID))
+        }
+
+      }
+      Await.result(queryExecution, 30 seconds)
+      queryExecution
+    }
+
+    "get correct tournament past group phase" in {
+      val queryExecution = service.findChallongeTournament("-")("DeathfateChallengerStarLeague1").map {
+        tournament =>{
+          assertResult(Some(8588305))(tournament.map(_.tournament.challongeID))
         }
 
       }
       Await.result(queryExecution,30 seconds)
       queryExecution
     }
+
+
+
   }
 }
