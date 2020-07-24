@@ -95,7 +95,11 @@
             @content
             @*Print form helper CSRF*@
             <form method="post" id="myForm" action="#">   @helper.CSRF.formField  </form>
-            <script @{CSPNonce.attr} >M.AutoInit();</script>
+            <script @{CSPNonce.attr} >
+                    M.AutoInit();
+                    var elems = document.querySelectorAll('.modal');
+                    var instances = M.Modal.init(elems, options);
+            </script>
         </main>
 
 

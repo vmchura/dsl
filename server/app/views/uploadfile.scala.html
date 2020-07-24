@@ -1,0 +1,33 @@
+@import play.api.i18n.Messages
+@import play.api.mvc.RequestHeader
+@import controllers.AssetsFinder
+
+@import helper._
+@(player1: String, player2: String, tournamentID: Long, matchID: Long, modalID: String)(implicit request: RequestHeader, messages: Messages,assets: AssetsFinder)
+
+<div id=@modalID class="modal">
+    <div class="modal-content">
+        <h4>Modal Header</h4>
+        @form(routes.ReplayMatchController.addReplayToMatch(tournamentID,matchID),
+            Symbol("enctype") -> "multipart/form-data") {
+            @CSRF.formField
+
+            <div class="file-field input-field">
+                <div class="btn">
+                    <span>Replay</span>
+                    <input type="file" name="replay_file" id="replay_file"><br>
+
+                </div>
+                <div class="file-path-wrapper">
+                    <input class="file-path validate" type="text">
+                </div>
+
+                <button class="btn waves-effect waves-light" type="submit" name="action">Submit
+                    <i class="material-icons right">send</i>
+                </button>
+            </div>
+        }
+
+    </div>
+</div>
+

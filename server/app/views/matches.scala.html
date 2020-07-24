@@ -1,36 +1,51 @@
-@import play.api.i18n.Messages
-@import play.api.mvc.RequestHeader
-@import controllers.AssetsFinder
-@import models.Match
-@import helper._
+
 @this()(implicit assets: AssetsFinder)
 @(matches: Seq[Match])(implicit request: RequestHeader, messages: Messages)
 @main("Partidas del torneo",None,Nil){
 
     <div id="makePairsID"></div>
-    <ol>
-    @for(m <- matches){
-        <li>
-            @m.player1Name
-            @m.player2Name
-            @m.round
-            @form(routes.ReplayMatchController.addReplayToMatch(m.matchPK.challongeID,m.matchPK.challongeMatchID),
-                Symbol("enctype") -> "multipart/form-data") {
-                @CSRF.formField
-                <label for="replay_file">Replay:</label>
-                <input type="file" name="replay_file" id="replay_file"><br>
-                <input type="submit" value="Upload">
-            }
-            <ol>
-                @for(r <- m.replaysAttached){
-                    <li>
-                        @r.matchName
-                    </li>
-                }
-            </ol>
+    <table>
+        <thead>
+            <tr>
+                <th>Round</th>
+                <th>Player 1</th>
+                <th>Player 2</th>
+                <th>Replays</th>
+                <th>Upload Replay</th>
+            </tr>
+        </thead>
+        <tbody>
+        @for(m <- matches){
+            <tr>
+                <td>@m.round</td>
+                <td>@m.player1Name</td>
+                <td>@m.player2Name</td>
+                <td>
+                    <button data-target=@{s"modal_list_${m.matchPK.challongeMatchID}"} class="btn waves-effect waves-light modal-trigger">Replays
+                    <i class="material-icons right">play_arrow</i>
+                    </button>
+                </td>
+                <td>
+                    <button data-target=@{s"modal_${m.matchPK.challongeMatchID}"} class="btn waves-effect waves-light modal-trigger">Subir
+                    <i class="material-icons right">cloud_upload</i>
+                    </button>
+                </td>
 
-        </li>
+            </tr>
+
+
+
+        }
+        </tbody>
+    </table>
+
+    @for(m <- matches){
+        @uploadfile(m.player1Name.getOrElse("Player 1?"),m.player2Name.getOrElse("Player 2?"),m.matchPK.challongeID,m.matchPK.challongeMatchID,s"modal_${m.matchPK.challongeMatchID}")
     }
-    </ol>
+
+    @for(m <- matches){
+        @listreplays(m,s"modal_list_${m.matchPK.challongeMatchID}")
+    }
+
 
 }
