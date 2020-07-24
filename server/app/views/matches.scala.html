@@ -1,7 +1,7 @@
 
 @this()(implicit assets: AssetsFinder)
-@(matches: Seq[Match])(implicit request: RequestHeader, messages: Messages)
-@main("Partidas del torneo",None,Nil){
+@(user: Option[models.User],torneos: Seq[TournamentMenu],matches: Seq[Match])(implicit request: RequestHeader, messages: Messages)
+@main("Partidas del torneo",user,torneos){
 
     <div id="makePairsID"></div>
     <table>

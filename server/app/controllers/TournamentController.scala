@@ -4,6 +4,8 @@ import com.mohiva.play.silhouette.api.actions.SecuredRequest
 import forms.CreateTournamentForm
 import javax.inject._
 import jobs.{CannontAccessChallongeTournament, CannotAccesDiscordGuild, TournamentBuilder}
+import models.TournamentMenu
+import models.services.TournamentService
 import play.api.mvc._
 import play.api.i18n.I18nSupport
 import shared.utils.BasicComparableByLabel
@@ -15,7 +17,8 @@ class TournamentController @Inject()(scc: SilhouetteControllerComponents,
                                      createTournamentView: views.html.createtournament,
                                      matchpairs: views.html.matchpairs,
                                      showmatches: views.html.matches,
-                                     tournamentBuilder: TournamentBuilder
+                                     tournamentBuilder: TournamentBuilder,
+                                     tournamentService: TournamentService
                            ) (
                              implicit
                              assets: AssetsFinder,
@@ -60,9 +63,17 @@ class TournamentController @Inject()(scc: SilhouetteControllerComponents,
   }
   def showMatches(challongeTournamentID: Long): Action[AnyContent] = silhouette.SecuredAction.async { implicit request: SecuredRequest[EnvType, AnyContent] =>
 
-    tournamentBuilder.getMatches(challongeTournamentID,Some(request.identity)).map{
-      case Left(error) =>Ok(s"error: ${error.toString}")
-      case Right(matches) => Ok(showmatches(matches))
+    for{
+      tournaments <- tournamentService.findAllTournaments()
+      matchesResult <- tournamentBuilder.getMatches(challongeTournamentID,Some(request.identity))
+    }yield{
+      matchesResult match {
+        case Left(error) =>Ok(s"error: ${error.toString}")
+        case Right(matches) => Ok(showmatches(Some(request.identity),tournaments.map(torneo =>
+          TournamentMenu(torneo.tournamentName,
+            routes.TournamentController.showMatches(torneo.challongeID).url
+          )),matches))
+      }
     }
   }
 

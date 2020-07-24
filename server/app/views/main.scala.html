@@ -57,7 +57,8 @@
 
                 <li><div class="user-view">
                     @*<div class="background"><img src="images/office.jpg"></div>*@
-                    <img class="circle" src="@controllers.routes.Assets.versioned("guesthome/img/IRILogo.svg")" alt="Logo">
+                    <img class="circle" src="@user.flatMap(_.avatarURL).getOrElse(assets.path("images/silhouette.png"))" alt="Avatar">
+
                     <span class="name text-black">@user.flatMap(_.fullName).getOrElse("Invitado")</span>
 
                 </div></li>
