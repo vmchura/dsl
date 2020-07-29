@@ -8,6 +8,7 @@ lazy val server = (project in file("server"))
     // triggers scalaJSPipeline when using compile or continuous compilation
     compile in Compile := ((compile in Compile) dependsOn scalaJSPipeline).value,
     resolvers += "Sonatype snapshots" at "https://oss.sonatype.org/content/repositories/snapshots/",
+    resolvers += Resolver.sonatypeRepo("snapshots"),
     resolvers += Resolver.jcenterRepo,
     libraryDependencies ++= Seq(
       "com.vmunier" %% "scalajs-scripts" % "1.1.4",
@@ -35,6 +36,8 @@ lazy val server = (project in file("server"))
       // https://mvnrepository.com/artifact/com.dropbox.core/dropbox-core-sdk
       "com.dropbox.core" % "dropbox-core-sdk" % "3.1.4",
 
+
+      "com.softwaremill.sttp.client" %% "core" % "2.2.3",
 
         ehcache,
         guice,
