@@ -32,7 +32,7 @@ class ReplayUpdater(fieldDiv: Div, player1: String, player2: String, discord1: S
     override def toString: String = "Archivo leído correctamente"
   }
   case class FileErrorReceivingParse(error: String) extends StateSettingResult{
-    override def toString: String = "Error en la conexión con el servidor"
+    override def toString: String = s"Error en la conexión con el servidor: $error"
   }
   object  FileParsedIncorrectly extends StateSettingResult{
     override def toString: String = "El archivo no se pudo interpretar como replay"
