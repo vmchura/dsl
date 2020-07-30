@@ -3,7 +3,7 @@ package models.daos
 import java.util.UUID
 
 import javax.inject.Inject
-import models.{Participant, ParticipantPK}
+import models.{Participant, ParticipantDefined, ParticipantPK}
 import play.api.libs.json.{JsObject, Json}
 import play.modules.reactivemongo.ReactiveMongoApi
 import reactivemongo.api.Cursor
@@ -50,5 +50,11 @@ class ParticipantDAOImpl  @Inject() (val reactiveMongoApi: ReactiveMongoApi) ext
   override def findByDiscordUserID(discordUserID: String): Future[Seq[Participant]] = {
     val query = Json.obj("discordUserID" -> Some(discordUserID))
     getParticipantsByQuery(query)
+  }
+
+  override def findDefinedByTournamentID(challongeID: Long): Future[Seq[ParticipantDefined]] = {
+    val query = Json.obj("participantPK.challongeID" -> challongeID)
+    getParticipantsByQuery(query).map(_.flatMap(p => p.discordUserID.map(discordID => ParticipantDefined(p.participantPK, p.chaname, discordID, p.userID))))
+
   }
 }

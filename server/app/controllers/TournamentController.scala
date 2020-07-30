@@ -61,17 +61,19 @@ class TournamentController @Inject()(scc: SilhouetteControllerComponents,
     }
 
   }
-  def showMatches(challongeTournamentID: Long): Action[AnyContent] = silhouette.SecuredAction.async { implicit request: SecuredRequest[EnvType, AnyContent] =>
+  def showMatchesToUploadReplay(challongeTournamentID: Long): Action[AnyContent] = silhouette.SecuredAction.async { implicit request: SecuredRequest[EnvType, AnyContent] =>
 
     for{
       tournaments <- tournamentService.findAllTournaments()
-      matchesResult <- tournamentBuilder.getMatches(challongeTournamentID,Some(request.identity))
+      matchesResult <- tournamentBuilder.getMatchesDiscord(challongeTournamentID,Some(request.identity))
     }yield{
       matchesResult match {
         case Left(error) =>Ok(s"error: ${error.toString}")
-        case Right(matches) => Ok(showmatches(Some(request.identity),tournaments.map(torneo =>
+        case Right(matches) =>
+
+          Ok(showmatches(Some(request.identity),tournaments.map(torneo =>
           TournamentMenu(torneo.tournamentName,
-            routes.TournamentController.showMatches(torneo.challongeID).url
+            routes.TournamentController.showMatchesToUploadReplay(torneo.challongeID).url
           )),matches))
       }
     }

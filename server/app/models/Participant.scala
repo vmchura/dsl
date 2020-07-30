@@ -16,6 +16,11 @@ object ParticipantPK{
 
 case class Participant(participantPK: ParticipantPK, chaname: String, discordUserID: Option[String], userID: Option[UUID]) extends ComparableByLabel {
   override def stringLabel: String = chaname
+  def definedParticipant(): Option[ParticipantDefined] = {
+    discordUserID.map{ duid =>
+      ParticipantDefined(participantPK, chaname, duid, userID)
+    }
+  }
 }
 object Participant {
   implicit val jsonFormat: OFormat[Participant] = Json.format[Participant]

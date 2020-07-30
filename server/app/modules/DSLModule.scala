@@ -1,7 +1,7 @@
 package modules
 
 import com.google.inject.AbstractModule
-import models.daos.{ParticipantDAO, ParticipantDAOImpl, ReplayMatchDAO, ReplayMatchDAOImpl, TournamentDAO, TournamentDAOImpl}
+import models.daos.{MatchResultDAO, MatchResultDAOImpl, ParticipantDAO, ParticipantDAOImpl, ReplayMatchDAO, ReplayMatchDAOImpl, TournamentDAO, TournamentDAOImpl}
 import models.services.{ChallongeTournamentService, ChallongeTournamentServiceImpl, DiscordUserService, DiscordUserServiceImpl, ParticipantsService, ParticipantsServiceImpl, TournamentService, TournamentServiceImpl}
 import net.codingwell.scalaguice.ScalaModule
 
@@ -24,5 +24,6 @@ class DSLModule extends AbstractModule with ScalaModule {
     bind[ChallongeTournamentService].to[ChallongeTournamentServiceImpl]
 
     bind[ReplayMatchDAO].to[ReplayMatchDAOImpl]
+    bind[MatchResultDAO].to[MatchResultDAOImpl]
   }
 }

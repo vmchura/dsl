@@ -30,7 +30,7 @@ class Application @Inject()(scc: SilhouetteControllerComponents,
     tournamentService.findAllTournaments().map{ torneos =>
       Ok(welcomeauthenticated(request.identity, torneos.map(torneo =>
         TournamentMenu(torneo.tournamentName,
-          routes.TournamentController.showMatches(torneo.challongeID).url
+          routes.TournamentController.showMatchesToUploadReplay(torneo.challongeID).url
           ))))
     }
 

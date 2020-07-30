@@ -4,13 +4,12 @@ package jobs
 import play.api.libs.json.{JsArray, JsString, Json}
 import java.util.Base64
 
-import models.ReplayDescription
-
 import sttp.client._
-
 import javax.inject.Inject
 import play.api.Configuration
 import java.io.{File, FileInputStream}
+
+import shared.models.ReplayDescriptionShared
 class ParseFile @Inject() (configuration: Configuration) {
   private val lambda_x_api_key = configuration.get[String]("lambda.apikey")
 
@@ -40,7 +39,7 @@ class ParseFile @Inject() (configuration: Configuration) {
 
 
   }
-  def parseJsonResponse(stringJson: String): Either[String,ReplayDescription] = {
+  def parseJsonResponse(stringJson: String): Either[String,ReplayDescriptionShared] = {
     val json = Json.parse(stringJson)
     val playersJson = (json \ "Header" \ "Players").getOrElse(JsArray.empty).asInstanceOf[JsArray]
     case class Player(team: Int, name: String)
@@ -53,10 +52,16 @@ class ParseFile @Inject() (configuration: Configuration) {
       }
 
     }
-    val winnerTeam = (json \ "Computed" \ "WinnerTeam").asOpt[Int]
+
+    (for{
+      p1 <- players.find(_.team ==1).map(_.name)
+      p2 <- players.find(_.team ==2).map(_.name)
+      winnerTeam <- (json \ "Computed" \ "WinnerTeam").asOpt[Int]
+    }yield{
+      Right(ReplayDescriptionShared(p1,p2, winnerTeam))
+    }).getOrElse(Left("Cant find players"))
 
 
-    Right(ReplayDescription(players.find(_.team ==1).map(_.name), players.find(_.team == 2).map(_.name), winnerTeam))
 
 
   }

@@ -2,7 +2,7 @@ package jobs
 import javax.inject.Inject
 import models.daos.ReplayMatchDAO
 import models.services.{ChallongeTournamentService, DiscordUserService, ParticipantsService, TournamentService}
-import models.{DiscordUser, Match, Participant, Tournament, User}
+import models.{DiscordUser, Match, MatchDiscord, Participant, TWithReplays, Tournament, User}
 
 import scala.concurrent.Future
 import scala.concurrent.ExecutionContext.Implicits.global
@@ -64,8 +64,14 @@ class TournamentBuilder @Inject() (tournamentService: TournamentService,
         challongeTournament.matches.filter(m => participants.exists(p => p.participantPK.chaNameID == m.firstChaNameID || p.participantPK.chaNameID == m.secondChaNameID)))
 
     }
-    val replaysAttached = for{
-      matches <- matchesFromChallonge
+    val replaysAttached = attachReplays(challongeTournamentID,matchesFromChallonge)
+
+    formFuture(replaysAttached)
+  }
+
+  def attachReplays[A <: TWithReplays[A]](challongeTournamentID: Long,replaysContainer: Future[Seq[A]]): Future[Seq[A]] = {
+    for{
+      matches <- replaysContainer
       replaysForTournament <- replayMatchDAO.loadAllByTournament(challongeTournamentID)
     }yield{
       matches.map{ m =>
@@ -73,6 +79,33 @@ class TournamentBuilder @Inject() (tournamentService: TournamentService,
 
       }
     }
+  }
+  def getMatchesDiscord(challongeTournamentID: Long, userOpt: Option[User]): Future[Either[JobError,Seq[MatchDiscord]]] = {
+    def filterByUser(md: MatchDiscord): Boolean = userOpt.fold(true)(u => u.loginInfo.providerKey.equals(md.discord1ID) || u.loginInfo.providerKey.equals(md.discord2ID))
+
+
+    val matchesFromChallonge: Future[Seq[MatchDiscord]] = for {
+      tournamentFromDBOpt <- tournamentService.loadTournament(challongeTournamentID)
+      tournamentDB <- tournamentFromDBOpt.withFailure(TournamentNotBuild(challongeTournamentID))
+      challongeTournamentOpt <- challongeTournamentService.findChallongeTournament(tournamentDB.discordServerID)(tournamentDB.urlID)
+      challongeTournament <- challongeTournamentOpt.withFailure(CannontAccessChallongeTournament(tournamentDB.urlID))
+      participants <- participantsService.loadParticipantDefinedByTournamentID(challongeTournamentID)
+    }yield{
+
+
+      val matchesDefined = challongeTournament.matches.flatMap{ m =>
+        for{
+          p1 <- participants.find(_.participantPK.chaNameID == m.firstChaNameID)
+          p2 <- participants.find(_.participantPK.chaNameID == m.secondChaNameID)
+        }yield{
+          MatchDiscord(m.matchPK,m.round, m.firstChaNameID, m.secondChaNameID,p1.discordUserID,p2.discordUserID, p1.chaname, p2.chaname)
+        }
+
+      }
+      matchesDefined.filter(filterByUser)
+
+    }
+    val replaysAttached = attachReplays(challongeTournamentID,matchesFromChallonge)
 
     formFuture(replaysAttached)
   }

@@ -16,9 +16,12 @@ POST        /participant/update                 controllers.ParticipantControlle
 
 # TOURNAMENT
 GET         /tournament/showparticipantscorrelation/:tournamentID       controllers.TournamentController.showparticipantscorrelation(tournamentID: Long)
-GET         /tournament/showmatches/:challongeTournamentID              controllers.TournamentController.showMatches(challongeTournamentID: Long)
+GET         /tournament/showmatches/:challongeTournamentID              controllers.TournamentController.showMatchesToUploadReplay(challongeTournamentID: Long)
 # REPLAY
-POST        /replay/add/:tournamentID/:matchID  controllers.ReplayMatchController.addReplayToMatch(tournamentID: Long, matchID: Long)
+POST        /replay/add/:tournamentID/:matchID controllers.ReplayMatchController.addReplayToMatch(tournamentID: Long, matchID: Long)
+POST        /replay/parse                       controllers.ReplayMatchController.parseReplay()
 # Prefix must match `play.assets.urlPrefix`
 GET        /assets/*file                        controllers.Assets.at(file)
 GET        /versionedAssets/*file               controllers.Assets.versioned(path="/public", file: Asset)
+
+GET     /javascriptRoutes                       controllers.JavaScriptRouter.javascriptRoutes

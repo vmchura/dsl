@@ -1,6 +1,6 @@
 
 @this()(implicit assets: AssetsFinder)
-@(user: Option[models.User],torneos: Seq[TournamentMenu],matches: Seq[Match])(implicit request: RequestHeader, messages: Messages)
+@(user: Option[models.User],torneos: Seq[TournamentMenu],matches: Seq[MatchDiscord])(implicit request: RequestHeader, messages: Messages)
 @main("Partidas del torneo",user,torneos){
 
     <div id="makePairsID"></div>
@@ -40,11 +40,11 @@
     </table>
 
     @for(m <- matches){
-        @uploadfile(m.player1Name.getOrElse("Player 1?"),m.player2Name.getOrElse("Player 2?"),m.matchPK.challongeID,m.matchPK.challongeMatchID,s"modal_${m.matchPK.challongeMatchID}")
+        @uploadfile(m,s"modal_${m.matchPK.challongeMatchID}")
     }
 
     @for(m <- matches){
-        @listreplays(m,s"modal_list_${m.matchPK.challongeMatchID}")
+        @listreplays(m.toMatch(),s"modal_list_${m.matchPK.challongeMatchID}")
     }
 
 

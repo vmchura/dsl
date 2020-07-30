@@ -98,6 +98,7 @@
             @request.flash.get("success").map { msg =>
                 <span class="new badge green">Hecho! @msg</span>
             }
+            <script @{CSPNonce.attr} type="text/javascript" src="@routes.JavaScriptRouter.javascriptRoutes()"></script>
 
             @content
 
@@ -107,6 +108,11 @@
                     var elems = document.querySelectorAll('.modal');
                     var instances = M.Modal.init(elems, {});
             </script>
+            <script @{CSPNonce.attr} >
+
+                    Main.init();
+            </script>
+
         </main>
 
 

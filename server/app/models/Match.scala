@@ -5,11 +5,11 @@ import play.api.libs.json._
 
 case class Match(matchPK: MatchPK,
                  firstChaNameID: Long, secondChaNameID: Long,
-                 round: String, player1Name: Option[String], player2Name: Option[String], replaysAttached: Seq[ReplayRecord] = Nil){
+                 round: String, player1Name: Option[String], player2Name: Option[String], replaysAttached: Seq[ReplayRecord] = Nil) extends TWithReplays[Match]{
   def asMatchName(): MatchNameReplay = MatchNameReplay(round,
     player1Name.getOrElse("player1"),
     player2Name.getOrElse("player2"))
-  def withReplays(replays: Seq[ReplayRecord]): Match = copy(replaysAttached = replays)
+  override def withReplays(replays: Seq[ReplayRecord]): Match = copy(replaysAttached = replays)
 }
 case class MatchNameReplay(round: String, player1: String, player2: String){
 
