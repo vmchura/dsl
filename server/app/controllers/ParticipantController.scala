@@ -27,7 +27,6 @@ class ParticipantController @Inject()(scc: SilhouetteControllerComponents,
       logger.error("buildRelation has not a valid multipartFormData")
       Future.successful(convertResponse(false))
     }{ data =>
-       println(data)
       val updateExecution = for{
         basicChallonge <-  try { Future.successful(read[BasicComparableByLabel](data.dataParts("challonge").head))} catch {case _: Throwable => Future.failed(new IllegalArgumentException("first cant parse to basic label"))}
         basicDiscord <-  try { Future.successful(read[BasicComparableByLabel](data.dataParts("discord").head))} catch {case _: Throwable => Future.failed(new IllegalArgumentException("second cant parse to basic label"))}
