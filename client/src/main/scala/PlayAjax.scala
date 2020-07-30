@@ -13,10 +13,10 @@ class PlayAjax[O](playCall: PlayCall[O]) {
   private def runCallWithParser[U](parseRequest: XMLHttpRequest => Either[String, U], data: FormData = new FormData()): Future[Either[String, U]] = {
 
     if (playCall.method.equals("POST"))
-      Ajax.post(playCall.absoluteURL(), headers = Map("Csrf-Token" -> Main.findTokenValue()), data = data).map(parseRequest)
+      Ajax.post(playCall.url, headers = Map("Csrf-Token" -> Main.findTokenValue()), data = data).map(parseRequest)
     else {
       if (playCall.method.equals("GET")) {
-        Ajax.get(playCall.absoluteURL()).map(parseRequest)
+        Ajax.get(playCall.url).map(parseRequest)
       } else {
         Future.successful(Left(playCall.method + " NOT SUPPORTED"))
       }
@@ -26,10 +26,10 @@ class PlayAjax[O](playCall: PlayCall[O]) {
   def runCall(data: FormData = new FormData()): Future[XMLHttpRequest] = {
 
     if (playCall.method.equals("POST"))
-      Ajax.post(playCall.absoluteURL(), headers = Map("Csrf-Token" -> Main.findTokenValue()), data = data)
+      Ajax.post(playCall.url, headers = Map("Csrf-Token" -> Main.findTokenValue()), data = data)
     else {
       if (playCall.method.equals("GET")) {
-        Ajax.get(playCall.absoluteURL())
+        Ajax.get(playCall.url)
       } else {
         throw new IllegalArgumentException("No supported: " + playCall.method)
       }
