@@ -17,8 +17,7 @@ class TournamentDAOImpl  @Inject() (val reactiveMongoApi: ReactiveMongoApi) exte
     for{
       loaded <- load(tournament.challongeID)
       newInsertion <- loaded.fold(collection.
-        flatMap(_.update(ordered=true).
-          one(Json.obj("challongeID" -> tournament.challongeID), tournament, upsert = true)).
+        flatMap(_.insert(ordered=false).one(tournament)).
         map(_.ok))(_ => Future.successful(false))
     }yield {
       newInsertion

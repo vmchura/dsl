@@ -14,7 +14,7 @@ object ParticipantPK{
 
 }
 
-case class Participant(participantPK: ParticipantPK, chaname: String, discordUserID: Option[String], userID: Option[UUID]) extends ComparableByLabel {
+case class Participant(participantPK: ParticipantPK, chaname: String, discordUserID: Option[String], userID: Option[UUID], smurfs: Seq[String] = Nil) extends ComparableByLabel {
   override def stringLabel: String = chaname
   def definedParticipant(): Option[ParticipantDefined] = {
     discordUserID.map{ duid =>

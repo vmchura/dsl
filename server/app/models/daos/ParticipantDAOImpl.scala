@@ -11,6 +11,7 @@ import reactivemongo.play.json.collection.JSONCollection
 
 import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.Future
+import scala.util.{Failure, Success}
 
 class ParticipantDAOImpl  @Inject() (val reactiveMongoApi: ReactiveMongoApi) extends ParticipantDAO {
   def collection: Future[JSONCollection] = reactiveMongoApi.database.map(_.collection("dsl.participant"))
@@ -32,6 +33,8 @@ class ParticipantDAOImpl  @Inject() (val reactiveMongoApi: ReactiveMongoApi) ext
     collection.flatMap(_.find(query,Option.empty[Participant]).cursor[Participant]().collect[List](-1,Cursor.FailOnError[List[Participant]]()))
 
   }
+  private def convertParticipantIntoDefined: Seq[Participant] => Seq[ParticipantDefined] =  _.flatMap(p => p.discordUserID.map(discordID => ParticipantDefined(p.participantPK, p.chaname, discordID, p.userID)))
+
   override def findByTournamentID(challongeID: Long): Future[Seq[Participant]] = {
     val query = Json.obj("participantPK.challongeID" -> challongeID)
     getParticipantsByQuery(query)
@@ -45,6 +48,7 @@ class ParticipantDAOImpl  @Inject() (val reactiveMongoApi: ReactiveMongoApi) ext
   override def drop(participantPK: ParticipantPK): Future[Boolean] = {
     val query = Json.obj("participantPK" -> participantPK)
     collection.flatMap(_.delete(ordered = true).one(query).map(_.ok))
+
   }
 
   override def findByDiscordUserID(discordUserID: String): Future[Seq[Participant]] = {
@@ -54,7 +58,23 @@ class ParticipantDAOImpl  @Inject() (val reactiveMongoApi: ReactiveMongoApi) ext
 
   override def findDefinedByTournamentID(challongeID: Long): Future[Seq[ParticipantDefined]] = {
     val query = Json.obj("participantPK.challongeID" -> challongeID)
-    getParticipantsByQuery(query).map(_.flatMap(p => p.discordUserID.map(discordID => ParticipantDefined(p.participantPK, p.chaname, discordID, p.userID))))
+    getParticipantsByQuery(query).map(convertParticipantIntoDefined)
 
   }
+
+  override def findBySmurf(smurf: String): Future[Seq[ParticipantDefined]] = {
+    val query = Json.obj("smurfs" -> smurf)
+    getParticipantsByQuery(query).map(convertParticipantIntoDefined)
+  }
+
+  override def addSmurf(participantPK: ParticipantPK, newSmurf: String): Future[Boolean] =  collection.
+    flatMap(_.update(ordered=true).
+      one(Json.obj("participantPK" -> participantPK), Json.obj("$push" -> Json.obj("smurfs"-> newSmurf)), upsert = true)).
+    map(_.ok)
+
+  override def removeSmurf(participantPK: ParticipantPK, smurfToRemove: String): Future[Boolean] = collection.
+    flatMap(_.update(ordered=true).
+      one(Json.obj("participantPK" -> participantPK), Json.obj("$pull" -> Json.obj("smurfs"-> smurfToRemove)), upsert = true)).
+    map(_.ok)
+
 }

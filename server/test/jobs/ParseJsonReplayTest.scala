@@ -15,7 +15,8 @@ class ParseJsonReplayTest extends PlaySpec with GuiceOneAppPerSuite{
         case Left(exception) => fail(exception)
         case Right(replay) => replay
       }
-      assert(replayParsed.winner.nonEmpty)
+
+      assert(replayParsed.winner == 1 || replayParsed.winner == 2)
       assert(replayParsed.player1.nonEmpty)
       assert(replayParsed.player2.nonEmpty)
     }

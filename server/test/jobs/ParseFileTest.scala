@@ -27,7 +27,8 @@ class ParseFileTest extends PlaySpec with GuiceOneAppPerSuite{
 
       assert(replay.player1.nonEmpty)
       assert(replay.player2.nonEmpty)
-      assert(replay.winner.nonEmpty)
+      assert(replay.winner == 1 || replay.winner == 2)
+
     }
   }
 

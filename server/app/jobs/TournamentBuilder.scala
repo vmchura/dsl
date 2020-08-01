@@ -23,14 +23,14 @@ class TournamentBuilder @Inject() (tournamentService: TournamentService,
 
 
     val tournamentCreation = for {
-      challongeTournamentOpt <- challongeTournamentService.findChallongeTournament(discordID)(challongeID)
-      challongeTournament <- challongeTournamentOpt.withFailure(CannontAccessChallongeTournament(challongeID))
-      discordUsersOpt <- discordUserService.findMembersOnGuild(discordID)
-      _ <- discordUsersOpt.withFailure(CannotAccesDiscordGuild(discordID))
-      tournamentInsertion <- tournamentService.saveTournament(challongeTournament.tournament)
-      _ <- tournamentInsertion.withFailure(TournamentAlreadyCreated(challongeID))
-      participantInsertion <- Future.sequence(challongeTournament.participants.map(participantsService.saveParticipant))
-      _ <- Future.sequence(participantInsertion.zip(challongeTournament.participants).map{case (f,p) => f.withFailure(CannotAddSomeParticipant(p.toString))})
+      challongeTournamentOpt  <- challongeTournamentService.findChallongeTournament(discordID)(challongeID)
+      challongeTournament     <- challongeTournamentOpt.withFailure(CannontAccessChallongeTournament(challongeID))
+      discordUsersOpt         <- discordUserService.findMembersOnGuild(discordID)
+      _                       <- discordUsersOpt.withFailure(CannotAccesDiscordGuild(discordID))
+      tournamentInsertion     <- tournamentService.saveTournament(challongeTournament.tournament)
+      _                       <- tournamentInsertion.withFailure(TournamentAlreadyCreated(challongeID))
+      participantInsertion    <- Future.sequence(challongeTournament.participants.map(participantsService.saveParticipant))
+      _                       <- Future.sequence(participantInsertion.zip(challongeTournament.participants).map{case (f,p) => f.withFailure(CannotAddSomeParticipant(p.toString))})
     }yield{
       challongeTournament.tournament
     }
@@ -39,12 +39,12 @@ class TournamentBuilder @Inject() (tournamentService: TournamentService,
   }
   def getParticipantsUsers(challongeTournamentID: Long): Future[Either[JobError, (Tournament,Seq[Participant],Seq[DiscordUser])]] = {
     val tournamentCreation = for {
-      tournamentFromDBOpt <- tournamentService.loadTournament(challongeTournamentID)
-      tournamentDB <- tournamentFromDBOpt.withFailure(TournamentNotBuild(challongeTournamentID))
-      challongeTournamentOpt <- challongeTournamentService.findChallongeTournament(tournamentDB.discordServerID)(tournamentDB.urlID)
-      challongeTournament <- challongeTournamentOpt.withFailure(CannontAccessChallongeTournament(tournamentDB.urlID))
-      discordUsersOpt <- discordUserService.findMembersOnGuild(tournamentDB.discordServerID)
-      discordUsers <- discordUsersOpt.withFailure(CannotAccesDiscordGuild(tournamentDB.discordServerID))
+      tournamentFromDBOpt       <- tournamentService.loadTournament(challongeTournamentID)
+      tournamentDB              <- tournamentFromDBOpt.withFailure(TournamentNotBuild(challongeTournamentID))
+      challongeTournamentOpt    <- challongeTournamentService.findChallongeTournament(tournamentDB.discordServerID)(tournamentDB.urlID)
+      challongeTournament       <- challongeTournamentOpt.withFailure(CannontAccessChallongeTournament(tournamentDB.urlID))
+      discordUsersOpt           <- discordUserService.findMembersOnGuild(tournamentDB.discordServerID)
+      discordUsers              <- discordUsersOpt.withFailure(CannotAccesDiscordGuild(tournamentDB.discordServerID))
     }yield{
       (challongeTournament.tournament,challongeTournament.participants,discordUsers)
     }
@@ -109,4 +109,6 @@ class TournamentBuilder @Inject() (tournamentService: TournamentService,
 
     formFuture(replaysAttached)
   }
+
+
 }

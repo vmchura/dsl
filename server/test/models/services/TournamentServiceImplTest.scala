@@ -65,7 +65,8 @@ class TournamentServiceImplTest extends PlaySpec with GuiceOneAppPerSuite{
         equals <- Future.successful(allTournaments(tournaments))
         removed <- Future.sequence(List(tournamentActive,tournamentNotActive).map(_.challongeID).map(service.dropTournament))
       } yield {
-        assert(removed.forall(q => q) && equals)
+        assert(removed.forall(q => q))
+        assert(equals)
       }
       Await.result(queryExecution,5 seconds)
       queryExecution
