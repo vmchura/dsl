@@ -1,7 +1,7 @@
 import java.util.UUID
 
 import shared.PlayCall
-import shared.models.{ReplayDescriptionShared, ReplayRecordShared}
+import shared.models.{ActionByReplay, ReplayDescriptionShared, ReplayRecordShared}
 
 import scala.scalajs.js
 import scala.scalajs.js.annotation.JSGlobal
@@ -18,5 +18,5 @@ trait Tcontrollers extends js.Object {
 
 @js.native
 trait TReplayMatchController extends js.Object {
-  def parseReplay(): PlayCall[Either[String,ReplayDescriptionShared]] = js.native
+  def parseReplay(discordUser1: String, discordUser2: String): PlayCall[Either[String,ActionByReplay]] = js.native
 }

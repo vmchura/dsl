@@ -70,9 +70,8 @@ class ReplayMatchController @Inject()(scc: SilhouetteControllerComponents,
 
   }
 
-  def parseReplay(): Action[MultipartFormData[Files.TemporaryFile]] = silhouette.SecuredAction.async(parse.multipartFormData){ implicit request =>
-    val discordUser1 = ""
-    val discordUser2 = ""
+  def parseReplay(discordUser1: String, discordUser2: String): Action[MultipartFormData[Files.TemporaryFile]] = silhouette.SecuredAction.async(parse.multipartFormData){ implicit request =>
+
     def buildResult(messageFut: Future[Either[String,ActionByReplay]]) = {
       messageFut.map{ message =>
 
@@ -109,6 +108,7 @@ class ReplayMatchController @Inject()(scc: SilhouetteControllerComponents,
       }yield{
         val withFirstSmurf = convertToChaUserRegistered(participantsWithFirstSmurf)
         val withSecondSmurf = convertToChaUserRegistered(participantsWithSecondSmurf)
+
 
         val action = (replayParsed.player1.equals(replayParsed.player2),withFirstSmurf, withSecondSmurf) match {
           case (true,_,_) => ImpossibleToDefine

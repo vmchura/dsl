@@ -7,7 +7,7 @@ import org.scalajs.dom.raw.{FormData, HTMLInputElement}
 
 import scala.util.{Failure, Success}
 import org.scalajs.dom.{Event, Node, document}
-import shared.models.ReplayDescriptionShared
+import shared.models.ActionByReplay
 import upickle.default.read
 
 import scala.scalajs.concurrent.JSExecutionContext.Implicits.queue
@@ -54,7 +54,7 @@ class ReplayUpdater(fieldDiv: Div, player1: String, player2: String, discord1: S
   }
 
   private val stateUploadProcess = Var[StateSettingResult](FileUnselected)
-  private val replayParsed = Var[Option[ReplayDescriptionShared]](None)
+  private val replayParsed = Var[Option[ActionByReplay]](None)
 
 
   @html
@@ -87,11 +87,11 @@ class ReplayUpdater(fieldDiv: Div, player1: String, player2: String, discord1: S
 
       }yield{
 
-        val parseReplay = JavaScriptRoutes.controllers.ReplayMatchController.parseReplay()
+        val parseReplay = JavaScriptRoutes.controllers.ReplayMatchController.parseReplay(discord1,discord2)
         val playAjax = new PlayAjax(parseReplay)
         val data = new FormData()
         data.append("replay_file", file)
-        val futValue = playAjax.callByAjaxWithParser(dyn => read[Either[String,ReplayDescriptionShared]](dyn.response.toString), data).map(_.flatten)
+        val futValue = playAjax.callByAjaxWithParser(dyn => read[Either[String,ActionByReplay]](dyn.response.toString), data).map(_.flatten)
 
         futValue.onComplete {
           case Success(Left(error)) => stateUploadProcess.value = ErrorByServerParsing(error)
