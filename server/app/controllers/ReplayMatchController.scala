@@ -3,13 +3,13 @@ import java.util.UUID
 
 import javax.inject._
 import jobs.{CannotSaveResultMatch, ParseFile, ReplayPusher}
-import models.{MatchResult, UserSmurf}
-import models.daos.{MatchResultDAO, UserSmurfDAO}
+import models.MatchResult
+import models.daos.MatchResultDAO
 import play.api.mvc._
 import play.api.i18n.I18nSupport
 import play.api.libs.Files
 import play.api.libs.json.Json
-import shared.models.{ActionByReplay, ActionBySmurf}
+import shared.models.ActionByReplay
 import upickle.default._
 
 import scala.concurrent.{ExecutionContext, Future}
