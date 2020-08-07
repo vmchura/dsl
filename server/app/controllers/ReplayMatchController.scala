@@ -3,9 +3,8 @@ import java.util.UUID
 
 import javax.inject._
 import jobs.{CannotSaveResultMatch, ParseFile, ReplayPusher}
-import models.{DiscordUser, MatchResult, UserSmurf}
+import models.{MatchResult, UserSmurf}
 import models.daos.{MatchResultDAO, UserSmurfDAO}
-import models.services.ParticipantsService
 import play.api.mvc._
 import play.api.i18n.I18nSupport
 import play.api.libs.Files
@@ -18,10 +17,9 @@ import scala.util.{Failure, Success}
 @Singleton
 class ReplayMatchController @Inject()(scc: SilhouetteControllerComponents,
                                       replayPusher: ReplayPusher,
-                                      fileParser: ParseFile,
                                       matchResultDAO: MatchResultDAO,
-                                      participantsService: ParticipantsService,
-                                      userSmurfDAO: UserSmurfDAO
+                                      parseFile: ParseFile
+
                                      )(
                                        implicit
                                        assets: AssetsFinder,
@@ -79,53 +77,9 @@ class ReplayMatchController @Inject()(scc: SilhouetteControllerComponents,
       }
 
     }
-    implicit class eitherToFailure[A](either: Either[String,A]){
-      def withFailure(): Future[A] = either match {
-        case Left(error) => Future.failed(new IllegalStateException(error))
-        case Right(a) => Future.successful(a)
-      }
-    }
-    case class DiscordUserRegistered(noDiscordUserFound: Boolean, foundOnlyOne: Boolean, anyDiscordUserIfMoreFound: Option[UserSmurf], discordUserIfOnlyOneFound: Option[UserSmurf])
-
-    def convertToChaUserRegistered(participants: List[UserSmurf]): DiscordUserRegistered = {
-      participants match {
-        case Nil      =>  DiscordUserRegistered(noDiscordUserFound = true,foundOnlyOne = false, None, None)
-        case d :: Nil =>  DiscordUserRegistered(noDiscordUserFound = false,foundOnlyOne = true, None, Some(d))
-        case d :: _ => DiscordUserRegistered(noDiscordUserFound = false,foundOnlyOne = false,Some(d),None)
-      }
-    }
-    def keyIsSame(pk: Option[UserSmurf], test: String): Boolean = pk.map(_.discordUser.discordID).contains(test)
-    import ActionBySmurf._
-
-    val result = request.body.file("replay_file").fold(buildResult(Future.successful(Left("Sin archivo enviado")))){ replay_file =>
-      val message = for{
-        jsonStringEither              <- fileParser.parseFile(replay_file.ref.toFile)
-        jsonString                    <- jsonStringEither.withFailure()
-        replayParsedEither            <- Future.successful(fileParser.parseJsonResponse(jsonString))
-        replayParsed                  <- replayParsedEither.withFailure()
-        participantsWithFirstSmurf    <- userSmurfDAO.findBySmurf(replayParsed.player1)
-        participantsWithSecondSmurf   <- userSmurfDAO.findBySmurf(replayParsed.player2)
-      }yield{
-        val withFirstSmurf = convertToChaUserRegistered(participantsWithFirstSmurf)
-        val withSecondSmurf = convertToChaUserRegistered(participantsWithSecondSmurf)
-
-
-        val action = (replayParsed.player1.equals(replayParsed.player2),withFirstSmurf, withSecondSmurf) match {
-          case (true,_,_) => ImpossibleToDefine
-          case (_,DiscordUserRegistered(true,_,_,_),DiscordUserRegistered(true,_,_,_)) => SmurfsEmpty
-          case (_,DiscordUserRegistered(true,_,_,_),DiscordUserRegistered(false,true,_,pk2))  if keyIsSame(pk2,discordUser1) || keyIsSame(pk2,discordUser2)  => CompletelyDefined
-          case (_,DiscordUserRegistered(false,true,_,pk1),DiscordUserRegistered(true,_,_,_))  if keyIsSame(pk1,discordUser1) || keyIsSame(pk1,discordUser2)  => CompletelyDefined
-          case (_,DiscordUserRegistered(false,true,_,pk1),DiscordUserRegistered(false,true,_,pk2))  if keyIsSame(pk1,discordUser1) && keyIsSame(pk2,discordUser2) || keyIsSame(pk1,discordUser2) && keyIsSame(pk2,discordUser1)  => CompletelyDefined
-          case _ => ImpossibleToDefine
-        }
-        ActionByReplay(defined = true,Some(replayParsed.player1), Some(replayParsed.player2), action, replayParsed.winner)
-      }
-
-      val messageWithError: Future[Either[String, ActionByReplay]] = message.map(v => Right(v)).recover(e => Left(e.toString))
-      buildResult(messageWithError)
-    }
-
-    result
+    val defaultValue: Future[Either[String,ActionByReplay]] = Future.successful(Left("Sin archivo enviado"))
+    val result: Future[Either[String,ActionByReplay]] = request.body.file("replay_file").fold(defaultValue)(file => parseFile.parseFileAndBuildAction(file.ref.toFile, discordUser1,discordUser2))
+    buildResult(result)
   }
 
 

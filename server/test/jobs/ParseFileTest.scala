@@ -2,8 +2,11 @@ package jobs
 
 import java.io.File
 
+import models.{DiscordUser, MatchPK, MatchSmurf, UserSmurf}
+import models.daos.UserSmurfDAO
 import org.scalatestplus.play.PlaySpec
 import org.scalatestplus.play.guice.GuiceOneAppPerSuite
+import shared.models.ActionByReplay
 
 import scala.concurrent.Await
 import scala.language.postfixOps
@@ -12,6 +15,7 @@ import scala.concurrent.duration.DurationInt
 
 class ParseFileTest extends PlaySpec with GuiceOneAppPerSuite{
   val fileParser: ParseFile = app.injector.instanceOf(classOf[ParseFile])
+  val userDAO: UserSmurfDAO = app.injector.instanceOf(classOf[UserSmurfDAO])
 
   "ParseFile" should {
     "get something" in {
@@ -38,6 +42,123 @@ class ParseFileTest extends PlaySpec with GuiceOneAppPerSuite{
 
       execution
 
+
+    }
+    "build action correctly - no users" in {
+      import shared.models.ActionBySmurf._
+      val file = new File("/home/vmchura/Games/starcraft-remastered/drive_c/users/vmchura/My Documents/StarCraft/Maps/Replays/ReplaysSaved-SC/dtfastexpand.rep")
+
+      val u1 = DiscordUser("1","1Name")
+      val u2 = DiscordUser("2","2Name")
+      val execution = for{
+        i1 <- userDAO.addUser(u1)
+        i2 <- userDAO.addUser(u2)
+        action <- fileParser.parseFileAndBuildAction(file,u1.discordID,u2.discordID)
+        d1 <- userDAO.removeUser(u1.discordID)
+        d2 <- userDAO.removeUser(u2.discordID)
+      }yield{
+        assert(i1 && i2 && d1 && d2)
+        println(action)
+        val actionMade = action match {
+          case Right(ActionByReplay(_,_,_, actionToTake, _)) => Some(actionToTake)
+          case _ => None
+        }
+        assertResult(Some(SmurfsEmpty))(actionMade)
+      }
+
+      Await.result(execution, 5.seconds)
+
+      execution
+
+    }
+
+    "build action correctly - only 1 user" in {
+      import shared.models.ActionBySmurf._
+      val file = new File("/home/vmchura/Games/starcraft-remastered/drive_c/users/vmchura/My Documents/StarCraft/Maps/Replays/ReplaysSaved-SC/dtfastexpand.rep")
+
+      val u1 = DiscordUser("1","1Name")
+      val u2 = DiscordUser("2","2Name")
+      val execution = for{
+        i1 <- userDAO.addUser(u1)
+        i2 <- userDAO.addUser(u2)
+        i3 <- userDAO.addSmurf(u1.discordID,MatchSmurf(MatchPK(0L,0L),"shafirru"))
+        action <- fileParser.parseFileAndBuildAction(file,u1.discordID,u2.discordID)
+        d1 <- userDAO.removeUser(u1.discordID)
+        d2 <- userDAO.removeUser(u2.discordID)
+      }yield{
+        assert(i1 && i2 && d1 && d2 && i3)
+        println(action)
+        val actionMade = action match {
+          case Right(ActionByReplay(_,_,_, actionToTake, _)) => Some(actionToTake)
+          case _ => None
+        }
+        assertResult(Some(CompletelyDefined))(actionMade)
+      }
+
+      Await.result(execution, 5.seconds)
+
+      execution
+
+    }
+    "build action correctly - 2 user" in {
+      import shared.models.ActionBySmurf._
+      val file = new File("/home/vmchura/Games/starcraft-remastered/drive_c/users/vmchura/My Documents/StarCraft/Maps/Replays/ReplaysSaved-SC/dtfastexpand.rep")
+
+      val u1 = DiscordUser("1","1Name")
+      val u2 = DiscordUser("2","2Name")
+      val execution = for{
+        i1 <- userDAO.addUser(u1)
+        i2 <- userDAO.addUser(u2)
+        i3 <- userDAO.addSmurf(u1.discordID,MatchSmurf(MatchPK(0L,0L),"shafirru"))
+        i4 <- userDAO.addSmurf(u2.discordID,MatchSmurf(MatchPK(0L,0L),"ash-Sabb4th"))
+        action <- fileParser.parseFileAndBuildAction(file,u1.discordID,u2.discordID)
+        d1 <- userDAO.removeUser(u1.discordID)
+        d2 <- userDAO.removeUser(u2.discordID)
+      }yield{
+        assert(i1 && i2 && d1 && d2 && i3 && i4)
+        println(action)
+        val actionMade = action match {
+          case Right(ActionByReplay(_,_,_, actionToTake, _)) => Some(actionToTake)
+          case _ => None
+        }
+        assertResult(Some(CompletelyDefined))(actionMade)
+      }
+
+      Await.result(execution, 20.seconds)
+
+      execution
+
+    }
+    "build action correctly - 3 user" in {
+      import shared.models.ActionBySmurf._
+      val file = new File("/home/vmchura/Games/starcraft-remastered/drive_c/users/vmchura/My Documents/StarCraft/Maps/Replays/ReplaysSaved-SC/dtfastexpand.rep")
+
+      val u1 = DiscordUser("1","1Name")
+      val u2 = DiscordUser("2","2Name")
+      val u3 = DiscordUser("3","3Name")
+      val execution = for{
+        i1 <- userDAO.addUser(u1)
+        i2 <- userDAO.addUser(u2)
+        ix <- userDAO.addUser(u3)
+        i3 <- userDAO.addSmurf(u1.discordID,MatchSmurf(MatchPK(0L,0L),"shafirru"))
+        i4 <- userDAO.addSmurf(u3.discordID,MatchSmurf(MatchPK(0L,0L),"ash-Sabb4th"))
+        action <- fileParser.parseFileAndBuildAction(file,u1.discordID,u2.discordID)
+        d1 <- userDAO.removeUser(u1.discordID)
+        d2 <- userDAO.removeUser(u2.discordID)
+        d3 <- userDAO.removeUser(u3.discordID)
+      }yield{
+        assert(i1 && i2 && d1 && d2 && i3 && i4 && ix && d3)
+        println(action)
+        val actionMade = action match {
+          case Right(ActionByReplay(_,_,_, actionToTake, _)) => Some(actionToTake)
+          case _ => None
+        }
+        assertResult(Some(ImpossibleToDefine))(actionMade)
+      }
+
+      Await.result(execution, 20.seconds)
+
+      execution
 
     }
   }

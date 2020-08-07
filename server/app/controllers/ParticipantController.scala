@@ -22,7 +22,6 @@ class ParticipantController @Inject()(scc: SilhouetteControllerComponents,
 
   def buildRelation(): Action[AnyContent] = silhouette.SecuredAction(WithAdmin()).async { implicit request: SecuredRequest[EnvType, AnyContent] =>
     def convertResponse(response: Boolean) = Ok(Json.obj("response" -> write(response)))
-    println(request.body)
     request.body.asMultipartFormData.fold{
       logger.error("buildRelation has not a valid multipartFormData")
       Future.successful(convertResponse(false))

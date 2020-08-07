@@ -1,6 +1,6 @@
 package jobs
 import javax.inject.Inject
-import models.daos.ReplayMatchDAO
+import models.daos.{ReplayMatchDAO, UserSmurfDAO}
 import models.services.{ChallongeTournamentService, DiscordUserService, ParticipantsService, TournamentService}
 import models.{DiscordUser, Match, MatchDiscord, Participant, TWithReplays, Tournament, User}
 
@@ -11,7 +11,8 @@ class TournamentBuilder @Inject() (tournamentService: TournamentService,
                                    participantsService: ParticipantsService,
                                    challongeTournamentService: ChallongeTournamentService,
                                    discordUserService: DiscordUserService,
-                                   replayMatchDAO: ReplayMatchDAO) {
+                                   replayMatchDAO: ReplayMatchDAO,
+                                   userSmurfDAO: UserSmurfDAO) {
 
   def formFuture[A](f: Future[A]): Future[Either[JobError,A]] = {
     convertToEither(s => UnknowTournamentBuilderError(s))(f)
@@ -26,7 +27,9 @@ class TournamentBuilder @Inject() (tournamentService: TournamentService,
       challongeTournamentOpt  <- challongeTournamentService.findChallongeTournament(discordID)(challongeID)
       challongeTournament     <- challongeTournamentOpt.withFailure(CannontAccessChallongeTournament(challongeID))
       discordUsersOpt         <- discordUserService.findMembersOnGuild(discordID)
-      _                       <- discordUsersOpt.withFailure(CannotAccesDiscordGuild(discordID))
+      guildUsers              <- discordUsersOpt.withFailure(CannotAccesDiscordGuild(discordID))
+      insertionGuildSmurfs    <- Future.sequence(guildUsers.map(userSmurfDAO.addUser)).map(_.forall(u => u))
+      _                       <- insertionGuildSmurfs.withFailure(CannotInsertSomeDiscordUser)
       tournamentInsertion     <- tournamentService.saveTournament(challongeTournament.tournament)
       _                       <- tournamentInsertion.withFailure(TournamentAlreadyCreated(challongeID))
       participantInsertion    <- Future.sequence(challongeTournament.participants.map(participantsService.saveParticipant))

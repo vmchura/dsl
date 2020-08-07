@@ -8,3 +8,4 @@ case class CannontAccessChallongeTournament(challongID: String) extends Tourname
 case class CannotAccesDiscordGuild(discordGuild: String) extends TournamentBuilderError
 case class CannotAddSomeParticipant(participantError: String) extends TournamentBuilderError
 case class UnknowTournamentBuilderError(error: String) extends TournamentBuilderError
+object CannotInsertSomeDiscordUser extends TournamentBuilderError
