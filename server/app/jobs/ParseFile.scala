@@ -9,11 +9,17 @@ import javax.inject.Inject
 import play.api.Configuration
 import java.io.{File, FileInputStream}
 
+import sttp.client.asynchttpclient.future.AsyncHttpClientFutureBackend
 import shared.models.ReplayDescriptionShared
+import sttp.client.asynchttpclient.WebSocketHandler
+
+import scala.concurrent.ExecutionContext.Implicits.global
+import scala.concurrent.Future
+
 class ParseFile @Inject() (configuration: Configuration) {
   private val lambda_x_api_key = configuration.get[String]("lambda.apikey")
 
-  def parseFile(file: File): Either[String,String] = {
+  def parseFile(file: File): Future[Either[String,String]] = {
 
     val in = new FileInputStream(file)
     val bytes = new Array[Byte](file.length.toInt)
@@ -28,18 +34,20 @@ class ParseFile @Inject() (configuration: Configuration) {
       body(Json.obj("replayfile" -> JsString(encoded), "filename" -> JsString("este es un archivo X")).toString()).post(uri"https://o1hyykheh4.execute-api.us-east-2.amazonaws.com/default/replayParser")
 
 
-    implicit val backend: SttpBackend[Identity, Nothing, NothingT] = HttpURLConnectionBackend()
+    implicit val backend: SttpBackend[Future, Nothing, WebSocketHandler] = AsyncHttpClientFutureBackend()
+
 
 
     // alternatively, if you prefer to pass the backend explicitly, instead
     // of using implicits, you can also call:
     val response = backend.send(request)
 
-    response.body
+    response.map(_.body)
 
 
   }
   def parseJsonResponse(stringJson: String): Either[String,ReplayDescriptionShared] = {
+
     val json = Json.parse(stringJson)
     val playersJson = (json \ "Header" \ "Players").getOrElse(JsArray.empty).asInstanceOf[JsArray]
     case class Player(team: Int, name: String)
@@ -60,9 +68,6 @@ class ParseFile @Inject() (configuration: Configuration) {
     }yield{
       Right(ReplayDescriptionShared(p1,p2, winnerTeam))
     }).getOrElse(Left("Cant find players"))
-
-
-
 
   }
 }

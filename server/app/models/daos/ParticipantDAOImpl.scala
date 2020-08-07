@@ -11,7 +11,7 @@ import reactivemongo.play.json.collection.JSONCollection
 
 import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.Future
-import scala.util.{Failure, Success}
+
 
 class ParticipantDAOImpl  @Inject() (val reactiveMongoApi: ReactiveMongoApi) extends ParticipantDAO {
   def collection: Future[JSONCollection] = reactiveMongoApi.database.map(_.collection("dsl.participant"))
@@ -62,19 +62,5 @@ class ParticipantDAOImpl  @Inject() (val reactiveMongoApi: ReactiveMongoApi) ext
 
   }
 
-  override def findBySmurf(smurf: String): Future[Seq[ParticipantDefined]] = {
-    val query = Json.obj("smurfs" -> smurf)
-    getParticipantsByQuery(query).map(convertParticipantIntoDefined)
-  }
-
-  override def addSmurf(participantPK: ParticipantPK, newSmurf: String): Future[Boolean] =  collection.
-    flatMap(_.update(ordered=true).
-      one(Json.obj("participantPK" -> participantPK), Json.obj("$push" -> Json.obj("smurfs"-> newSmurf)), upsert = true)).
-    map(_.ok)
-
-  override def removeSmurf(participantPK: ParticipantPK, smurfToRemove: String): Future[Boolean] = collection.
-    flatMap(_.update(ordered=true).
-      one(Json.obj("participantPK" -> participantPK), Json.obj("$pull" -> Json.obj("smurfs"-> smurfToRemove)), upsert = true)).
-    map(_.ok)
 
 }

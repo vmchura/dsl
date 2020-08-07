@@ -25,9 +25,4 @@ class ParticipantsServiceImpl @Inject() (participantDAO: ParticipantDAO) extends
 
   override def loadParticipantDefinedByTournamentID(challongeID: Long): Future[Seq[ParticipantDefined]] = participantDAO.findDefinedByTournamentID(challongeID)
 
-  override def findBySmurf(smurf: String): Future[Seq[ParticipantDefined]] = participantDAO.findBySmurf(smurf)
-
-  override def addSmurf(participantPK: ParticipantPK, newSmurf: String): Future[Boolean] = participantDAO.addSmurf(participantPK, newSmurf)
-
-  override def removeSmurf(participantPK: ParticipantPK, smurfToRemove: String): Future[Boolean] = participantDAO.removeSmurf(participantPK, smurfToRemove)
 }

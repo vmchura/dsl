@@ -14,8 +14,6 @@ trait ParticipantDAO {
   def findByDiscordUserID(discordUserID: String): Future[Seq[Participant]]
   def findDefinedByTournamentID(challongeID: Long): Future[Seq[ParticipantDefined]]
   def drop(participantPK: ParticipantPK): Future[Boolean]
-  def findBySmurf(smurf: String): Future[Seq[ParticipantDefined]]
-  def addSmurf(participantPK: ParticipantPK, newSmurf: String): Future[Boolean]
-  def removeSmurf(participantPK: ParticipantPK, smurfToRemove: String): Future[Boolean]
+
 
 }

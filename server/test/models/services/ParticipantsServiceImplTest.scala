@@ -7,9 +7,10 @@ import org.scalatestplus.play.guice.GuiceOneAppPerSuite
 import org.scalatestplus.play._
 
 import scala.concurrent.duration._
+import scala.language.postfixOps
+
 import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.{Await, Future}
-import scala.language.postfixOps
 class ParticipantsServiceImplTest extends PlaySpec with GuiceOneAppPerSuite{
 
   val service: ParticipantsService = app.injector.instanceOf(classOf[ParticipantsService])
@@ -87,58 +88,6 @@ class ParticipantsServiceImplTest extends PlaySpec with GuiceOneAppPerSuite{
       queryExecution
     }
 
-    "return no participant by smurf" in {
-      val smurfTest = "randomSmurf"
-      val queryExecution = for{
-        participant <- service.findBySmurf(smurfTest)
-      }yield{
-        assert(participant.isEmpty)
-      }
-      Await.result(queryExecution, 5 seconds)
-      queryExecution
-
-    }
-    "add and delete smurf" in {
-      val smurfTest = "randomSmurf"
-      val pk = ParticipantPK(141341L,141L)
-
-      val queryExecution = for{
-        participant <- Future.successful(Participant(pk,"vmchq", None,None))
-        inserted <- service.saveParticipant(participant)
-        smurfAdded <- if(inserted) service.addSmurf(pk, smurfTest) else Future.successful(false)
-        withSmurf <- service.loadParticipant(pk)
-        smurfRemoved <- if(smurfAdded) service.removeSmurf(pk, smurfTest) else Future.successful(false)
-        withNoSmurf <- service.loadParticipant(pk)
-        deleted <- service.dropParticipant(pk)
-      }yield{
-
-        assert(deleted)
-        assert(smurfRemoved)
-        assert(withSmurf.fold(false)(_.smurfs.contains(smurfTest)))
-        assert(withNoSmurf.fold(false)(! _.smurfs.contains(smurfTest)))
-      }
-      Await.result(queryExecution, 5 seconds)
-      queryExecution
-    }
-    "find by smurf" in {
-      val smurfTest = "randomSmurf"
-      val pk = ParticipantPK(141341L,141L)
-
-      val queryExecution = for{
-        participant <- Future.successful(Participant(pk,"vmchq",Some("qwdasd"),Some(UUID.randomUUID())))
-        inserted <- service.saveParticipant(participant)
-        smurfAdded <- if(inserted) service.addSmurf(pk, smurfTest) else Future.successful(false)
-        withSmurf <- service.findBySmurf(smurfTest)
-        deleted <- service.dropParticipant(pk)
-      }yield{
-
-        assert(deleted)
-        assertResult(List(participant.participantPK))(withSmurf.map(_.participantPK))
-      }
-      Await.result(queryExecution, 5 seconds)
-      queryExecution
-
-    }
 
 
 

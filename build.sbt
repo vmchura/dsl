@@ -26,9 +26,8 @@ lazy val server = (project in file("server"))
       // https://mvnrepository.com/artifact/net.codingwell/scala-guice
       "net.codingwell" %% "scala-guice" % "4.2.10",
       // https://mvnrepository.com/artifact/org.http4s/http4s-dsl
-      "com.softwaremill.sttp.client" %% "core" % "2.2.0",
-      "com.softwaremill.sttp.client" %% "async-http-client-backend-future" % "2.2.0",
-
+      "com.softwaremill.sttp.client" %% "core" % "2.2.3",
+      "com.softwaremill.sttp.client" %% "async-http-client-backend-future" % "2.2.3",
       //test
       "org.scalatestplus.play" %% "scalatestplus-play" % "5.0.0" % "test",
       //json play
