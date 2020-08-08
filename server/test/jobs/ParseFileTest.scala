@@ -2,7 +2,7 @@ package jobs
 
 import java.io.File
 
-import models.{DiscordUser, MatchPK, MatchSmurf, UserSmurf}
+import models.{DiscordUser, MatchPK, MatchSmurf}
 import models.daos.UserSmurfDAO
 import org.scalatestplus.play.PlaySpec
 import org.scalatestplus.play.guice.GuiceOneAppPerSuite
@@ -92,7 +92,7 @@ class ParseFileTest extends PlaySpec with GuiceOneAppPerSuite{
           case Right(ActionByReplay(_,_,_, actionToTake, _)) => Some(actionToTake)
           case _ => None
         }
-        assertResult(Some(CompletelyDefined))(actionMade)
+        assertResult(Some(Correlated1d2rDefined))(actionMade)
       }
 
       Await.result(execution, 5.seconds)
@@ -121,7 +121,7 @@ class ParseFileTest extends PlaySpec with GuiceOneAppPerSuite{
           case Right(ActionByReplay(_,_,_, actionToTake, _)) => Some(actionToTake)
           case _ => None
         }
-        assertResult(Some(CompletelyDefined))(actionMade)
+        assertResult(Some(CorrelatedCruzadoDefined))(actionMade)
       }
 
       Await.result(execution, 20.seconds)

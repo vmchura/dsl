@@ -18,7 +18,7 @@ POST        /participant/update                 controllers.ParticipantControlle
 GET         /tournament/showparticipantscorrelation/:tournamentID       controllers.TournamentController.showparticipantscorrelation(tournamentID: Long)
 GET         /tournament/showmatches/:challongeTournamentID              controllers.TournamentController.showMatchesToUploadReplay(challongeTournamentID: Long)
 # REPLAY
-POST        /replay/add/:tournamentID/:matchID controllers.ReplayMatchController.addReplayToMatch(tournamentID: Long, matchID: Long)
+POST        /replay/add/:tournamentID/:matchID/:discordUser1/:discordUser2  controllers.ReplayMatchController.addReplayToMatch(tournamentID: Long, matchID: Long,discordUser1: String, discordUser2: String)
 POST        /replay/parse/:discordUser1/:discordUser2                       controllers.ReplayMatchController.parseReplay(discordUser1: String, discordUser2: String)
 # Prefix must match `play.assets.urlPrefix`
 GET        /assets/*file                        controllers.Assets.at(file)

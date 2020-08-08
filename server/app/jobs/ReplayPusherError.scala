@@ -7,3 +7,4 @@ case class MatchNotFoundOnChallonge(challongeID: Long) extends ReplayPusherError
 case class UnknowReplayPusherError(error: String) extends ReplayPusherError
 object CannotSaveResultMatch extends ReplayPusherError
 object CannotInsertOnDropBox extends ReplayPusherError
+object CannotSmurf extends ReplayPusherError

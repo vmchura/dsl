@@ -35,7 +35,7 @@ class UserSmurfDAOImpl @Inject() (val reactiveMongoApi: ReactiveMongoApi) extend
       user <- getUserSmurf(discordUser.discordID)
       insertion <- user.fold(collection.
         flatMap(_.insert(ordered=true).
-          one(UserSmurf(discordUser,Nil))).
+          one(UserSmurf(discordUser,Nil,Nil))).
         map(_.ok))(_ => {
         Future.successful(true)
 
@@ -53,5 +53,22 @@ class UserSmurfDAOImpl @Inject() (val reactiveMongoApi: ReactiveMongoApi) extend
   override def removeUser(discordUserID: String): Future[Boolean] =  {
     collection.
       flatMap(_.delete(ordered = true).one(Json.obj("discordUser.discordID" -> discordUserID))).map(_.ok)
+  }
+
+  override def addNotCheckedSmurf(discordUserID: String, newSmurf: MatchSmurf): Future[Boolean] = collection.
+    flatMap(_.update(ordered=true).
+      one(Json.obj("discordUser.discordID" -> discordUserID), Json.obj("$push" -> Json.obj("notCheckedSmurf"-> newSmurf)), upsert = true)).
+    map(_.ok)
+
+  override def removeNotCheckedSmurf(discordUserID: String, smurfToRemove: MatchSmurf): Future[Boolean] = {
+    for {
+     removed <-  collection.
+      flatMap(_.update(ordered = true).
+      one(Json.obj("discordUser.discordID" -> discordUserID), Json.obj("$pull" -> Json.obj("notCheckedSmurf" -> smurfToRemove)), upsert = true)).
+      map(_.ok)
+      added <- if(removed) addSmurf(discordUserID,smurfToRemove) else Future.successful(false)
+    }yield{
+      added
+    }
   }
 }

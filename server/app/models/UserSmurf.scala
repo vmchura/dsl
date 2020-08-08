@@ -9,7 +9,7 @@ object MatchSmurf{
 }
 
 
-case class UserSmurf(discordUser: DiscordUser, matchSmurf: Seq[MatchSmurf])
+case class UserSmurf(discordUser: DiscordUser, matchSmurf: Seq[MatchSmurf], notCheckedSmurf: Seq[MatchSmurf])
 
 object UserSmurf {
   implicit val jsonFormat: OFormat[UserSmurf] = Json.format[UserSmurf]

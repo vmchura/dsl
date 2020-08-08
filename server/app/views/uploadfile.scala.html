@@ -8,7 +8,7 @@
 <div id=@modalID class="modal">
     <div class="modal-content">
         <h4>Modal Header</h4>
-        @form(routes.ReplayMatchController.addReplayToMatch(m.matchPK.challongeID,m.matchPK.challongeMatchID),
+        @form(routes.ReplayMatchController.addReplayToMatch(m.matchPK.challongeID,m.matchPK.challongeMatchID,m.discord1ID,m.discord2ID),
             Symbol("enctype") -> "multipart/form-data") {
             @CSRF.formField
 

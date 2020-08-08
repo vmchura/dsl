@@ -10,6 +10,8 @@ trait UserSmurfDAO {
   def getUserSmurf(discordUserID: String): Future[Option[UserSmurf]]
   def findBySmurf(smurf: String): Future[List[UserSmurf]]
   def addSmurf(discordUserID: String, matchSmurf: MatchSmurf): Future[Boolean]
+  def addNotCheckedSmurf(discordUserID: String, matchSmurf: MatchSmurf): Future[Boolean]
   def removeSmurf(discordUserID : String, smurfToRemove: MatchSmurf): Future[Boolean]
+  def removeNotCheckedSmurf(discordUserID : String, smurfToRemove: MatchSmurf): Future[Boolean]
   def removeUser(discordUserID: String): Future[Boolean]
 }
