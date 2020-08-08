@@ -1,6 +1,7 @@
 package jobs
 
 import java.io.File
+import java.util.UUID
 
 import models.{DiscordUser, MatchPK, MatchSmurf}
 import models.daos.UserSmurfDAO
@@ -81,7 +82,7 @@ class ParseFileTest extends PlaySpec with GuiceOneAppPerSuite{
       val execution = for{
         i1 <- userDAO.addUser(u1)
         i2 <- userDAO.addUser(u2)
-        i3 <- userDAO.addSmurf(u1.discordID,MatchSmurf(MatchPK(0L,0L),"shafirru"))
+        i3 <- userDAO.addSmurf(u1.discordID,MatchSmurf(UUID.randomUUID(),MatchPK(0L,0L),"shafirru"))
         action <- fileParser.parseFileAndBuildAction(file,u1.discordID,u2.discordID)
         d1 <- userDAO.removeUser(u1.discordID)
         d2 <- userDAO.removeUser(u2.discordID)
@@ -109,8 +110,8 @@ class ParseFileTest extends PlaySpec with GuiceOneAppPerSuite{
       val execution = for{
         i1 <- userDAO.addUser(u1)
         i2 <- userDAO.addUser(u2)
-        i3 <- userDAO.addSmurf(u1.discordID,MatchSmurf(MatchPK(0L,0L),"shafirru"))
-        i4 <- userDAO.addSmurf(u2.discordID,MatchSmurf(MatchPK(0L,0L),"ash-Sabb4th"))
+        i3 <- userDAO.addSmurf(u1.discordID,MatchSmurf(UUID.randomUUID(),MatchPK(0L,0L),"shafirru"))
+        i4 <- userDAO.addSmurf(u2.discordID,MatchSmurf(UUID.randomUUID(),MatchPK(0L,0L),"ash-Sabb4th"))
         action <- fileParser.parseFileAndBuildAction(file,u1.discordID,u2.discordID)
         d1 <- userDAO.removeUser(u1.discordID)
         d2 <- userDAO.removeUser(u2.discordID)
@@ -140,8 +141,8 @@ class ParseFileTest extends PlaySpec with GuiceOneAppPerSuite{
         i1 <- userDAO.addUser(u1)
         i2 <- userDAO.addUser(u2)
         ix <- userDAO.addUser(u3)
-        i3 <- userDAO.addSmurf(u1.discordID,MatchSmurf(MatchPK(0L,0L),"shafirru"))
-        i4 <- userDAO.addSmurf(u3.discordID,MatchSmurf(MatchPK(0L,0L),"ash-Sabb4th"))
+        i3 <- userDAO.addSmurf(u1.discordID,MatchSmurf(UUID.randomUUID(),MatchPK(0L,0L),"shafirru"))
+        i4 <- userDAO.addSmurf(u3.discordID,MatchSmurf(UUID.randomUUID(),MatchPK(0L,0L),"ash-Sabb4th"))
         action <- fileParser.parseFileAndBuildAction(file,u1.discordID,u2.discordID)
         d1 <- userDAO.removeUser(u1.discordID)
         d2 <- userDAO.removeUser(u2.discordID)

@@ -34,11 +34,11 @@ class ReplayMatchController @Inject()(scc: SilhouetteControllerComponents,
     import jobs.eitherError
     import jobs.flag2Future
     val result = Redirect(routes.TournamentController.showMatchesToUploadReplay(tournamentID))
-    def insertOnProperlySmurfList(input: Either[Option[String],Option[String]], discordUserID: String): MatchPK => Future[Boolean] = {
+    def insertOnProperlySmurfList(input: Either[Option[String],Option[String]], discordUserID: String): (UUID,MatchPK) => Future[Boolean] = {
       input match {
-        case Left(Some(value)) => (m: MatchPK) => smurfDAO.addSmurf(discordUserID,MatchSmurf(m,value))
-        case Right(Some(value)) => (m: MatchPK) => smurfDAO.addNotCheckedSmurf(discordUserID,MatchSmurf(m,value))
-        case _ => (m: MatchPK) => Future.successful(true)
+        case Left(Some(value)) => (resultID: UUID, m: MatchPK) => smurfDAO.addSmurf(discordUserID,MatchSmurf(resultID, m,value))
+        case Right(Some(value)) => (resultID: UUID, m: MatchPK) => smurfDAO.addNotCheckedSmurf(discordUserID,MatchSmurf(resultID, m,value))
+        case _ => (_,_) => Future.successful(true)
       }
     }
     val outerExecution = for{
@@ -49,6 +49,7 @@ class ReplayMatchController @Inject()(scc: SilhouetteControllerComponents,
       nicks <- request.body.dataParts.get("nicks").flatMap(_.headOption.flatMap(_.toIntOption))
     }yield{
       val file = replay_file.ref.toFile
+      val newMatchResultID = UUID.randomUUID()
       val execution = for {
         action            <- parseFile.parseFileAndBuildAction(file, discordUser1,discordUser2)
 
@@ -67,6 +68,7 @@ class ReplayMatchController @Inject()(scc: SilhouetteControllerComponents,
           case _ => Right(None)
         })
 
+
         smurfForDiscord2 <- Future.successful(action match {
           case Right(ActionByReplay(_, _, smurf2, Correlated1d1rDefined, _)) => Right(smurf2)
           case Right(ActionByReplay(_, _, smurf2, Correlated2d2rDefined, _)) => Left(smurf2)
@@ -83,10 +85,10 @@ class ReplayMatchController @Inject()(scc: SilhouetteControllerComponents,
         })
         replayPushedTry <- replayPusher.pushReplay(tournamentID,matchID,file, request.identity, replay_file.filename)
         _               <- replayPushedTry.withFailure
-        resultSaved     <- matchResultDAO.save(MatchResult(UUID.randomUUID(),tournamentID, matchID, discordUser1, discordUser2,player1,player2, winner))
+        resultSaved     <- matchResultDAO.save(MatchResult(newMatchResultID,tournamentID, matchID, discordUser1, discordUser2,player1,player2, winner))
         _ <- resultSaved.withFailure(CannotSaveResultMatch)
-        insertionSmurf1 <- insertOnProperlySmurfList(smurfForDiscord1,discordUser1)(MatchPK(tournamentID,matchID))
-        insertionSmurf2 <- insertOnProperlySmurfList(smurfForDiscord2,discordUser2)(MatchPK(tournamentID,matchID))
+        insertionSmurf1 <- insertOnProperlySmurfList(smurfForDiscord1,discordUser1)(newMatchResultID,MatchPK(tournamentID,matchID))
+        insertionSmurf2 <- insertOnProperlySmurfList(smurfForDiscord2,discordUser2)(newMatchResultID,MatchPK(tournamentID,matchID))
         _ <- insertionSmurf1.withFailure(CannotSmurf)
         _ <- insertionSmurf2.withFailure(CannotSmurf)
       }yield{

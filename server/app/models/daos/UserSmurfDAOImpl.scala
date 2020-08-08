@@ -71,4 +71,10 @@ class UserSmurfDAOImpl @Inject() (val reactiveMongoApi: ReactiveMongoApi) extend
       added
     }
   }
+
+  override def findUsersNotCompletelyDefined(): Future[Seq[UserSmurf]] = {
+    //ME.find({ pictures: { $exists: true, $ne: [] } })
+    collection.flatMap(_.find(Json.obj("notCheckedSmurf"-> Json.obj("$exists" -> true, "$ne" -> Json.arr())),Option.empty[UserSmurf]).cursor[UserSmurf]().collect[List](-1,Cursor.FailOnError[List[UserSmurf]]()))
+
+  }
 }

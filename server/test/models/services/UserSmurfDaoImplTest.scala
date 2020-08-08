@@ -1,5 +1,7 @@
 package models.services
 
+import java.util.UUID
+
 import models.{DiscordUser, MatchPK, MatchSmurf}
 import models.daos.UserSmurfDAO
 import org.scalatestplus.play.PlaySpec
@@ -28,12 +30,12 @@ class UserSmurfDaoImplTest extends PlaySpec with GuiceOneAppPerSuite{
   "add and delete smurf" in {
     val smurfTest = "randomSmurf"
     val du = DiscordUser("asd","xyz")
-
+    val matchSmurf = MatchSmurf(UUID.randomUUID(),MatchPK(0L,141L), smurfTest)
     val queryExecution = for{
       inserted      <- dao.addUser(du)
-      smurfAdded    <- if(inserted) dao.addSmurf(du.discordID, MatchSmurf(MatchPK(0L,141L), smurfTest)) else Future.successful(false)
+      smurfAdded    <- if(inserted) dao.addSmurf(du.discordID, matchSmurf) else Future.successful(false)
       withSmurf     <- dao.getUserSmurf(du.discordID)
-      smurfRemoved  <- if(smurfAdded) dao.removeSmurf(du.discordID, MatchSmurf(MatchPK(0L,141L), smurfTest)) else Future.successful(false)
+      smurfRemoved  <- if(smurfAdded) dao.removeSmurf(du.discordID, matchSmurf) else Future.successful(false)
       withNoSmurf   <- dao.getUserSmurf(du.discordID)
       deleted       <- dao.removeUser(du.discordID)
     }yield{
@@ -52,7 +54,7 @@ class UserSmurfDaoImplTest extends PlaySpec with GuiceOneAppPerSuite{
 
     val queryExecution = for{
       inserted    <- dao.addUser(du)
-      smurfAdded  <- if(inserted) dao.addSmurf(du.discordID, MatchSmurf(MatchPK(0L,141L), smurfTest)) else Future.successful(false)
+      smurfAdded  <- if(inserted) dao.addSmurf(du.discordID, MatchSmurf(UUID.randomUUID(),MatchPK(0L,141L), smurfTest)) else Future.successful(false)
       withSmurf   <- dao.findBySmurf(smurfTest)
       deleted     <- dao.removeUser(du.discordID)
     }yield{

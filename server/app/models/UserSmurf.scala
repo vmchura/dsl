@@ -1,8 +1,10 @@
 package models
 
+import java.util.UUID
+
 import play.api.libs.json.{Json, OFormat}
 
-case class MatchSmurf(matchPK: MatchPK, smurf: String)
+case class MatchSmurf(resultID: UUID,matchPK: MatchPK, smurf: String)
 object MatchSmurf{
   implicit val jsonFormat: OFormat[MatchSmurf] = Json.format[MatchSmurf]
 

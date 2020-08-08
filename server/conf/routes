@@ -23,5 +23,8 @@ POST        /replay/parse/:discordUser1/:discordUser2                       cont
 # Prefix must match `play.assets.urlPrefix`
 GET        /assets/*file                        controllers.Assets.at(file)
 GET        /versionedAssets/*file               controllers.Assets.versioned(path="/public", file: Asset)
+# SMURFS
+GET         /smurfs/view                        controllers.SmurfController.view
+
 
 GET     /javascriptRoutes                       controllers.JavaScriptRouter.javascriptRoutes
