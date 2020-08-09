@@ -111,7 +111,7 @@ class ParseFile @Inject() (configuration: Configuration, userSmurfDAO: UserSmurf
           case (_,DiscordUserRegistered(true,_,_,_),DiscordUserRegistered(false,true,_,pk2))  if keyIsSame(pk2,discordUserID1) => Correlated1d2rDefined
           case (_,DiscordUserRegistered(true,_,_,_),DiscordUserRegistered(false,true,_,pk2))  if keyIsSame(pk2,discordUserID2) => Correlated2d2rDefined
           case (_,DiscordUserRegistered(false,true,_,pk1),DiscordUserRegistered(true,_,_,_))  if keyIsSame(pk1,discordUserID1) => Correlated1d1rDefined
-          case (_,DiscordUserRegistered(false,true,_,pk1),DiscordUserRegistered(true,_,_,_))  if keyIsSame(pk1,discordUserID2) => Correlated1d2rDefined
+          case (_,DiscordUserRegistered(false,true,_,pk1),DiscordUserRegistered(true,_,_,_))  if keyIsSame(pk1,discordUserID2) => Correlated2d1rDefined
           case (_,DiscordUserRegistered(false,true,_,pk1),DiscordUserRegistered(false,true,_,pk2))  if keyIsSame(pk1,discordUserID1) && keyIsSame(pk2,discordUserID2)  => CorrelatedParallelDefined
           case (_,DiscordUserRegistered(false,true,_,pk1),DiscordUserRegistered(false,true,_,pk2))  if keyIsSame(pk1,discordUserID2) && keyIsSame(pk2,discordUserID1)  => CorrelatedCruzadoDefined
           case _ => ImpossibleToDefine

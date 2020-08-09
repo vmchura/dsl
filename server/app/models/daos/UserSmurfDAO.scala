@@ -9,6 +9,7 @@ import scala.concurrent.Future
 trait UserSmurfDAO {
   def addUser(discordUser: DiscordUser): Future[Boolean]
   def findUser(discordUserID: String): Future[Option[UserSmurf]]
+  def findUsers(discordUsersID: Seq[String]): Future[Seq[UserSmurf]]
   def findBySmurf(smurf: String): Future[List[UserSmurf]]
   def addSmurf(discordUserID: String, matchSmurf: MatchSmurf): Future[Boolean]
   def addNotCheckedSmurf(discordUserID: String, matchSmurf: MatchSmurf): Future[Boolean]

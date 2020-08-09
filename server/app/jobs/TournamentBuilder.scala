@@ -84,7 +84,7 @@ class TournamentBuilder @Inject() (tournamentService: TournamentService,
     }
   }
   def getMatchesDiscord(challongeTournamentID: Long, userOpt: Option[User]): Future[Either[JobError,Seq[MatchDiscord]]] = {
-    def filterByUser(md: MatchDiscord): Boolean = userOpt.fold(true)(u => u.loginInfo.providerKey.equals(md.discord1ID) || u.loginInfo.providerKey.equals(md.discord2ID))
+    def filterByUser(md: MatchDiscord): Boolean = userOpt.fold(true)(u => u.loginInfo.providerKey.equals(md.userSmurf1.discordUser.discordID) || u.loginInfo.providerKey.equals(md.userSmurf2.discordUser.discordID))
 
 
     val matchesFromChallonge: Future[Seq[MatchDiscord]] = for {
@@ -93,6 +93,7 @@ class TournamentBuilder @Inject() (tournamentService: TournamentService,
       challongeTournamentOpt <- challongeTournamentService.findChallongeTournament(tournamentDB.discordServerID)(tournamentDB.urlID)
       challongeTournament <- challongeTournamentOpt.withFailure(CannontAccessChallongeTournament(tournamentDB.urlID))
       participants <- participantsService.loadParticipantDefinedByTournamentID(challongeTournamentID)
+      usersSmurf <- userSmurfDAO.findUsers(participants.map(_.discordUserID))
     }yield{
 
 
@@ -100,8 +101,10 @@ class TournamentBuilder @Inject() (tournamentService: TournamentService,
         for{
           p1 <- participants.find(_.participantPK.chaNameID == m.firstChaNameID)
           p2 <- participants.find(_.participantPK.chaNameID == m.secondChaNameID)
+          u1 <- usersSmurf.find(_.discordUser.discordID.equals(p1.discordUserID))
+          u2 <- usersSmurf.find(_.discordUser.discordID.equals(p2.discordUserID))
         }yield{
-          MatchDiscord(m.matchPK,m.round, m.firstChaNameID, m.secondChaNameID,p1.discordUserID,p2.discordUserID, p1.chaname, p2.chaname)
+          MatchDiscord(m.matchPK,m.round, m.firstChaNameID, m.secondChaNameID,u1.copy(matchSmurf = u1.matchSmurf.filter(_.matchPK == m.matchPK)),u2.copy(matchSmurf = u2.matchSmurf.filter(_.matchPK == m.matchPK)))
         }
 
       }

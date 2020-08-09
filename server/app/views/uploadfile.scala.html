@@ -8,17 +8,17 @@
 <div id=@modalID class="modal">
     <div class="modal-content">
         <h4>Modal Header</h4>
-        @form(routes.ReplayMatchController.addReplayToMatch(m.matchPK.challongeID,m.matchPK.challongeMatchID,m.discord1ID,m.discord2ID),
+        @form(routes.ReplayMatchController.addReplayToMatch(m.matchPK.challongeID,m.matchPK.challongeMatchID,m.userSmurf1.discordUser.discordID,m.userSmurf2.discordUser.discordID),
             Symbol("enctype") -> "multipart/form-data") {
             @CSRF.formField
 
 
             <div class="file-field input-field"
             id=@{s"replay_file_field_${m.matchPK.challongeMatchID}"}
-            data-player1=@{m.player1Name}
-            data-player2=@{m.player2Name}
-            data-discord1=@{m.discord1ID}
-            data-discord2=@{m.discord2ID}
+            data-player1=@{m.userSmurf1.discordUser.userName}
+            data-player2=@{m.userSmurf2.discordUser.userName}
+            data-discord1=@{m.userSmurf1.discordUser.discordID}
+            data-discord2=@{m.userSmurf2.discordUser.discordID}
             >
 
 

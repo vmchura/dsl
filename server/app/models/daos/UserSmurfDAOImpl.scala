@@ -7,7 +7,7 @@ import play.modules.reactivemongo.ReactiveMongoApi
 
 import scala.concurrent.ExecutionContext.Implicits.global
 import reactivemongo.play.json.collection.JSONCollection
-import play.api.libs.json.Json
+import play.api.libs.json.{JsObject, Json}
 import reactivemongo.api.Cursor
 
 import scala.concurrent.Future
@@ -73,10 +73,18 @@ class UserSmurfDAOImpl @Inject() (val reactiveMongoApi: ReactiveMongoApi) extend
     }
   }
 
+  private def findSequenceUserSmurf(query: JsObject): Future[Seq[UserSmurf]] = {
+    collection.flatMap(_.find(query,Option.empty[UserSmurf]).cursor[UserSmurf]().collect[List](-1,Cursor.FailOnError[List[UserSmurf]]()))
+  }
   override def findUsersNotCompletelyDefined(): Future[Seq[UserSmurf]] = {
-    //ME.find({ pictures: { $exists: true, $ne: [] } })
-    collection.flatMap(_.find(Json.obj("notCheckedSmurf"-> Json.obj("$exists" -> true, "$ne" -> Json.arr())),Option.empty[UserSmurf]).cursor[UserSmurf]().collect[List](-1,Cursor.FailOnError[List[UserSmurf]]()))
+    val query: JsObject = Json.obj("notCheckedSmurf"-> Json.obj("$exists" -> true, "$ne" -> Json.arr()))
+    findSequenceUserSmurf(query)
 
   }
 
+  override def findUsers(discordUsersID: Seq[String]): Future[Seq[UserSmurf]] = {
+    val query = Json.obj("discordUser.discordID" -> Json.obj("$in" -> discordUsersID))
+    findSequenceUserSmurf(query)
+
+  }
 }

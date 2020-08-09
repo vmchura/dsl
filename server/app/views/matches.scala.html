@@ -18,8 +18,16 @@
         @for(m <- matches){
             <tr>
                 <td>@m.round</td>
-                <td>@m.player1Name</td>
-                <td>@m.player2Name</td>
+                <td>@m.userSmurf1.discordUser.userName
+                    @for(smurfDefined <- m.userSmurf1.matchSmurf){
+                        <span class="badge">@smurfDefined.smurf </span>
+                    }
+                </td>
+                <td>@m.userSmurf2.discordUser.userName
+                @for(smurfDefined <- m.userSmurf2.matchSmurf){
+                    <span class="badge">@smurfDefined.smurf </span>
+                }
+                </td>
                 <td>
                     <button data-target=@{s"modal_list_${m.matchPK.challongeMatchID}"} class="btn waves-effect waves-light modal-trigger">Replays
                     <i class="material-icons right">play_arrow</i>
@@ -44,7 +52,7 @@
     }
 
     @for(m <- matches){
-        @listreplays(m.toMatch(),s"modal_list_${m.matchPK.challongeMatchID}")
+        @listreplays(m.convertToMatch(),s"modal_list_${m.matchPK.challongeMatchID}")
     }
 
 
