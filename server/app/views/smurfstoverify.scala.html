@@ -7,11 +7,11 @@
 
             <li class="collection-header collection-header-discorduser">@smurftou.discordUser.userName</li>
 
-            @for(matches <- smurftou.notCheckedSmurf){
+            @for(matchSmurf <- smurftou.notCheckedSmurf){
                 <li class="collection-item">
                     <div>
-                        @matches.smurf
-                        <a class="secondary-content waves-effect waves-light btn-small"><i class="material-icons left">check_circle</i>Aceptar</a>
+                        @matchSmurf.smurf
+                        <a class="secondary-content waves-effect waves-light btn-small" href="@controllers.routes.SmurfController.accept(smurftou.discordUser.discordID,matchSmurf.resultID)"><i class="material-icons left">check_circle</i>Aceptar</a>
                         <a class="secondary-content waves-effect waves-light btn-small"><i class="material-icons left">cancel</i>Cancelar</a>
                     </div>
                 </li>

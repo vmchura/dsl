@@ -34,9 +34,9 @@ class UserSmurfDaoImplTest extends PlaySpec with GuiceOneAppPerSuite{
     val queryExecution = for{
       inserted      <- dao.addUser(du)
       smurfAdded    <- if(inserted) dao.addSmurf(du.discordID, matchSmurf) else Future.successful(false)
-      withSmurf     <- dao.getUserSmurf(du.discordID)
+      withSmurf     <- dao.findUser(du.discordID)
       smurfRemoved  <- if(smurfAdded) dao.removeSmurf(du.discordID, matchSmurf) else Future.successful(false)
-      withNoSmurf   <- dao.getUserSmurf(du.discordID)
+      withNoSmurf   <- dao.findUser(du.discordID)
       deleted       <- dao.removeUser(du.discordID)
     }yield{
 

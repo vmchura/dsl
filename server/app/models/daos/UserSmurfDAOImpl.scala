@@ -1,5 +1,6 @@
 package models.daos
 
+
 import javax.inject.Inject
 import models.{DiscordUser, MatchSmurf, UserSmurf}
 import play.modules.reactivemongo.ReactiveMongoApi
@@ -32,7 +33,7 @@ class UserSmurfDAOImpl @Inject() (val reactiveMongoApi: ReactiveMongoApi) extend
 
   override def addUser(discordUser: DiscordUser): Future[Boolean] = {
     for{
-      user <- getUserSmurf(discordUser.discordID)
+      user <- findUser(discordUser.discordID)
       insertion <- user.fold(collection.
         flatMap(_.insert(ordered=true).
           one(UserSmurf(discordUser,Nil,Nil))).
@@ -45,7 +46,7 @@ class UserSmurfDAOImpl @Inject() (val reactiveMongoApi: ReactiveMongoApi) extend
     }
   }
 
-  override def getUserSmurf(discordUserID: String): Future[Option[UserSmurf]] = {
+  override def findUser(discordUserID: String): Future[Option[UserSmurf]] = {
     val query = Json.obj("discordUser.discordID" -> discordUserID)
     collection.flatMap(_.find(query,Option.empty[UserSmurf]).one[UserSmurf])
 
@@ -60,7 +61,7 @@ class UserSmurfDAOImpl @Inject() (val reactiveMongoApi: ReactiveMongoApi) extend
       one(Json.obj("discordUser.discordID" -> discordUserID), Json.obj("$push" -> Json.obj("notCheckedSmurf"-> newSmurf)), upsert = true)).
     map(_.ok)
 
-  override def removeNotCheckedSmurf(discordUserID: String, smurfToRemove: MatchSmurf): Future[Boolean] = {
+  override def acceptNotCheckedSmurf(discordUserID: String, smurfToRemove: MatchSmurf): Future[Boolean] = {
     for {
      removed <-  collection.
       flatMap(_.update(ordered = true).
@@ -77,4 +78,5 @@ class UserSmurfDAOImpl @Inject() (val reactiveMongoApi: ReactiveMongoApi) extend
     collection.flatMap(_.find(Json.obj("notCheckedSmurf"-> Json.obj("$exists" -> true, "$ne" -> Json.arr())),Option.empty[UserSmurf]).cursor[UserSmurf]().collect[List](-1,Cursor.FailOnError[List[UserSmurf]]()))
 
   }
+
 }
