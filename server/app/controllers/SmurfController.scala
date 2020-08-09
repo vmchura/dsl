@@ -5,7 +5,7 @@ import java.util.UUID
 import javax.inject.Inject
 import models.TournamentMenu
 import models.daos.UserSmurfDAO
-import models.services.{SmurfService, TournamentService}
+import models.services.{SideBarMenuService, SmurfService, TournamentService}
 import play.api.i18n.I18nSupport
 import play.api.mvc.{Action, AnyContent}
 
@@ -15,7 +15,8 @@ class SmurfController @Inject()(scc: SilhouetteControllerComponents,
                                smurfsToCheck: views.html.smurfstoverify,
                                tournamentService: TournamentService,
                                userSmurfDAO: UserSmurfDAO,
-                               smurfService: SmurfService
+                               smurfService: SmurfService,
+                               sideBarMenuService: SideBarMenuService
                                ) (
                                  implicit
                                  assets: AssetsFinder,
@@ -24,14 +25,11 @@ class SmurfController @Inject()(scc: SilhouetteControllerComponents,
 
   def view(): Action[AnyContent] = silhouette.SecuredAction(WithAdmin()).async { implicit request =>
     for {
-      tournaments <- tournamentService.findAllTournaments()
+      menues <- sideBarMenuService.buildSideBar(Some(request.identity))
       usersNotDefined <- userSmurfDAO.findUsersNotCompletelyDefined()
 
     } yield {
-      Ok(smurfsToCheck(Some(request.identity), tournaments.map(torneo =>
-        TournamentMenu(torneo.tournamentName,
-          routes.TournamentController.showMatchesToUploadReplay(torneo.challongeID).url
-        )), usersNotDefined))
+      Ok(smurfsToCheck(Some(request.identity),menues, usersNotDefined))
     }
   }
   def accept(discordUserID: String,matchID: UUID): Action[AnyContent] = silhouette.SecuredAction(WithAdmin()).async { implicit request =>

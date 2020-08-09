@@ -1,0 +1,34 @@
+@import play.api.i18n.Messages
+@import play.api.mvc.RequestHeader
+@import controllers.AssetsFinder
+@import models.Match
+@(matchReplay: Match, modalID: String)(implicit request: RequestHeader, messages: Messages,assets: AssetsFinder)
+
+<div id=@modalID class="modal">
+    <div class="modal-content">
+        <table>
+                <tr>
+                    <th>Nombre original</th>
+                    <th>Habilitado</th>
+                    <th>Descargar</th>
+                </tr>
+                @for(m <- matchReplay.replaysAttached){
+                    <tr>
+                        <td>@m.nombreOriginal</td>
+                        <td>
+                            <i class="material-icons">
+                            @if(m.enabled){
+                                check
+                            }else{
+                                cancel
+                            }
+                            </i>
+                        </td>
+                        <td>@messages("to.be.implemented")</td>
+                    </tr>
+                }
+        </table>
+
+    </div>
+</div>
+

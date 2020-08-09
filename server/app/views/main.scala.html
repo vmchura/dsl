@@ -6,7 +6,7 @@
 @import views.html.menutorneo
 @import views.html.helper._
 
-@(title: String,user: Option[models.User] = None, torneos: Seq[TournamentMenu])(content: Html)(implicit request: RequestHeader, messages: Messages, assets: AssetsFinder)
+@(title: String,user: Option[models.User] = None, menues: Seq[MenuGroup])(content: Html)(implicit request: RequestHeader, messages: Messages, assets: AssetsFinder)
 
 
 <!DOCTYPE html>
@@ -65,7 +65,7 @@
                 <div class="divider"></div>
                 <li class="no-padding">
                     <ul class="collapsible collapsible-accordion">
-                        @menutorneo(torneos)
+                        @menutorneo(menues)
                     </ul>
 
                     <div class="divider"></div>

@@ -11,7 +11,6 @@
                 <th>Player 1</th>
                 <th>Player 2</th>
                 <th>Replays</th>
-                <th>Upload Replay</th>
             </tr>
         </thead>
         <tbody>
@@ -33,11 +32,6 @@
                     <i class="material-icons right">play_arrow</i>
                     </button>
                 </td>
-                <td>
-                    <button data-target=@{s"modal_${m.matchPK.challongeMatchID}"} class="btn waves-effect waves-light modal-trigger">Subir
-                    <i class="material-icons right">cloud_upload</i>
-                    </button>
-                </td>
 
             </tr>
 
@@ -47,12 +41,9 @@
         </tbody>
     </table>
 
-    @for(m <- matches){
-        @uploadfile(m,s"modal_${m.matchPK.challongeMatchID}")
-    }
 
     @for(m <- matches){
-        @listreplays(m.convertToMatch(),s"modal_list_${m.matchPK.challongeMatchID}")
+        @listreplayssimple(m.convertToMatch(),s"modal_list_${m.matchPK.challongeMatchID}")
     }
 
 

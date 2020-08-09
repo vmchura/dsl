@@ -1,15 +1,19 @@
 @import play.api.i18n.Messages
 @import play.api.mvc.RequestHeader
 @import controllers.AssetsFinder
-@(torneos: Seq[TournamentMenu])(implicit request: RequestHeader, messages: Messages, assets: AssetsFinder)
-
-<li class="bold"><a class="collapsible-header waves-effect waves-yellow"><i class="material-icons">layers</i>Torneos</a>
-    <div class="collapsible-body">
-        <ul>
-        @for(torneo <- torneos) {
-            <li><a href="@torneo.url" class="sidenav-cela-element"><i class="material-icons">label_outline</i>@torneo.tag</a></li>
-        }
-        </ul>
-    </div>
-</li>
+@(menus: Seq[MenuGroup])(implicit request: RequestHeader, messages: Messages, assets: AssetsFinder)
+@for(menuGroup <- menus) {
+    <li class="bold"><a class="collapsible-header waves-effect waves-yellow"><i class="material-icons">layers</i>
+        @menuGroup.tag</a>
+        <div class="collapsible-body">
+            <ul>
+            @for(menuAction <- menuGroup.submenus) {
+                <li><a href="@menuAction.url" class="sidenav-cela-element"><i class="material-icons">label_outline</i>
+                    @menuAction.tag</a>
+                </li>
+            }
+            </ul>
+        </div>
+    </li>
+}
 
