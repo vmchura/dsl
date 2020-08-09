@@ -4,7 +4,6 @@ import com.mohiva.play.silhouette.api.actions.{SecuredRequest, UserAwareRequest}
 import forms.CreateTournamentForm
 import javax.inject._
 import jobs.{CannontAccessChallongeTournament, CannotAccesDiscordGuild, TournamentBuilder}
-import models.TournamentMenu
 import models.services.{SideBarMenuService, TournamentService}
 import play.api.mvc._
 import play.api.i18n.I18nSupport

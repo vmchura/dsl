@@ -3,7 +3,6 @@ package controllers
 import java.util.UUID
 
 import javax.inject.Inject
-import models.TournamentMenu
 import models.daos.UserSmurfDAO
 import models.services.{SideBarMenuService, SmurfService, TournamentService}
 import play.api.i18n.I18nSupport

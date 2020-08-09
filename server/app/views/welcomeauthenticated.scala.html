@@ -1,7 +1,6 @@
 @import play.api.i18n.Messages
 @import play.api.mvc.RequestHeader
 @import controllers.AssetsFinder
-@import models.TournamentMenu
 @this()(implicit assets: AssetsFinder)
 @(user: models.User,menues: Seq[MenuGroup])(implicit request: RequestHeader, messages: Messages)
 @main("Participante",Some(user),menues) {

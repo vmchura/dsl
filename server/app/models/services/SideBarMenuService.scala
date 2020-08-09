@@ -6,7 +6,7 @@ import com.mohiva.play.silhouette.api.LoginInfo
 import com.mohiva.play.silhouette.impl.providers.CommonSocialProfile
 import controllers.routes
 import javax.inject.Inject
-import models.{MenuActionDefined, MenuGroup, TournamentMenu, User}
+import models.{MenuActionDefined, MenuGroup, User}
 import models.daos.UserDAO
 
 import scala.concurrent.ExecutionContext.Implicits.global
