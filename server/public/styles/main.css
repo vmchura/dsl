@@ -41,5 +41,12 @@
 }
 
 
+.match-hidden{
+    display: none;
+}
+.match-shown{
+    display: table-row;
+}
+
 
 

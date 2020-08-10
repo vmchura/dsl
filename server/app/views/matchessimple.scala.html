@@ -1,9 +1,10 @@
-
+@import views.html.helper._
 @this()(implicit assets: AssetsFinder)
 @(user: Option[models.User],menues: Seq[MenuGroup],matches: Seq[MatchDiscord])(implicit request: RequestHeader, messages: Messages)
 @main("Partidas del torneo",user,menues){
 
-    <div id="makePairsID"></div>
+    <div id="container-matches-finder"></div>
+
     <table>
         <thead>
             <tr>
@@ -15,7 +16,7 @@
         </thead>
         <tbody>
         @for(m <- matches){
-            <tr>
+            <tr id="@m.matchPK.challongeMatchID">
                 <td>@m.round</td>
                 <td>@m.userSmurf1.discordUser.userName
                     @for(smurfDefined <- m.userSmurf1.matchSmurf){
@@ -45,6 +46,8 @@
     @for(m <- matches){
         @listreplayssimple(m.convertToMatch(),s"modal_list_${m.matchPK.challongeMatchID}")
     }
+
+    <script @{CSPNonce.attr}>   MatchFinder.init("container-matches-finder"); </script>
 
 
 }
