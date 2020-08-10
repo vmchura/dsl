@@ -11,6 +11,16 @@ case class WithAdmin() extends Authorization[User, CookieAuthenticator] {
 
   def isAuthorized[B](user: User, authenticator: CookieAuthenticator)(
     implicit request: Request[B]): Future[Boolean] = {
-    Future.successful(user.loginInfo.providerKey.equals("698648718999814165"))
+
+    Future.successful(WithAdmin.isModeradorID(user.loginInfo.providerKey))
   }
+}
+object WithAdmin{
+  private val moderadoresID = List(
+    "361607214156480512",  //kogler
+    "578353624699109435", //kishigel
+    "662869207633100840", //araknoides
+    "698648718999814165"  //vmchq
+  )
+  def isModeradorID(discordID: String): Boolean = moderadoresID.exists(_.equals(discordID))
 }

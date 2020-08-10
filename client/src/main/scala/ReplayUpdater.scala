@@ -53,6 +53,14 @@ class ReplayUpdater(fieldDiv: Div, player1: String, player2: String, discord1: S
     override def toString: String = s"ERROR en el servidor: $message"
   }
 
+  case class ErrorImpossibleMessage(smurf1: Option[String], smurf2: Option[String]) extends StateSettingResult{
+    override def toString: String = (smurf1,smurf2) match {
+      case (Some(x), Some(y)) => s"El smurf $x o $y ya está asignado a otro usuario."
+      case (None, _) => s"El replay no se pudo interpretar correctamente"
+      case (_, None) => s"El replay no se pudo interpretar correctamente"
+    }
+  }
+
   private val stateUploadProcess = Var[StateSettingResult](FileUnselected)
   private val replayParsed = Var[Option[ActionByReplay]](None)
 
@@ -126,29 +134,49 @@ class ReplayUpdater(fieldDiv: Div, player1: String, player2: String, discord1: S
 
   private val selection_Cross: Binding[HTMLInputElement] = buildInput(2)
 
+  import shared.models.ActionBySmurf._
   @html
   private val correlateTags = Binding {
-    replayParsed.bind.map(replay =>
+    replayParsed.bind.map {
+      case ActionByReplay(_,Some(smurf1),Some(smurf2),SmurfsEmpty, winner) =>
+        <div class="input-field col s12">
+          <p>
+            <label>
+              {selection_Same.bind}<span class="playerRelation">
+              {s"[$player1 -> ${smurf1}] y [$player2 -> ${smurf2}]"}
+            </span>
+            </label>
+          </p>
+          <p>
+            <label>
+              {selection_Cross.bind}<span class="playerRelation">
+              {s"[$player1 -> ${smurf2}] y [$player2 -> ${smurf1}]"}
+            </span>
+            </label>
+          </p>
+          <input type="hidden" name="player1" value={smurf1}/>
+          <input type="hidden" name="player2" value={smurf2}/>
+          <input type="hidden" name="winner" value={winner.toString}/>
+        </div>
+        case ActionByReplay(_,player1,player2,ImpossibleToDefine, _) =>
+          stateUploadProcess.value = ErrorImpossibleMessage(player1, player2)
+          <div>Error</div>
+        case ActionByReplay(_,_,_,CorrelatedCruzadoDefined, _) =>
+          stateUploadProcess.value = ReadyToSend
+          <div>Los nicks ya están definidos :)</div>
+        case ActionByReplay(_,_,_,CorrelatedParallelDefined, _) =>
+          stateUploadProcess.value = ReadyToSend
+          <div>Los nicks ya están definidos :)</div>
+        case ActionByReplay(true,Some(_),Some(_),_, _) =>
+          stateUploadProcess.value = ReadyToSend
+          <div>Puedes enviar el replay! aunque un nick falta ser aprobado por los moderadores. :)</div>
+        case ActionByReplay(_,player1,player2,_, _) =>
+          stateUploadProcess.value = ErrorImpossibleMessage(player1, player2)
+          <div>Error</div>
 
-      <div class="input-field col s12">
-        <p>
-          <label>
-            {selection_Same.bind}
-            <span class="playerRelation">{s"[$player1 -> ${replay.player1}] y [$player2 -> ${replay.player2}]"}</span>
-          </label>
-        </p>
-        <p>
-          <label>
-            {selection_Cross.bind}
-            <span class="playerRelation">{s"[$player1 -> ${replay.player2}] y [$player2 -> ${replay.player1}]"}</span>
-          </label>
-        </p>
-        <input type="hidden" name="player1" value={replay.player1}/>
-        <input type="hidden" name="player2" value={replay.player2}/>
-        <input type="hidden" name="winner" value={replay.winner.toString}/>
-      </div>
 
-    ).getOrElse(<div></div>)
+
+    }.getOrElse(<div></div>)
   }
   @html
   val buttonSubmit: Binding[Button] = Binding {
