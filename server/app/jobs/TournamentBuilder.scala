@@ -104,7 +104,7 @@ class TournamentBuilder @Inject() (tournamentService: TournamentService,
           u1 <- usersSmurf.find(_.discordUser.discordID.equals(p1.discordUserID))
           u2 <- usersSmurf.find(_.discordUser.discordID.equals(p2.discordUserID))
         }yield{
-          MatchDiscord(m.matchPK,m.round, m.firstChaNameID, m.secondChaNameID,u1.copy(matchSmurf = u1.matchSmurf.filter(_.matchPK == m.matchPK)),u2.copy(matchSmurf = u2.matchSmurf.filter(_.matchPK == m.matchPK)))
+          MatchDiscord(m.matchPK, tournamentDB.tournamentName, m.round, m.firstChaNameID, m.secondChaNameID,u1.copy(matchSmurf = u1.matchSmurf.filter(_.matchPK == m.matchPK)),u2.copy(matchSmurf = u2.matchSmurf.filter(_.matchPK == m.matchPK)))
         }
 
       }

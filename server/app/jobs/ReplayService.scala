@@ -10,7 +10,7 @@ import models.services.{ChallongeTournamentService, DropBoxFilesService, Tournam
 import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.Future
 
-class ReplayPusher  @Inject() (tournamentService: TournamentService,
+class ReplayService  @Inject()(tournamentService: TournamentService,
                                challongeTournamentService: ChallongeTournamentService,
                                dropBoxFilesService: DropBoxFilesService,
                                replayMatchDAO: ReplayMatchDAO) {
@@ -20,21 +20,30 @@ class ReplayPusher  @Inject() (tournamentService: TournamentService,
   }
 
   def pushReplay(tournamentID: Long, matchID: Long, replay: File, user: User, fileName: String): Future[Either[JobError,Boolean]] = {
+    val newIDForThisReplay = UUID.randomUUID()
     val executionFuture = for{
       tournamentOpt <- tournamentService.loadTournament(tournamentID)
       tournament <- tournamentOpt.withFailure(TournamentNotFoundToReplay(tournamentID))
       challongeTournamentOpt <- challongeTournamentService.findChallongeTournament(tournament.discordServerID)(tournament.urlID)
       challongeTournament <- challongeTournamentOpt.withFailure(TournamentNotFoundOnChallonge(tournament.urlID))
       matchChallonge <- challongeTournament.matches.find(_.matchPK.challongeMatchID == matchID).withFailure(MatchNotFoundOnChallonge(matchID))
-      insertionOnDropBox <- dropBoxFilesService.push(replay,matchChallonge.asMatchName())
+      insertionOnDropBox <- dropBoxFilesService.push(replay,matchChallonge.asMatchName(newIDForThisReplay))
       _ <- insertionOnDropBox.withFailure(CannotInsertOnDropBox)
-      insertionOnDB <- replayMatchDAO.add(ReplayRecord(UUID.randomUUID(),
-        matchChallonge.asMatchName().toString,
+      insertionOnDB <- replayMatchDAO.add(ReplayRecord(newIDForThisReplay,
+        matchChallonge.asMatchName(newIDForThisReplay).pathFileOnCloud,
         fileName,tournamentID,matchID,enabled = true,user.loginInfo.providerKey))
     }yield{
       insertionOnDB
     }
     formFuture(executionFuture)
+  }
+  def downloadReplay(replayID: UUID, replayName: String): Future[Either[JobError,File]] = {
+    val f = for{
+      file <- dropBoxFilesService.download(replayID, replayName)
+    }yield{
+      file
+    }
+    formFuture(f)
   }
 
 

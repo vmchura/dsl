@@ -48,7 +48,7 @@ class ChallongeTournamentServiceImpl @Inject()(configuration: Configuration) ext
               playerID2 <- match1v1("player2_id").asOpt[Long]
               match1v1ID <- match1v1("id").asOpt[Long]
             }yield{
-              val matchModel = Match(MatchPK(chaID,match1v1ID),
+              val matchModel = Match(MatchPK(chaID,match1v1ID),name,
                 playerID1,
                 playerID2,"unknow",
                 findParticipantBySomeID(playerID1).map(_.chaname),

@@ -24,7 +24,10 @@
                             }
                             </i>
                         </td>
-                        <td>@messages("to.be.implemented")</td>
+                        <td>
+                            <a class="waves-effect waves-light btn-small" href=@controllers.routes.ReplayMatchController.downloadReplay(m.replayID,m.nombreOriginal)>
+                                <i class="material-icons left">cloud_download</i></a>
+                        </td>
                     </tr>
                 }
         </table>

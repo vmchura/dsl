@@ -2,7 +2,7 @@ package controllers
 import java.util.UUID
 
 import javax.inject._
-import jobs.{CannotSaveResultMatch, CannotSmurf, ParseFile, ReplayPusher}
+import jobs.{CannotSaveResultMatch, CannotSmurf, ParseFile, ReplayService}
 import models.{MatchPK, MatchResult, MatchSmurf}
 import models.daos.{MatchResultDAO, UserSmurfDAO}
 import play.api.mvc._
@@ -17,7 +17,7 @@ import scala.concurrent.{ExecutionContext, Future}
 import scala.util.{Failure, Success}
 @Singleton
 class ReplayMatchController @Inject()(scc: SilhouetteControllerComponents,
-                                      replayPusher: ReplayPusher,
+                                      replayService: ReplayService,
                                       matchResultDAO: MatchResultDAO,
                                       parseFile: ParseFile,
                                       smurfDAO: UserSmurfDAO
@@ -33,6 +33,7 @@ class ReplayMatchController @Inject()(scc: SilhouetteControllerComponents,
   def addReplayToMatch(tournamentID: Long, matchID: Long,discordUser1: String, discordUser2: String): Action[MultipartFormData[Files.TemporaryFile]] = silhouette.SecuredAction.async(parse.multipartFormData) { implicit request =>
     import jobs.eitherError
     import jobs.flag2Future
+    def secureName(fileName: String): String = fileName.filter(ch => ch.isLetterOrDigit || ch=='.' || ch == '-' || ch == '-').mkString("")
     val result = Redirect(routes.TournamentController.showMatchesToUploadReplay(tournamentID))
     def insertOnProperlySmurfList(input: Either[Option[String],Option[String]], discordUserID: String): (UUID,MatchPK) => Future[Boolean] = {
       input match {
@@ -83,7 +84,7 @@ class ReplayMatchController @Inject()(scc: SilhouetteControllerComponents,
           }
           case _ => Right(None)
         })
-        replayPushedTry <- replayPusher.pushReplay(tournamentID,matchID,file, request.identity, replay_file.filename)
+        replayPushedTry <- replayService.pushReplay(tournamentID,matchID,file, request.identity, secureName(replay_file.filename))
         _               <- replayPushedTry.withFailure
         resultSaved     <- matchResultDAO.save(MatchResult(newMatchResultID,tournamentID, matchID, discordUser1, discordUser2,player1,player2, winner))
         _ <- resultSaved.withFailure(CannotSaveResultMatch)
@@ -92,12 +93,12 @@ class ReplayMatchController @Inject()(scc: SilhouetteControllerComponents,
         _ <- insertionSmurf1.withFailure(CannotSmurf)
         _ <- insertionSmurf2.withFailure(CannotSmurf)
       }yield{
-        result.flashing("success" -> s"${replay_file.filename} guardado!")
+        result.flashing("success" -> s"${secureName(replay_file.filename)} guardado!")
       }
 
       execution.transformWith{
         case Success(value) =>  Future.successful(value)
-        case Failure(_) => Future.successful(result.flashing("error" -> s"${replay_file.filename} ERROR!"))
+        case Failure(_) => Future.successful(result.flashing("error" -> s"${secureName(replay_file.filename)} ERROR!"))
       }
     }
 
@@ -118,6 +119,14 @@ class ReplayMatchController @Inject()(scc: SilhouetteControllerComponents,
     val defaultValue: Future[Either[String,ActionByReplay]] = Future.successful(Left("Sin archivo enviado"))
     val result: Future[Either[String,ActionByReplay]] = request.body.file("replay_file").fold(defaultValue)(file => parseFile.parseFileAndBuildAction(file.ref.toFile, discordUser1,discordUser2))
     buildResult(result)
+  }
+
+  def downloadReplay(replayID: UUID, replayName: String): Action[AnyContent] = Action.async{ implicit request =>
+    replayService.downloadReplay(replayID, replayName).map{
+      case Left(error) => Redirect(routes.Application.index()).flashing("error" -> error.toString)
+      case Right(file) => Ok.sendFile(file,inline = true, _ => Some(replayName))
+    }
+
   }
 
 
