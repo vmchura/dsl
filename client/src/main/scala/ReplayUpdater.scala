@@ -15,42 +15,58 @@ import scala.scalajs.concurrent.JSExecutionContext.Implicits.queue
 class ReplayUpdater(fieldDiv: Div, player1: String, player2: String, discord1: String, discord2: String) {
 
 
-  sealed trait StateSettingResult
+  sealed trait StateSettingResult {
+    def stateType: String
+  }
   object FileUnselected extends StateSettingResult {
     override def toString: String = "Seleccione el replay de la partida"
+
+    override def stateType: String = "warning"
   }
   object FileSelectedWrongType extends StateSettingResult {
     override def toString: String = "El archivo seleccionado debe terminar en .rep"
+    override def stateType: String = "danger"
   }
   object FileSelectedNotSmallSyze extends StateSettingResult {
     override def toString: String = "El archivo debe ser menor a 1Mb"
+    override def stateType: String = "danger"
   }
   object FileSelectedOk extends StateSettingResult{
     override def toString: String = "Archivo seleccionado de manera correcta"
+    override def stateType: String = "success"
+
   }
   object FileParsedCorrectly extends StateSettingResult{
     override def toString: String = "Archivo leído correctamente"
+    override def stateType: String = "success"
   }
   case class FileErrorReceivingParse(error: String) extends StateSettingResult{
     override def toString: String = s"Error en la conexión con el servidor: $error"
+    override def stateType: String = "danger"
   }
   object  FileParsedIncorrectly extends StateSettingResult{
     override def toString: String = "El archivo no se pudo interpretar como replay"
+    override def stateType: String = "danger"
   }
   object FileOnProcessToParse extends StateSettingResult{
     override def toString: String = "Esperando el PRE procesamiento del archivo"
+    override def stateType: String = "info"
   }
   object FileIsNotOne extends StateSettingResult{
     override def toString: String = "Sólo se debe escoger UN archivo"
+    override def stateType: String = "warning"
   }
   object MatchingUsers extends StateSettingResult{
     override def toString: String = "Relacione al usuario con el nick en el juego"
+    override def stateType: String = "info"
   }
   object ReadyToSend extends StateSettingResult{
     override def toString: String = ":) Listo para subir el archivo al servidor"
+    override def stateType: String = "success"
   }
   case class ErrorByServerParsing(message: String) extends StateSettingResult {
     override def toString: String = s"ERROR en el servidor: $message"
+    override def stateType: String = "danger"
   }
 
   case class ErrorImpossibleMessage(smurf1: Option[String], smurf2: Option[String]) extends StateSettingResult{
@@ -59,11 +75,12 @@ class ReplayUpdater(fieldDiv: Div, player1: String, player2: String, discord1: S
       case (None, _) => s"El replay no se pudo interpretar correctamente"
       case (_, None) => s"El replay no se pudo interpretar correctamente"
     }
+    override def stateType: String = "danger"
   }
 
   private val stateUploadProcess = Var[StateSettingResult](FileUnselected)
   private val replayParsed = Var[Option[ActionByReplay]](None)
-
+  private val fileNameSelected = Var[Option[String]](None)
 
   @html
   private val messageState = Binding{stateUploadProcess.bind.toString}
@@ -73,10 +90,13 @@ class ReplayUpdater(fieldDiv: Div, player1: String, player2: String, discord1: S
     val input: HTMLInputElement = org.scalajs.dom.document.createElement("input").asInstanceOf[HTMLInputElement]
     input.`type` = "file"
     input.name = "replay_file"
+    input.classList.add("form-file-input")
+    input.id = "replayFileID"
     //<input type="file" accept="text/csv" style="display:none" id="upload-file"/>
 
     input.onchange = (_: Event) => {
       replayParsed.value = None
+      fileNameSelected.value = None
       val processOnChange = for{
         file <- {
           val files = input.files
@@ -94,6 +114,7 @@ class ReplayUpdater(fieldDiv: Div, player1: String, player2: String, discord1: S
 
 
       }yield{
+        fileNameSelected.value = Some(file.name)
 
         val parseReplay = JavaScriptRoutes.controllers.ReplayMatchController.parseReplay(discord1,discord2)
         val playAjax = new PlayAjax(parseReplay)
@@ -121,8 +142,8 @@ class ReplayUpdater(fieldDiv: Div, player1: String, player2: String, discord1: S
 
 
   @html
-  private def buildInput(value: Int): Binding[HTMLInputElement] = Binding{
-    val input: NodeBinding[HTMLInputElement] = <input name="nicks" type="radio" value={s"$value"} />
+  private def buildInput(value: Int,id: String): Binding[HTMLInputElement] = Binding{
+    val input: NodeBinding[HTMLInputElement] = <input class="form-check-input"  name="nicks" type="radio" value={s"$value"} id={id} />
     input.value.onclick = _ => {
       stateUploadProcess.value = ReadyToSend
     }
@@ -130,34 +151,34 @@ class ReplayUpdater(fieldDiv: Div, player1: String, player2: String, discord1: S
     input.bind
   }
 
-  private val selection_Same: Binding[HTMLInputElement] = buildInput(1)
+  private val selection_Same: Binding[HTMLInputElement] = buildInput(1,"radioSelectID1")
 
-  private val selection_Cross: Binding[HTMLInputElement] = buildInput(2)
+  private val selection_Cross: Binding[HTMLInputElement] = buildInput(2,"radioSelectID2")
 
   import shared.models.ActionBySmurf._
   @html
   private val correlateTags = Binding {
     replayParsed.bind.map {
       case ActionByReplay(_,Some(smurf1),Some(smurf2),SmurfsEmpty, winner) =>
-        <div class="input-field col s12">
-          <p>
-            <label>
-              {selection_Same.bind}<span class="playerRelation">
-              {s"[$player1 -> ${smurf1}] y [$player2 -> ${smurf2}]"}
-            </span>
-            </label>
-          </p>
-          <p>
-            <label>
-              {selection_Cross.bind}<span class="playerRelation">
+        <div class="container">
+          <div class="form-check">
+            {selection_Same.bind}
+              <label class="form-check-label" for="radioSelectID1">
+                {s"[$player1 -> ${smurf1}] y [$player2 -> ${smurf2}]"}
+              </label>
+            </div>
+          <div class="form-check">
+            {selection_Cross.bind}
+            <label class="form-check-label" for="radioSelectID2">
               {s"[$player1 -> ${smurf2}] y [$player2 -> ${smurf1}]"}
-            </span>
             </label>
-          </p>
+          </div>
+
           <input type="hidden" name="player1" value={smurf1}/>
           <input type="hidden" name="player2" value={smurf2}/>
           <input type="hidden" name="winner" value={winner.toString}/>
         </div>
+
         case ActionByReplay(_,player1,player2,ImpossibleToDefine, _) =>
           stateUploadProcess.value = ErrorImpossibleMessage(player1, player2)
           <div>Error</div>
@@ -180,7 +201,7 @@ class ReplayUpdater(fieldDiv: Div, player1: String, player2: String, discord1: S
   }
   @html
   val buttonSubmit: Binding[Button] = Binding {
-    val button: NodeBinding[Button] = <button class="btn waves-effect waves-light" type="submit" name="action">Enviar Replay
+    val button: NodeBinding[Button] = <button class="btn btn-primary" type="submit" name="action">Enviar Replay
       <i class="material-icons right">send</i>
     </button>
     button.value.disabled = stateUploadProcess.bind != ReadyToSend
@@ -193,27 +214,27 @@ class ReplayUpdater(fieldDiv: Div, player1: String, player2: String, discord1: S
   val content: Binding[Node] = {
 
 
-    <div>
+    <div class="container">
 
-    <div class="btn">
-      <span>Replay</span>
-      {inputFile}
-    </div>
-
-    <div class="file-path-wrapper">
-      <input class="file-path validate" type="text"/>
-    </div>
-    <div>
-      {
+      <div class="form-file">
+          {inputFile}
+          <label class="form-file-label" for="replayFileID">
+            <span class="form-file-text">{fileNameSelected.bind.getOrElse("Replay ...")}</span>
+            <span class="form-file-button">Seleccionar replay</span>
+          </label>
+      </div>
+      <div class={s"alert alert-${stateUploadProcess.bind.stateType}"} data:role="alert">
+        {
         messageState.bind
-      }
-    </div>
-    {correlateTags.bind}
-    {buttonSubmit.bind}
+        }
+      </div>
+
+      {correlateTags.bind}
+      {buttonSubmit.bind}
 
 
-     <input type="hidden" name="player1Discord" value={discord1}/>
-     <input type="hidden" name="player2Discord" value={discord2}/>
+       <input type="hidden" name="player1Discord" value={discord1}/>
+       <input type="hidden" name="player2Discord" value={discord2}/>
 
     </div>
   }

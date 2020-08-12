@@ -56,34 +56,32 @@
 
     </head>
     <body>
+        @navbar(user,menues,socialProviders)
 
-        <header>
-
-            @navbar(user,menues,socialProviders)
-
-        </header>
-
-
-
-        <main>
+        <div class="container-fluid">
             @request.flash.get("error").map { msg =>
-                <span class="new badge red">Error @msg</span>
+                <div class="alert alert-danger" role="alert">
+                    ¡Error!: @msg
+                </div>
             }
             @request.flash.get("success").map { msg =>
-                <span class="new badge green">Hecho! @msg</span>
+                <div class="alert alert-success" role="alert">
+                    !Hecho! @msg
+                </div>
             }
-            <script @{CSPNonce.attr} type="text/javascript" src="@routes.JavaScriptRouter.javascriptRoutes()"></script>
+        </div>
+        <script @{CSPNonce.attr} type="text/javascript" src="@routes.JavaScriptRouter.javascriptRoutes()"></script>
 
-            @content
 
-            <form method="post" id="myForm" action="#">   @helper.CSRF.formField  </form>
+        @content
 
-            <script @{CSPNonce.attr} >
-                    Main.init();
-            </script>
 
-        </main>
 
+
+
+        <form method="post" id="myForm" action="#">   @helper.CSRF.formField  </form>
+
+        <script @{CSPNonce.attr} >Main.init();</script>
         <script @{CSPNonce.attr} src="https://cdn.jsdelivr.net/npm/popper.js@@1.16.0/dist/umd/popper.min.js" integrity="sha384-Q6E9RHvbIyZFJoft+2mJbHaEWldlvI9IOYy5n3zV9zzTtmI3UksdQRVvoxMfooAo" crossorigin="anonymous"></script>
         <script @{CSPNonce.attr} src="https://stackpath.bootstrapcdn.com/bootstrap/5.0.0-alpha1/js/bootstrap.min.js" integrity="sha384-oesi62hOLfzrys4LxRF63OJCXdXDipiYWBnvTl9Y9/TRlw5xlKIEHpNyvvDShgf/" crossorigin="anonymous"></script>
     </body>

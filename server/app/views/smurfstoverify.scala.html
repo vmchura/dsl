@@ -3,18 +3,20 @@
 @this()(implicit assets: AssetsFinder)
 @(user: Option[models.User],menues: Seq[MenuGroup],smurfsToUpdate: Seq[UserSmurf],socialProviders: SocialProviderRegistry)(implicit request: RequestHeader, messages: Messages)
 @main("Update Smurfs",user,menues,socialProviders){
-    <ul class="collection with-header">
+    <ul class="list-group">
     @for(smurftou <- smurfsToUpdate){
 
-            <li class="collection-header collection-header-discorduser">@smurftou.discordUser.userName</li>
+            <li class="list-group-item list-group-item-primary collection-header-discorduser">@smurftou.discordUser.userName</li>
 
             @for(matchSmurf <- smurftou.notCheckedSmurf){
-                <li class="collection-item">
-                    <div>
+                <li class="list-group-item d-flex justify-content-between align-items-center">
+
                         @matchSmurf.smurf
-                        <a class="secondary-content waves-effect waves-light btn-small" href="@controllers.routes.SmurfController.accept(smurftou.discordUser.discordID,matchSmurf.resultID)"><i class="material-icons left">check_circle</i>Aceptar</a>
-                        <a class="secondary-content waves-effect waves-light btn-small"><i class="material-icons left">cancel</i>Cancelar</a>
-                    </div>
+                        <div>
+                        <a class="btn btn-outline-success" href="@controllers.routes.SmurfController.accept(smurftou.discordUser.discordID,matchSmurf.resultID)">Aceptar<i class="material-icons right">check_circle</i></a>
+                        <a class="btn btn-outline-danger">Cancelar<i class="material-icons right">cancel</i></a>
+                        </div>
+
                 </li>
             }
     }

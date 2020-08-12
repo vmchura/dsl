@@ -5,7 +5,7 @@
 @main("Partidas del torneo",user,menues,socialProviders){
 
     <div id="makePairsID"></div>
-    <table>
+    <table class="table table-striped" >
         <thead>
             <tr>
                 <th>Round</th>
@@ -21,22 +21,24 @@
                 <td>@m.round</td>
                 <td>@m.userSmurf1.discordUser.userName
                     @for(smurfDefined <- m.userSmurf1.matchSmurf){
-                        <span class="badge">@smurfDefined.smurf </span>
+                        <span class="badge rounded-pill bg-primary">@smurfDefined.smurf </span>
                     }
                 </td>
                 <td>@m.userSmurf2.discordUser.userName
                 @for(smurfDefined <- m.userSmurf2.matchSmurf){
-                    <span class="badge">@smurfDefined.smurf </span>
+                    <span class="badge rounded-pill bg-primary">@smurfDefined.smurf </span>
                 }
                 </td>
                 <td>
-                    <button data-target=@{s"modal_list_${m.matchPK.challongeMatchID}"} class="btn waves-effect waves-light modal-trigger">Replays
-                    <i class="material-icons right">play_arrow</i>
+
+                    <button type="button" class="btn btn-primary" data-toggle="modal" data-target="@{s"#modal_list_${m.matchPK.challongeMatchID}"}">
+                        <span class="material-icons">replay</span>
                     </button>
                 </td>
                 <td>
-                    <button data-target=@{s"modal_${m.matchPK.challongeMatchID}"} class="btn waves-effect waves-light modal-trigger">Subir
-                    <i class="material-icons right">cloud_upload</i>
+
+                    <button type="button" class="btn btn-primary" data-toggle="modal" data-target="@{s"#modal_${m.matchPK.challongeMatchID}"}">
+                        <span class="material-icons">cloud_upload</span>
                     </button>
                 </td>
 

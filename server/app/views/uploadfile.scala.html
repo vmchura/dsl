@@ -5,26 +5,33 @@
 @import helper._
 @(m: MatchDiscord, modalID: String)(implicit request: RequestHeader, messages: Messages,assets: AssetsFinder)
 
-<div id=@modalID class="modal">
-    <div class="modal-content">
-        <h4>Modal Header</h4>
-        @form(routes.ReplayMatchController.addReplayToMatch(m.matchPK.challongeID,m.matchPK.challongeMatchID,m.userSmurf1.discordUser.discordID,m.userSmurf2.discordUser.discordID),
-            Symbol("enctype") -> "multipart/form-data") {
-            @CSRF.formField
-
-
-            <div class="file-field input-field"
-            id=@{s"replay_file_field_${m.matchPK.challongeMatchID}"}
-            data-player1=@{m.userSmurf1.discordUser.userName}
-            data-player2=@{m.userSmurf2.discordUser.userName}
-            data-discord1=@{m.userSmurf1.discordUser.discordID}
-            data-discord2=@{m.userSmurf2.discordUser.discordID}
-            >
-
-
+<div class="modal fade" id=@modalID tabindex="-1" aria-labelledby="@{modalID+"label"}" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <p class="modal-title" id="@{modalID+"label"}">Sube tu replay</p>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
             </div>
-        }
+            <div class="modal-body">
+                @form(routes.ReplayMatchController.addReplayToMatch(m.matchPK.challongeID,m.matchPK.challongeMatchID,m.userSmurf1.discordUser.discordID,m.userSmurf2.discordUser.discordID),
+                    Symbol("enctype") -> "multipart/form-data") {
+                    @CSRF.formField
 
+
+                    <div class="file-field input-field"
+                        id=@{s"replay_file_field_${m.matchPK.challongeMatchID}"}
+                        data-player1=@{m.userSmurf1.discordUser.userName}
+                        data-player2=@{m.userSmurf2.discordUser.userName}
+                        data-discord1=@{m.userSmurf1.discordUser.discordID}
+                        data-discord2=@{m.userSmurf2.discordUser.discordID}>
+
+                    </div>
+                }
+            </div>
+        </div>
     </div>
 </div>
+
 

@@ -45,7 +45,7 @@ object MatchFinder {
 
   @html
   private val finderByRoundMatch = {
-    val inputElement: NodeBinding[HTMLInputElement] =  <input placeholder="Ronda" id="roundNameID" type="text"/>
+    val inputElement: NodeBinding[HTMLInputElement] =  <input type="text" class="form-control" placeholder="Ronda" data:aria-label="Ronda" data:aria-describedby="basic-addon-ronda1"/>
 
     inputElement.value.oninput = _ => {
       val newText = inputElement.value.value
@@ -53,16 +53,16 @@ object MatchFinder {
       filterTable()
     }
 
-    val inputComponent: NodeBinding[Div] =  <div class="input-field">
+    val inputComponent: NodeBinding[Div] =   <div class="input-group mb-3">
+      <span class="input-group-text" id="basic-addon-ronda1">Ronda</span>
       {inputElement}
-      <label for="roundNameID">Ronda</label>
     </div>
 
     inputComponent
   }
   @html
   private val finderByUser = {
-    val inputElement: NodeBinding[HTMLInputElement] =  <input placeholder="Jugador" id="playerNameID" type="text"/>
+    val inputElement: NodeBinding[HTMLInputElement] =  <input type="text" class="form-control" placeholder="Nombre de usuario" data:aria-label="Nombre de usuario" data:aria-describedby="basic-addon-jugador1"/>
 
     inputElement.value.oninput = _ => {
       val newText = inputElement.value.value
@@ -70,18 +70,27 @@ object MatchFinder {
       filterTable()
     }
 
-    val inputComponent: NodeBinding[Div] =  <div class="input-field">
+    val inputComponent: NodeBinding[Div] =  <div class="input-group mb-3">
+      <span class="input-group-text" id="basic-addon-jugador1">Nombre de usuario</span>
       {inputElement}
-      <label for="playerNameID">Jugador</label>
     </div>
 
     inputComponent
   }
 
   @html
-  private val component = <div>
-    {finderByRoundMatch}
-    {finderByUser}
+  private val component = <div class="container">
+    <div class="row justify-content-md-center">
+      <div class="col col-lg-3">
+        {finderByRoundMatch}
+      </div>
+      <div class="col col-lg-3">
+        {finderByUser}
+      </div>
+    </div>
+  </div><div>
+
+
   </div>
 
 
