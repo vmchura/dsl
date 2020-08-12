@@ -1,7 +1,8 @@
 
+@import com.mohiva.play.silhouette.impl.providers.SocialProviderRegistry
 @this()(implicit assets: AssetsFinder)
-@(user: Option[models.User],menues: Seq[MenuGroup],matches: Seq[MatchDiscord])(implicit request: RequestHeader, messages: Messages)
-@main("Partidas del torneo",user,menues){
+@(user: Option[models.User],menues: Seq[MenuGroup],matches: Seq[MatchDiscord],socialProviders: SocialProviderRegistry)(implicit request: RequestHeader, messages: Messages)
+@main("Partidas del torneo",user,menues,socialProviders){
 
     <div id="makePairsID"></div>
     <table>

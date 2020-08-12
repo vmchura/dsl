@@ -27,24 +27,24 @@ class TournamentController @Inject()(scc: SilhouetteControllerComponents,
                            )extends   AbstractAuthController(scc) with I18nSupport {
 
   def view(): Action[AnyContent] = silhouette.SecuredAction(WithAdmin()).async { implicit request: SecuredRequest[EnvType, AnyContent] =>
-    Future.successful(Ok(createTournamentView(CreateTournamentForm.form)))
+    Future.successful(Ok(createTournamentView(CreateTournamentForm.form,socialProviderRegistry)))
   }
   def post(): Action[AnyContent] = silhouette.SecuredAction(WithAdmin()).async { implicit request: SecuredRequest[EnvType, AnyContent] =>
     CreateTournamentForm.form.bindFromRequest.fold(
-      form => Future.successful(BadRequest(createTournamentView(form))),
+      form => Future.successful(BadRequest(createTournamentView(form,socialProviderRegistry))),
       data => {
         tournamentBuilder.buildTournament(data.discordGuildID,data.challongeID).map{
           case Left(error: CannontAccessChallongeTournament) =>
             logger.error(error.toString)
             BadRequest(createTournamentView(CreateTournamentForm.form.
-              fill(CreateTournamentForm.Data(data.discordGuildID,""))))
+              fill(CreateTournamentForm.Data(data.discordGuildID,"")),socialProviderRegistry))
           case Left(error: CannotAccesDiscordGuild) =>
             logger.error(error.toString)
             BadRequest(createTournamentView(CreateTournamentForm.form.
-              fill(CreateTournamentForm.Data("",data.challongeID))))
+              fill(CreateTournamentForm.Data("",data.challongeID)),socialProviderRegistry))
           case Left(error) =>
             logger.error(error.toString)
-            BadRequest(createTournamentView(CreateTournamentForm.form))
+            BadRequest(createTournamentView(CreateTournamentForm.form,socialProviderRegistry))
           case Right(tournament) => Redirect(routes.TournamentController.showparticipantscorrelation(tournament.challongeID))
 
         }
@@ -58,7 +58,7 @@ class TournamentController @Inject()(scc: SilhouetteControllerComponents,
       case Left(error) =>Ok(s"error: ${error.toString}")
       case Right((tournament,participants, discordusers)) => Ok(matchpairs(tournament,
         participants.map(p => BasicComparableByLabel(p.chaname,write(p.participantPK))),
-        discordusers.map(p => BasicComparableByLabel(p.userName, write(p.discordID)))))
+        discordusers.map(p => BasicComparableByLabel(p.userName, write(p.discordID))),socialProviderRegistry))
     }
 
   }
@@ -72,7 +72,7 @@ class TournamentController @Inject()(scc: SilhouetteControllerComponents,
         case Left(error) =>Ok(s"error: ${error.toString}")
         case Right(matches) =>
 
-          Ok(showmatches(Some(request.identity),sideBar,matches))
+          Ok(showmatches(Some(request.identity),sideBar,matches,socialProviderRegistry))
       }
     }
   }
@@ -86,7 +86,7 @@ class TournamentController @Inject()(scc: SilhouetteControllerComponents,
         case Left(error) =>Ok(s"error: ${error.toString}")
         case Right(matches) =>
 
-          Ok(showmatchessimple(request.identity,sideBar,matches))
+          Ok(showmatchessimple(request.identity,sideBar,matches,socialProviderRegistry))
       }
     }
   }

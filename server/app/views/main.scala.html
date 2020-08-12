@@ -5,12 +5,11 @@
 @import views.html.menutorneo
 @import views.html.helper._
 
-@(title: String,user: Option[models.User] = None, menues: Seq[MenuGroup])(content: Html)(implicit request: RequestHeader, messages: Messages, assets: AssetsFinder)
+@import com.mohiva.play.silhouette.impl.providers.SocialProviderRegistry
+@(title: String,user: Option[models.User] = None, menues: Seq[MenuGroup],socialProviders: SocialProviderRegistry)(content: Html)(implicit request: RequestHeader, messages: Messages, assets: AssetsFinder)
 
-
-<!DOCTYPE html>
-
-<html>
+<!doctype html>
+<html lang="en">
     <head>
 
 
@@ -22,20 +21,22 @@
 
         @*ICONS*@
         <link @{CSPNonce.attr} href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+        <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
+
             <!-- HTML5 shim and Respond.js IE8 support of HTML5 elements and media queries -->
             <!--[if lt IE 9]>
             <script @{CSPNonce.attr} src="https://oss.maxcdn.com/libs/html5shiv/3.7.0/html5shiv.js"></script>
             <script @{CSPNonce.attr} src="https://oss.maxcdn.com/libs/respond.js/1.4.2/respond.min.js"></script>
             <![endif]-->
 
-        <link @{CSPNonce.attr} rel="stylesheet" media="screen" href="@controllers.routes.Assets.versioned("styles/ghpages-materialize.css")">
+        <link @{CSPNonce.attr} rel="stylesheet" media="screen" href="@controllers.routes.Assets.versioned("styles/bootstrap.css")">
         <link @{CSPNonce.attr} rel="stylesheet" media="screen" href="@controllers.routes.Assets.versioned("styles/main.css")">
             <!-- Compiled and minified CSS -->
             <!--
       <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/materialize/1.0.0/css/materialize.min.css">
         -->
             <!-- Compiled and minified JavaScript -->
-        <script @{CSPNonce.attr} src="https://cdnjs.cloudflare.com/ajax/libs/materialize/1.0.0/js/materialize.min.js"></script>
+
 
         @*Java Script router*@
         @*
@@ -43,48 +44,22 @@
         <script src="@assets.path("javascripts/JSUtil.js")"></script>
             *@
         @*Client javascript made by Scala.js*@
-        @scalajs.html.scripts("client", controllers.routes.Assets.versioned(_).toString, name => getClass.getResource(s"/public/$name") != null,CSPNonce.attr))
+        @scalajs.html.scripts("client", controllers.routes.Assets.versioned(_).toString, name => getClass.getResource(s"/public/$name") != null,CSPNonce.attr)
 
+        <style @{CSPNonce.attr}>
+                @@font-face {
+                    font-family: atomicAge;
+                    @*src: url(/versionedAssets/fonts/atomic-font/AtomicAge-Regular.ttf);*@
+                    src: url(@controllers.routes.Assets.versioned("fonts/atomic-font/AtomicAge-Regular.ttf"))
+                }
+        </style>
 
     </head>
     <body>
 
         <header>
 
-            <div class="container"><a href="#" data-target="nav-mobile" class="top-nav sidenav-trigger waves-effect waves-light circle hide-on-large-only"><i class="material-icons">menu</i></a></div>
-            <ul id="nav-mobile" class="sidenav sidenav-fixed">
-
-                <li><div class="user-view">
-                    @*<div class="background"><img src="images/office.jpg"></div>*@
-                    <img class="circle" src="@user.flatMap(_.avatarURL).getOrElse(assets.path("images/silhouette.png"))" alt="Avatar">
-
-                    <span class="name text-black">@user.flatMap(_.fullName).getOrElse("Invitado")</span>
-
-                </div></li>
-                <div class="divider"></div>
-                <li class="no-padding">
-                    <ul class="collapsible collapsible-accordion">
-                        @menutorneo(menues)
-                    </ul>
-
-                    <div class="divider"></div>
-                @user.map{ u  =>
-                        @*
-                <li class="bold"><a href="@celacontrollers.routes.ApplicationController.guestHome" class="waves-effect waves-teal"><i class="material-icons">featured_play_list</i>Ventajas</a></li>
-                <li class="bold"><a href="@celacontrollers.routes.ApplicationController.signOut" class="waves-effect waves-teal"><i class="material-icons">keyboard_backspace</i>Salir</a></li>
-                            *@
-                }.getOrElse{
-                    @*
-
-                    <li class="bold"><a href="@celacontrollers.routes.ApplicationController.guestHome" class="waves-effect waves-teal"><i class="material-icons">featured_play_list</i>Ventajas</a></li>
-                    <li class="bold"><a href="@celacontrollers.authlayer.routes.SignInController.view" class="waves-effect waves-teal"><i class="material-icons">arrow_forward</i>Ingresa</a></li>
-                    <li class="bold"><a href="@celacontrollers.authlayer.routes.SignUpController.view" class="waves-effect waves-teal"><i class="material-icons">arrow_black</i>Regístrate</a></li>
-                    *@
-                }
-                </li>
-            </ul>
-
-
+            @navbar(user,menues,socialProviders)
 
         </header>
 
@@ -102,18 +77,14 @@
             @content
 
             <form method="post" id="myForm" action="#">   @helper.CSRF.formField  </form>
-            <script @{CSPNonce.attr} >
-                    M.AutoInit();
-                    var elems = document.querySelectorAll('.modal');
-                    var instances = M.Modal.init(elems, {});
-            </script>
-            <script @{CSPNonce.attr} >
 
+            <script @{CSPNonce.attr} >
                     Main.init();
             </script>
 
         </main>
 
-
+        <script @{CSPNonce.attr} src="https://cdn.jsdelivr.net/npm/popper.js@@1.16.0/dist/umd/popper.min.js" integrity="sha384-Q6E9RHvbIyZFJoft+2mJbHaEWldlvI9IOYy5n3zV9zzTtmI3UksdQRVvoxMfooAo" crossorigin="anonymous"></script>
+        <script @{CSPNonce.attr} src="https://stackpath.bootstrapcdn.com/bootstrap/5.0.0-alpha1/js/bootstrap.min.js" integrity="sha384-oesi62hOLfzrys4LxRF63OJCXdXDipiYWBnvTl9Y9/TRlw5xlKIEHpNyvvDShgf/" crossorigin="anonymous"></script>
     </body>
 </html>

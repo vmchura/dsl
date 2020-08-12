@@ -2,9 +2,23 @@
 @import play.api.mvc.RequestHeader
 @import controllers.AssetsFinder
 
+@import com.mohiva.play.silhouette.impl.providers.SocialProviderRegistry
 @this()(implicit assets: AssetsFinder)
-@()(implicit request: RequestHeader, messages: Messages)
+@(user: Option[models.User] = None, menues: Seq[MenuGroup],socialProviders: SocialProviderRegistry)(implicit request: RequestHeader, messages: Messages)
 
-@main("Pagina inicial",None,Nil){
-    <h1>Hola, esta es la página inicial</h1>
+@main("Pagina inicial",user,menues,socialProviders){
+    <div id="home-page-id">
+        <img src="@controllers.routes.Assets.versioned("images/favicon.png")" id="deathfatelogo" alt="DeathFateLogo"/>
+
+        <div id="socialmediaid">
+            <a href="https://www.facebook.com/JuanDeathfate" class="fa fa-facebook " id="facebooklink"></a>
+            <a href="https://www.youtube.com/channel/UCZ7wN9kEDmRFhQ7MAotRIAQ" class="fa fa-youtube " id="youtubelink"></a>
+            <a href="https://www.twitch.tv/deathfate89" class="fa fa-twitch " id="twitchlink"></a>
+        </div>
+
+        <p id="nombreUsuarioTextID">
+            @user.flatMap(_.fullName).getOrElse("StarCraft")
+        </p>
+    </div>
+
 }

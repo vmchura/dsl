@@ -1,0 +1,47 @@
+@import play.api.i18n.Messages
+@import play.api.mvc.RequestHeader
+@import controllers.AssetsFinder
+@import com.mohiva.play.silhouette.impl.providers.SocialProviderRegistry
+@(user: Option[models.User] = None,menues: Seq[MenuGroup],socialProviders: SocialProviderRegistry)(implicit request: RequestHeader, messages: Messages, assets: AssetsFinder)
+<nav class="navbar navbar-expand-lg navbar-dark bg-primary">
+    <div class="container-fluid">
+        <a class="navbar-brand" href="#">Navbar</a>
+        <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarSupportedContent" aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
+            <span class="navbar-toggler-icon"></span>
+        </button>
+        <div class="collapse navbar-collapse" id="navbarSupportedContent">
+
+
+            <ul class="navbar-nav  mr-auto mb-2 mb-lg-0">
+
+                @for(menu <- menues){
+                    <li class="nav-item dropdown">
+                        <a class="nav-link dropdown-toggle" href="#" id="@menu.tag.filter(_.isLetterOrDigit).mkString("")" role="button" data-toggle="dropdown" aria-expanded="false">
+                        @menu.tag
+                        </a>
+                        <ul class="dropdown-menu" aria-labelledby="@menu.tag.filter(_.isLetterOrDigit).mkString("")">
+                            @for(action <- menu.submenus){
+                                <li><a class="dropdown-item" href="@action.url">@action.tag</a></li>
+                            }
+                        </ul>
+                    </li>
+                }
+
+
+
+            </ul>
+            <ul class="navbar-nav">
+                @user.fold{
+                    @if(socialProviders.providers.nonEmpty) {
+                            @for(p <- socialProviders.providers) {
+                               <li><a class="nav-link active" href="@controllers.routes.SocialAuthController.authenticate(p.id)" class="provider @p.id" title="@messages(p.id)">Inicia sesión con @p.id.capitalize </a></li>
+                            }
+                    }
+                }{ u =>
+                    <li><a class="nav-link active" href="#!">Bienvenido <img src="@u.avatarURL.getOrElse(assets.path("images/silhouette.png"))" height="40px" /> </a> </li>
+                }
+            </ul>
+
+        </div>
+    </div>
+</nav>

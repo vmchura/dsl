@@ -28,7 +28,7 @@ class SmurfController @Inject()(scc: SilhouetteControllerComponents,
       usersNotDefined <- userSmurfDAO.findUsersNotCompletelyDefined()
 
     } yield {
-      Ok(smurfsToCheck(Some(request.identity),menues, usersNotDefined))
+      Ok(smurfsToCheck(Some(request.identity),menues, usersNotDefined,socialProviderRegistry))
     }
   }
   def accept(discordUserID: String,matchID: UUID): Action[AnyContent] = silhouette.SecuredAction(WithAdmin()).async { implicit request =>

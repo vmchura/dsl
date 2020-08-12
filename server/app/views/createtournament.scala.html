@@ -2,10 +2,11 @@
 @import play.api.mvc.RequestHeader
 @import controllers.AssetsFinder
 @import forms.CreateTournamentForm.Data
+@import com.mohiva.play.silhouette.impl.providers.SocialProviderRegistry
 @this()(implicit assets: AssetsFinder)
-@(createTournamentForm: Form[Data])(implicit request: RequestHeader, messages: Messages)
+@(createTournamentForm: Form[Data],socialProviders: SocialProviderRegistry)(implicit request: RequestHeader, messages: Messages)
 
-@main("Crea un torneo: Discord + Challonge",None,Nil){
+@main("Crea un torneo: Discord + Challonge",None,Nil,socialProviders){
     <div class="card container-cela-form">
         <div class="card-content">
             <div class="card-title">@messages("tournament.create.title")</div>

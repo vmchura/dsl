@@ -6,9 +6,10 @@
 @import shared.utils.BasicComparableByLabel
 
 @import views.html.helper._
+@import com.mohiva.play.silhouette.impl.providers.SocialProviderRegistry
 @this()(implicit assets: AssetsFinder)
-@(tournament: Tournament, first: Seq[BasicComparableByLabel], second: Seq[BasicComparableByLabel])(implicit request: RequestHeader, messages: Messages)
-@main(tournament.tournamentName,None,Nil){
+@(tournament: Tournament, first: Seq[BasicComparableByLabel], second: Seq[BasicComparableByLabel],socialProviders: SocialProviderRegistry)(implicit request: RequestHeader, messages: Messages)
+@main(tournament.tournamentName,None,Nil,socialProviders){
 
     <div id="makePairsID"></div>
     <script
