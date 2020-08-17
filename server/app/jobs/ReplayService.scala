@@ -21,8 +21,7 @@ class ReplayService  @Inject()(tournamentService: TournamentService,
 
   }
 
-  def pushReplay(tournamentID: Long, matchID: Long, replay: File, user: User, fileName: String): Future[Either[JobError,Boolean]] = {
-    val newIDForThisReplay = UUID.randomUUID()
+  def pushReplay(tournamentID: Long, matchID: Long, replay: File, user: User, fileName: String)(newIDForThisReplay: UUID): Future[Either[JobError,Boolean]] = {
     val executionFuture = for{
       tournamentOpt <- tournamentService.loadTournament(tournamentID)
       tournament <- tournamentOpt.withFailure(TournamentNotFoundToReplay(tournamentID))
@@ -55,10 +54,9 @@ class ReplayService  @Inject()(tournamentService: TournamentService,
   def disableReplay(replayID: UUID): Future[Either[JobError,Boolean]] = {
     val executionFuture = for{
       replayOpt <- replayMatchDAO.find(replayID)
-      replay <- replayOpt.withFailure(TournamentNotFoundToReplay(0L))
-      deleteSpicific <- dropBoxFilesService.delete(replay.matchName)
+      deleteSpicific <- replayOpt.fold(Future.successful(true))(replay => dropBoxFilesService.delete(replay.matchName))
       _ <- deleteSpicific.withFailure(TournamentNotFoundToReplay(0L))
-      insertionOnDB <- replayMatchDAO.markAsDisabled(replay.replayID)
+      insertionOnDB <- replayOpt.fold(Future.successful(true))(replay => replayMatchDAO.markAsDisabled(replay.replayID))
     }yield{
       insertionOnDB
     }

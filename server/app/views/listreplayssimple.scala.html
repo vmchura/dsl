@@ -39,10 +39,16 @@
                                 </i>
                             </td>
                             @if(isAdmin) {
-                                <td>
-                                    <a class="waves-effect waves-light btn-small" href=@controllers.routes.ReplayMatchController.deleteReplay(m.replayID)>
-                                        <i class="material-icons left">cancel</i></a>
-                                </td>
+                                @if(m.enabled) {
+                                    <td>
+                                        <a class="waves-effect waves-light btn-small" href=@controllers.routes.ReplayMatchController.deleteReplay(m.replayID)>
+                                            <i class="material-icons left">cancel</i></a>
+                                    </td>
+                                }else{
+                                    <td>
+                                        <span><i class="material-icons left">cancel</i></span>
+                                    </td>
+                                }
                             }
 
                             <td>

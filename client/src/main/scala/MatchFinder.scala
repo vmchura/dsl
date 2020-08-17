@@ -79,12 +79,12 @@ object MatchFinder {
   }
 
   @html
-  private val component = <div class="container">
+  private val component = <div class="container-fluid">
     <div class="row justify-content-md-center">
-      <div class="col col-lg-3">
+      <div class="col col-12 col-lg-4 ">
         {finderByRoundMatch}
       </div>
-      <div class="col col-lg-3">
+      <div class="col col-12 col-lg-4 ">
         {finderByUser}
       </div>
     </div>

@@ -51,7 +51,7 @@ class ReplayMatchController @Inject()(scc: SilhouetteControllerComponents,
       nicks <- request.body.dataParts.get("nicks").flatMap(_.headOption.flatMap(_.toIntOption))
     }yield{
       val file = replay_file.ref.toFile
-      val newMatchResultID = UUID.randomUUID()
+      val newReplayMatchID = UUID.randomUUID()
       val execution = for {
         action            <- parseFile.parseFileAndBuildAction(file, discordUser1,discordUser2)
 
@@ -85,12 +85,12 @@ class ReplayMatchController @Inject()(scc: SilhouetteControllerComponents,
           }
           case _ => Right(None)
         })
-        replayPushedTry <- replayService.pushReplay(tournamentID,matchID,file, request.identity, secureName(replay_file.filename))
+        replayPushedTry <- replayService.pushReplay(tournamentID,matchID,file, request.identity, secureName(replay_file.filename))(newReplayMatchID)
         _               <- replayPushedTry.withFailure
-        resultSaved     <- matchResultDAO.save(MatchResult(newMatchResultID,tournamentID, matchID, discordUser1, discordUser2,player1,player2, winner))
+        resultSaved     <- matchResultDAO.save(MatchResult(newReplayMatchID,tournamentID, matchID, discordUser1, discordUser2,player1,player2, winner))
         _ <- resultSaved.withFailure(CannotSaveResultMatch)
-        insertionSmurf1 <- insertOnProperlySmurfList(smurfForDiscord1,discordUser1)(newMatchResultID,MatchPK(tournamentID,matchID))
-        insertionSmurf2 <- insertOnProperlySmurfList(smurfForDiscord2,discordUser2)(newMatchResultID,MatchPK(tournamentID,matchID))
+        insertionSmurf1 <- insertOnProperlySmurfList(smurfForDiscord1,discordUser1)(newReplayMatchID,MatchPK(tournamentID,matchID))
+        insertionSmurf2 <- insertOnProperlySmurfList(smurfForDiscord2,discordUser2)(newReplayMatchID,MatchPK(tournamentID,matchID))
         _ <- insertionSmurf1.withFailure(CannotSmurf)
         _ <- insertionSmurf2.withFailure(CannotSmurf)
       }yield{
@@ -130,8 +130,8 @@ class ReplayMatchController @Inject()(scc: SilhouetteControllerComponents,
 
   }
 
-  def deleteReplay(replayID: UUID) = silhouette.SecuredAction(WithAdmin()).async{ implicit request =>
-    def  resultSuccess(tournamentID: Long) = Redirect(routes.TournamentController.showMatchesToUploadReplay(tournamentID))
+  def deleteReplay(replayID: UUID): Action[AnyContent] = silhouette.SecuredAction(WithAdmin()).async{ implicit request =>
+    def  resultSuccess(tournamentID: Long) = Redirect(routes.TournamentController.showMatches(tournamentID))
     val resultError = Redirect(routes.Application.index())
     for{
       replayOpt <- replayMatchDAO.find(replayID)

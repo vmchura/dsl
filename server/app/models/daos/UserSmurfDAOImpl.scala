@@ -63,10 +63,7 @@ class UserSmurfDAOImpl @Inject() (val reactiveMongoApi: ReactiveMongoApi) extend
 
   override def acceptNotCheckedSmurf(discordUserID: String, smurfToRemove: MatchSmurf): Future[Boolean] = {
     for {
-     removed <-  collection.
-      flatMap(_.update(ordered = true).
-      one(Json.obj("discordUser.discordID" -> discordUserID), Json.obj("$pull" -> Json.obj("notCheckedSmurf" -> smurfToRemove)), upsert = true)).
-      map(_.ok)
+     removed <-  declineNotCheckedSmurf(discordUserID: String, smurfToRemove: MatchSmurf)
       added <- if(removed) addSmurf(discordUserID,smurfToRemove) else Future.successful(false)
     }yield{
       added
@@ -86,5 +83,12 @@ class UserSmurfDAOImpl @Inject() (val reactiveMongoApi: ReactiveMongoApi) extend
     val query = Json.obj("discordUser.discordID" -> Json.obj("$in" -> discordUsersID))
     findSequenceUserSmurf(query)
 
+  }
+
+  override def declineNotCheckedSmurf(discordUserID: String, smurfToRemove: MatchSmurf): Future[Boolean] = {
+    collection.
+      flatMap(_.update(ordered = true).
+        one(Json.obj("discordUser.discordID" -> discordUserID), Json.obj("$pull" -> Json.obj("notCheckedSmurf" -> smurfToRemove)), upsert = true)).
+      map(_.ok)
   }
 }

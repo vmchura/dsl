@@ -4,11 +4,12 @@ import java.util.UUID
 
 import scala.concurrent.ExecutionContext.Implicits.global
 import javax.inject.Inject
+import jobs.ReplayService
 import models.daos.UserSmurfDAO
 
 import scala.concurrent.Future
 
-class SmurfServiceImpl @Inject() (smurfDAO: UserSmurfDAO) extends SmurfService {
+class SmurfServiceImpl @Inject() (smurfDAO: UserSmurfDAO, replayService: ReplayService) extends SmurfService {
   import jobs._
   sealed trait SmurfError extends JobError
   case class MatchIDNotFound(matchID: UUID) extends SmurfError
@@ -26,5 +27,20 @@ class SmurfServiceImpl @Inject() (smurfDAO: UserSmurfDAO) extends SmurfService {
 
   }
 
-  override def declineSmurf(discordUserID: String, matchID: UUID): Future[Boolean] = Future.successful(false)
+  override def declineSmurf(discordUserID: String, matchID: UUID): Future[Boolean] = {
+    for{
+      userFound <- smurfDAO.findUser(discordUserID)
+      user <- userFound.withFailure(MatchIDNotFound(matchID))
+      matchSmurf <- user.notCheckedSmurf.find(_.resultID == matchID).withFailure(MatchIDNotFoundOnList(matchID))
+      deleteReplays <- Future.sequence(user.notCheckedSmurf.filter(_.smurf.equals(matchSmurf.smurf)).map(ms => replayService.disableReplay(ms.resultID)))
+      deleteSmurfs <- Future.sequence(user.notCheckedSmurf.filter(_.smurf.equals(matchSmurf.smurf)).map(ms => smurfDAO.declineNotCheckedSmurf(user.discordUser.discordID,ms)))
+    }yield{
+
+      deleteReplays.forall{
+        case Right(x) => x
+        case _ => false
+      } && deleteSmurfs.forall(q => q)
+    }
+
+  }
 }

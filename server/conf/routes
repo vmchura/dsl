@@ -29,6 +29,7 @@ GET        /versionedAssets/*file               controllers.Assets.versioned(pat
 # SMURFS
 GET         /smurfs/view                        controllers.SmurfController.view
 GET         /smurfs/accept/:discordUserID/:matchID                        controllers.SmurfController.accept(discordUserID: String, matchID: java.util.UUID)
+GET         /smurfs/decline/:discordUserID/:matchID                       controllers.SmurfController.decline(discordUserID: String, matchID: java.util.UUID)
 
 
 GET     /javascriptRoutes                       controllers.JavaScriptRouter.javascriptRoutes

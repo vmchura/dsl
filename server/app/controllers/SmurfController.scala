@@ -45,5 +45,19 @@ class SmurfController @Inject()(scc: SilhouetteControllerComponents,
         result.flashing("error" -> "ERROR EN GUARDAR LA RELACION")
     }
   }
+  def decline(discordUserID: String,matchID: UUID): Action[AnyContent] = silhouette.SecuredAction(WithAdmin()).async { implicit request =>
+    for {
+      accepted <- smurfService.declineSmurf(discordUserID, matchID)
+
+    } yield {
+
+      val result = Redirect(routes.SmurfController.view())
+
+      if(accepted)
+        result.flashing("success" -> "Relación denegada, todos los replays asociados a ese usuario-smurf se eliminaron")
+      else
+        result.flashing("error" -> "ERROR en eliminar la relacion y smurfs")
+    }
+  }
 
 }
