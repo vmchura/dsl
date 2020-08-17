@@ -42,4 +42,10 @@ class ReplayMatchDAOImpl  @Inject() (val reactiveMongoApi: ReactiveMongoApi) ext
     getMatchesByQuery(query)
 
   }
+
+  override def find(replayID: UUID): Future[Option[ReplayRecord]] = {
+    val query = Json.obj("replayID" -> replayID)
+    collection.flatMap(_.find(query,Option.empty[ReplayRecord]).one[ReplayRecord])
+
+  }
 }

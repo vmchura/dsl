@@ -10,4 +10,5 @@ trait ReplayMatchDAO {
   def markAsDisabled(replayID: UUID): Future[Boolean]
   def loadAllByTournament(tournamentID: Long): Future[Seq[ReplayRecord]]
   def loadAllByMatch(tournamentID: Long, matchID: Long): Future[Seq[ReplayRecord]]
+  def find(replayID: UUID): Future[Option[ReplayRecord]]
 }

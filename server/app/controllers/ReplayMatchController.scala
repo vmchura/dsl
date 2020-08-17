@@ -4,7 +4,7 @@ import java.util.UUID
 import javax.inject._
 import jobs.{CannotSaveResultMatch, CannotSmurf, ParseFile, ReplayService}
 import models.{MatchPK, MatchResult, MatchSmurf}
-import models.daos.{MatchResultDAO, UserSmurfDAO}
+import models.daos.{MatchResultDAO, ReplayMatchDAO, UserSmurfDAO}
 import play.api.mvc._
 import play.api.i18n.I18nSupport
 import play.api.libs.Files
@@ -20,7 +20,8 @@ class ReplayMatchController @Inject()(scc: SilhouetteControllerComponents,
                                       replayService: ReplayService,
                                       matchResultDAO: MatchResultDAO,
                                       parseFile: ParseFile,
-                                      smurfDAO: UserSmurfDAO
+                                      smurfDAO: UserSmurfDAO,
+                                      replayMatchDAO: ReplayMatchDAO
 
                                      )(
                                        implicit
@@ -127,6 +128,26 @@ class ReplayMatchController @Inject()(scc: SilhouetteControllerComponents,
       case Right(file) => Ok.sendFile(file,inline = true, _ => Some(replayName))
     }
 
+  }
+
+  def deleteReplay(replayID: UUID) = silhouette.SecuredAction(WithAdmin()).async{ implicit request =>
+    def  resultSuccess(tournamentID: Long) = Redirect(routes.TournamentController.showMatchesToUploadReplay(tournamentID))
+    val resultError = Redirect(routes.Application.index())
+    for{
+      replayOpt <- replayMatchDAO.find(replayID)
+      result <- replayOpt match {
+        case Some(replay) =>
+          replayService.disableReplay(replayID).map{
+            case Left(error) => resultSuccess(replay.tournamentID).flashing("error" -> error.toString)
+            case Right(true) => resultSuccess(replay.tournamentID).flashing("success" -> "replay eliminado!")
+            case Right(false) => resultSuccess(replay.tournamentID).flashing("error" -> "error eliminando la replay!")
+          }
+        case None =>
+          Future.successful(resultError.flashing("error" -> "Replay corrupta en base de datos"))
+      }
+    }yield{
+      result
+    }
   }
 
 

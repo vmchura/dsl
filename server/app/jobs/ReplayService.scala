@@ -52,6 +52,19 @@ class ReplayService  @Inject()(tournamentService: TournamentService,
     formFuture(f)
   }
 
+  def disableReplay(replayID: UUID): Future[Either[JobError,Boolean]] = {
+    val executionFuture = for{
+      replayOpt <- replayMatchDAO.find(replayID)
+      replay <- replayOpt.withFailure(TournamentNotFoundToReplay(0L))
+      deleteSpicific <- dropBoxFilesService.delete(replay.matchName)
+      _ <- deleteSpicific.withFailure(TournamentNotFoundToReplay(0L))
+      insertionOnDB <- replayMatchDAO.markAsDisabled(replay.replayID)
+    }yield{
+      insertionOnDB
+    }
+    formFuture(executionFuture)
+  }
+
 
 
 }

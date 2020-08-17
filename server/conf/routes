@@ -22,6 +22,7 @@ GET         /tournament/showmatchessimple/:challongeTournamentID              co
 POST        /replay/add/:tournamentID/:matchID/:discordUser1/:discordUser2  controllers.ReplayMatchController.addReplayToMatch(tournamentID: Long, matchID: Long,discordUser1: String, discordUser2: String)
 POST        /replay/parse/:discordUser1/:discordUser2                       controllers.ReplayMatchController.parseReplay(discordUser1: String, discordUser2: String)
 GET         /replay/download/:replayID/:replayName  controllers.ReplayMatchController.downloadReplay(replayID: java.util.UUID,replayName: String)
+GET         /replay/delete/:replayID/  controllers.ReplayMatchController.deleteReplay(replayID: java.util.UUID)
 # Prefix must match `play.assets.urlPrefix`
 GET        /assets/*file                        controllers.Assets.at(file)
 GET        /versionedAssets/*file               controllers.Assets.versioned(path="/public", file: Asset)

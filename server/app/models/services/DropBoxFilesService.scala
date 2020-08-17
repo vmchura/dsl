@@ -17,9 +17,10 @@ class DropBoxFilesService @Inject()(configuration: Configuration) {
 
   private val dropBoxAccessToken: String = configuration.get[String]("dropbox.accessToken")
 
+  private def buildDropBoxConfig() = DbxRequestConfig.newBuilder("dropbox/dsl-replays").build
   def push(file: File, replayName: MatchNameReplay): Future[Boolean] = {
 
-    val config = DbxRequestConfig.newBuilder("dropbox/dsl-replays").build
+    val config = buildDropBoxConfig()
     val client = new DbxClientV2(config, dropBoxAccessToken)
     for{
       f <- Future{
@@ -46,7 +47,7 @@ class DropBoxFilesService @Inject()(configuration: Configuration) {
     }
   }
   def download(replayID: UUID,fileName: String): Future[File] = {
-    val config = DbxRequestConfig.newBuilder("dropbox/dsl-replays").build
+    val config = buildDropBoxConfig()
     val client = new DbxClientV2(config, dropBoxAccessToken)
 
     try{
@@ -64,5 +65,22 @@ class DropBoxFilesService @Inject()(configuration: Configuration) {
       case e :Throwable => Future.failed(e)
     }
   }
+  private def deleteByPath(path: String): Future[Boolean] = {
 
+    val config = buildDropBoxConfig()
+    val client = new DbxClientV2(config, dropBoxAccessToken)
+    try{
+      Future {
+
+
+        val res = client.files().deleteV2(path)
+
+        res.getMetadata.getName.nonEmpty
+      }
+    }catch {
+      case e :Throwable => Future.failed(e)
+    }
+  }
+  def delete(pathFileOnCloud: String): Future[Boolean] = deleteByPath(s"$pathFileOnCloud")
+  def delete(replayID: UUID): Future[Boolean] = deleteByPath(s"/all/R_$replayID.rep")
 }
