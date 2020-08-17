@@ -6,6 +6,7 @@ import javax.inject.Inject
 import models.daos.UserSmurfDAO
 import models.services.{SideBarMenuService, SmurfService, TournamentService}
 import play.api.i18n.I18nSupport
+import play.api.libs.json.Json
 import play.api.mvc.{Action, AnyContent}
 
 import scala.concurrent.ExecutionContext
@@ -58,6 +59,13 @@ class SmurfController @Inject()(scc: SilhouetteControllerComponents,
       else
         result.flashing("error" -> "ERROR en eliminar la relacion y smurfs")
     }
+  }
+  def showListSmurfsDefined(): Action[AnyContent] = Action.async{ implicit request =>
+    smurfService.showAcceptedSmurfs().map{ usuarios =>
+      val json = Json.obj("users" -> Json.arr(usuarios.map(u => Json.obj("discordname" -> u.discordUser.userName, "smurfs" -> Json.arr(u.matchSmurf.map(_.smurf).distinct)))))
+      Ok(json)
+    }
+
   }
 
 }

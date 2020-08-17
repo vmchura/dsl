@@ -91,4 +91,10 @@ class UserSmurfDAOImpl @Inject() (val reactiveMongoApi: ReactiveMongoApi) extend
         one(Json.obj("discordUser.discordID" -> discordUserID), Json.obj("$pull" -> Json.obj("notCheckedSmurf" -> smurfToRemove)), upsert = true)).
       map(_.ok)
   }
+
+  override def findUsersWithSmurfs(): Future[Seq[UserSmurf]] = {
+    val query: JsObject = Json.obj("matchSmurf"-> Json.obj("$exists" -> true, "$ne" -> Json.arr()))
+    findSequenceUserSmurf(query)
+
+  }
 }

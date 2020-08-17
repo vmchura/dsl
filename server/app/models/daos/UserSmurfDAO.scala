@@ -18,4 +18,5 @@ trait UserSmurfDAO {
   def declineNotCheckedSmurf(discordUserID : String, smurfToRemove: MatchSmurf): Future[Boolean]
   def removeUser(discordUserID: String): Future[Boolean]
   def findUsersNotCompletelyDefined(): Future[Seq[UserSmurf]]
+  def findUsersWithSmurfs(): Future[Seq[UserSmurf]]
 }

@@ -5,6 +5,7 @@ import java.util.UUID
 import scala.concurrent.ExecutionContext.Implicits.global
 import javax.inject.Inject
 import jobs.ReplayService
+import models.UserSmurf
 import models.daos.UserSmurfDAO
 
 import scala.concurrent.Future
@@ -43,4 +44,6 @@ class SmurfServiceImpl @Inject() (smurfDAO: UserSmurfDAO, replayService: ReplayS
     }
 
   }
+
+  override def showAcceptedSmurfs(): Future[Seq[UserSmurf]] = smurfDAO.findUsersWithSmurfs()
 }
