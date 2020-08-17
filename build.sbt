@@ -10,6 +10,7 @@ lazy val server = (project in file("server"))
     resolvers += "Sonatype snapshots" at "https://oss.sonatype.org/content/repositories/snapshots/",
     resolvers += Resolver.sonatypeRepo("snapshots"),
     resolvers += Resolver.jcenterRepo,
+    fork := true,
     libraryDependencies ++= Seq(
       "com.vmunier" %% "scalajs-scripts" % "1.1.4",
       // https://mvnrepository.com/artifact/org.reactivemongo/play2-reactivemongo
@@ -34,9 +35,10 @@ lazy val server = (project in file("server"))
       "com.softwaremill.sttp.client" %% "play-json" % "2.2.0",
       // https://mvnrepository.com/artifact/com.dropbox.core/dropbox-core-sdk
       "com.dropbox.core" % "dropbox-core-sdk" % "3.1.4",
-
-
       "com.softwaremill.sttp.client" %% "core" % "2.2.3",
+      "com.github.seratch" %% "awscala" % "0.8.+",
+      // https://mvnrepository.com/artifact/net.dv8tion/JDA
+      "net.dv8tion" % "JDA" % "4.2.0_181",
 
         ehcache,
         guice,

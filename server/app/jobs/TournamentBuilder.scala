@@ -20,11 +20,11 @@ class TournamentBuilder @Inject() (tournamentService: TournamentService,
   }
 
 
-  def buildTournament(discordID: String, challongeID: String): Future[Either[JobError,Tournament]] = {
+  def buildTournament(discordID: String, challongeID: String, discordChanelReplayID: Option[String] = None): Future[Either[JobError,Tournament]] = {
 
 
     val tournamentCreation = for {
-      challongeTournamentOpt  <- challongeTournamentService.findChallongeTournament(discordID)(challongeID)
+      challongeTournamentOpt  <- challongeTournamentService.findChallongeTournament(discordID, discordChanelReplayID)(challongeID)
       challongeTournament     <- challongeTournamentOpt.withFailure(CannontAccessChallongeTournament(challongeID))
       discordUsersOpt         <- discordUserService.findMembersOnGuild(discordID)
       guildUsers              <- discordUsersOpt.withFailure(CannotAccesDiscordGuild(discordID))

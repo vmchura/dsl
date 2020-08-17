@@ -5,7 +5,7 @@ import java.util.UUID
 import javax.inject.Inject
 import models.{ReplayRecord, User}
 import models.daos.ReplayMatchDAO
-import models.services.{ChallongeTournamentService, DropBoxFilesService, TournamentService}
+import models.services.{ChallongeTournamentService, DiscordFileService, DropBoxFilesService, S3FilesService, TournamentService}
 
 import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.Future
@@ -13,7 +13,9 @@ import scala.concurrent.Future
 class ReplayService  @Inject()(tournamentService: TournamentService,
                                challongeTournamentService: ChallongeTournamentService,
                                dropBoxFilesService: DropBoxFilesService,
-                               replayMatchDAO: ReplayMatchDAO) {
+                               replayMatchDAO: ReplayMatchDAO,
+                               s3FilesService: S3FilesService,
+                               discordFileService: DiscordFileService) {
   def formFuture[A](f: Future[A]): Future[Either[JobError,A]] = {
     convertToEither(s => UnknowReplayPusherError(s))(f)
 
@@ -29,6 +31,10 @@ class ReplayService  @Inject()(tournamentService: TournamentService,
       matchChallonge <- challongeTournament.matches.find(_.matchPK.challongeMatchID == matchID).withFailure(MatchNotFoundOnChallonge(matchID))
       insertionOnDropBox <- dropBoxFilesService.push(replay,matchChallonge.asMatchName(newIDForThisReplay))
       _ <- insertionOnDropBox.withFailure(CannotInsertOnDropBox)
+      s3Insertion <- s3FilesService.push(replay,matchChallonge.asMatchName(newIDForThisReplay))
+      _ <- s3Insertion.withFailure(CannotInsertS3)
+      discordInsertion <- tournament.channelDiscordReplay.fold(Future.successful(true))(ch => discordFileService.pushFileOnChannel(ch,replay,"",matchChallonge.asMatchName(newIDForThisReplay).pathFileOnCloud))
+      _ <- discordInsertion.withFailure(CannotInsertDiscord)
       insertionOnDB <- replayMatchDAO.add(ReplayRecord(newIDForThisReplay,
         matchChallonge.asMatchName(newIDForThisReplay).pathFileOnCloud,
         fileName,tournamentID,matchID,enabled = true,user.loginInfo.providerKey))

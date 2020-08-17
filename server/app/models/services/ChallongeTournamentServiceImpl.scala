@@ -14,7 +14,7 @@ import scala.concurrent.ExecutionContext.Implicits.global
 class ChallongeTournamentServiceImpl @Inject()(configuration: Configuration) extends ChallongeTournamentService with Logger {
   implicit val sttpBackend: SttpBackend[Future, Nothing, WebSocketHandler] = AsyncHttpClientFutureBackend()
   override protected val challongeApiKey: String = configuration.get[String]("challonge.apikey")
-  override def findChallongeTournament(discordServerID: String)(tournamentUrlID: String): Future[Option[ChallongeTournament]] = {
+  override def findChallongeTournament(discordServerID: String,discordChanelReplayID: Option[String] = None)(tournamentUrlID: String): Future[Option[ChallongeTournament]] = {
 
     val responseFut = basicRequest.get(uri"https://api.challonge.com/v1/tournaments/$tournamentUrlID.json?api_key=$challongeApiKey&include_participants=1&include_matches=1").send()
     responseFut.map{ _.body match {
@@ -26,7 +26,7 @@ class ChallongeTournamentServiceImpl @Inject()(configuration: Configuration) ext
           val tournament = Json.parse(body)("tournament")
           val chaID = tournament("id").as[Long]
           val name = tournament("name").as[String]
-          val tournamentModel = Tournament(chaID,tournamentUrlID,discordServerID,name,active = false)
+          val tournamentModel = Tournament(chaID,tournamentUrlID,discordServerID,name,active = false,discordChanelReplayID)
           case class ParticipantWithGroup(participant: Participant, groupIDs: Seq[Long])
           val participants = tournament("participants").as[JsArray].value.map(p => {
             val participant = Participant(ParticipantPK(chaID,p("participant")("id").as[Long]),p("participant")("name").as[String],None,None)

@@ -7,8 +7,6 @@ import java.io.{File, FileInputStream}
 import java.util.UUID
 
 import models.MatchNameReplay
-import play.api.libs.Files
-import play.api.mvc.MultipartFormData
 
 import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.Future
@@ -23,22 +21,28 @@ class DropBoxFilesService @Inject()(configuration: Configuration) {
 
     val config = DbxRequestConfig.newBuilder("dropbox/dsl-replays").build
     val client = new DbxClientV2(config, dropBoxAccessToken)
-    Future{
-      try {
-        val in = new FileInputStream(file)
+    for{
+      f <- Future{
+        try {
 
-        client.files().uploadBuilder(s"${replayName.pathFileOnCloud}").uploadAndFinish(in)
+          val in = new FileInputStream(file)
 
-        in.close()
-        val in2 = new FileInputStream(file)
+          client.files().uploadBuilder(s"${replayName.pathFileOnCloud}").uploadAndFinish(in)
 
-        client.files().uploadBuilder(s"/all/${replayName.uniqueNameReplay}").uploadAndFinish(in2)
+          in.close()
+          val in2 = new FileInputStream(file)
 
-        in2.close()
-        true
-      }catch {
-        case _: Throwable => false
+          client.files().uploadBuilder(s"/all/${replayName.uniqueNameReplay}").uploadAndFinish(in2)
+
+          in2.close()
+          true
+        }catch {
+          case _: Throwable => false
+        }
       }
+
+    }yield{
+      f
     }
   }
   def download(replayID: UUID,fileName: String): Future[File] = {

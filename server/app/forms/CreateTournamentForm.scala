@@ -16,11 +16,13 @@ object CreateTournamentForm {
     mapping(
       "discordGuildID" -> nonEmptyText,
       "challongeID" -> nonEmptyText,
+      "discordChannelID" -> text
     )(Data.apply)(Data.unapply)
   )
 
   case class Data(
                    discordGuildID: String,
-                   challongeID: String)
+                   challongeID: String,
+                   discordChannelID: String)
 }
 

@@ -18,7 +18,6 @@ class TournamentController @Inject()(scc: SilhouetteControllerComponents,
                                      showmatches: views.html.matches,
                                      showmatchessimple: views.html.matchessimple,
                                      tournamentBuilder: TournamentBuilder,
-                                     tournamentService: TournamentService,
                                     sideBarMenuService: SideBarMenuService
                            ) (
                              implicit
@@ -33,15 +32,15 @@ class TournamentController @Inject()(scc: SilhouetteControllerComponents,
     CreateTournamentForm.form.bindFromRequest.fold(
       form => Future.successful(BadRequest(createTournamentView(form,socialProviderRegistry))),
       data => {
-        tournamentBuilder.buildTournament(data.discordGuildID,data.challongeID).map{
+        tournamentBuilder.buildTournament(data.discordGuildID,data.challongeID,if(data.discordChannelID.trim.isEmpty) None else Some(data.discordChannelID.trim)).map{
           case Left(error: CannontAccessChallongeTournament) =>
             logger.error(error.toString)
             BadRequest(createTournamentView(CreateTournamentForm.form.
-              fill(CreateTournamentForm.Data(data.discordGuildID,"")),socialProviderRegistry))
+              fill(CreateTournamentForm.Data(data.discordGuildID,"","")),socialProviderRegistry))
           case Left(error: CannotAccesDiscordGuild) =>
             logger.error(error.toString)
             BadRequest(createTournamentView(CreateTournamentForm.form.
-              fill(CreateTournamentForm.Data("",data.challongeID)),socialProviderRegistry))
+              fill(CreateTournamentForm.Data("",data.challongeID,"")),socialProviderRegistry))
           case Left(error) =>
             logger.error(error.toString)
             BadRequest(createTournamentView(CreateTournamentForm.form,socialProviderRegistry))
