@@ -68,6 +68,7 @@ class ReplayMatchController @Inject()(scc: SilhouetteControllerComponents,
             case Some(value) => Future.successful(value)
             case None => Future.failed(new IllegalArgumentException("no nicks provided when needed"))
           }
+          case _ => Future.failed(new IllegalArgumentException("no nicks can be calculated"))
         }
         player1 <- action match {
           case Right(ActionByReplay(_,Some(smurf1),Some(_),_,_)) => Future.successful(smurf1)
