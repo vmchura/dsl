@@ -21,7 +21,7 @@ trait BaseDiscordProvider extends OAuth2Provider {
     httpLayer.url(urls("api")).
       withHttpHeaders("Authorization" -> s"Bearer ${authInfo.accessToken}").
       get().flatMap { response =>
-      println(response)
+
 
       val json = response.json
 

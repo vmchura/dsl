@@ -368,7 +368,7 @@ class SilhouetteModule extends AbstractModule with ScalaModule {
                                socialStateHandler: SocialStateHandler,
                                configuration: Configuration): DiscordProvider = {
 
-    new DiscordProvider(httpLayer, socialStateHandler, configuration.underlying.as[OAuth2Settings]("silhouette.discord"))
+    new DiscordProvider(httpLayer, socialStateHandler, configuration.underlying.as[OAuth2Settings]("silhouette.discord").copy(authorizationParams = Map("prompt" -> "none")))
   }
 
   /**
