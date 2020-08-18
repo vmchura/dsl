@@ -45,16 +45,42 @@ class ReplayMatchController @Inject()(scc: SilhouetteControllerComponents,
     }
     val outerExecution = for{
       replay_file <- request.body.file("replay_file")
+      /*
       player1 <- request.body.dataParts.get("player1").flatMap(_.headOption)
       player2 <- request.body.dataParts.get("player2").flatMap(_.headOption)
       winner <- request.body.dataParts.get("winner").flatMap(_.headOption.flatMap(_.toIntOption))
       nicks <- request.body.dataParts.get("nicks").flatMap(_.headOption.flatMap(_.toIntOption))
+
+       */
     }yield{
       val file = replay_file.ref.toFile
       val newReplayMatchID = UUID.randomUUID()
       val execution = for {
         action            <- parseFile.parseFileAndBuildAction(file, discordUser1,discordUser2)
-
+        nicks <- action match {
+          case Right(ActionByReplay(_, _, _, Correlated1d1rDefined, _)) => Future.successful(1)
+          case Right(ActionByReplay(_, _, _, Correlated2d2rDefined, _)) => Future.successful(1)
+          case Right(ActionByReplay(_, _, _, Correlated1d2rDefined, _)) => Future.successful(2)
+          case Right(ActionByReplay(_, _, _, Correlated2d1rDefined, _)) => Future.successful(2)
+          case Right(ActionByReplay(_, _, _, CorrelatedParallelDefined, _)) => Future.successful(1)
+          case Right(ActionByReplay(_, _, _, CorrelatedCruzadoDefined, _)) => Future.successful(1)
+          case Right(ActionByReplay(_, _, _, SmurfsEmpty, _)) => request.body.dataParts.get("nicks").flatMap(_.headOption.flatMap(_.toIntOption)) match {
+            case Some(value) => Future.successful(value)
+            case None => Future.failed(new IllegalArgumentException("no nicks provided when needed"))
+          }
+        }
+        player1 <- action match {
+          case Right(ActionByReplay(_,Some(smurf1),Some(_),_,_)) => Future.successful(smurf1)
+          case _ => Future.failed(new IllegalArgumentException("no player1 provided when needed"))
+        }
+        player2 <- action match {
+          case Right(ActionByReplay(_,Some(_),Some(smurf2),_,_)) => Future.successful(smurf2)
+          case _ => Future.failed(new IllegalArgumentException("no player2 provided when needed"))
+        }
+        winner <- action match {
+          case Right(ActionByReplay(_,Some(_),Some(_),_,win)) => Future.successful(win)
+          case _ => Future.failed(new IllegalArgumentException("no winner provided when needed"))
+        }
         smurfForDiscord1 <- Future.successful(action match {
           case Right(ActionByReplay(_, smurf1, _, Correlated1d1rDefined, _)) => Left(smurf1)
           case Right(ActionByReplay(_, smurf1, _, Correlated2d2rDefined, _)) => Right(smurf1)
