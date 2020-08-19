@@ -13,12 +13,12 @@ www.deathfate.gg
 ## Tecnologías
 DSL web está implementado con las siguientes principales tecnologías.
 Backend - Lado del servidor
-```
+
 *   Scala (https://scala-lang.org/)
 *   Play Framework (https://www.playframework.com/)
 *   MongoDB (https://www.mongodb.com/)
 Frontend - Lado del usuario
-```
+
 *   Binding.scala (https://github.com/ThoughtWorksInc/Binding.scala)
 *   Bootstrap V5 (https://v5.getbootstrap.com/)
 
