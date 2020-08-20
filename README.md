@@ -1,17 +1,17 @@
-#DSL
+# DSL
 
 
-##Contenidos
+## Contenidos
 
 1. [Información general](#Información-general)
 2. [Tecnologías](#Tecnologías)
 3. [Instalación](#Instalación)
 4. [Licencia](#Licencia)
 
-##Información general
+## Información general
 Aplicación web para brindar una mejor experiencia a los participantes de los torneos DSL de StarCraft, actualmente alojado en
 www.deathfate.gg
-##Tecnologías
+## Tecnologías
 DSL web está implementado con las siguientes principales tecnologías.
 
 **Backend - Lado del servidor**
@@ -28,7 +28,7 @@ DSL web está implementado con las siguientes principales tecnologías.
 **Entorno de desarrollo**
 *   ItelliJ IDEA
 
-##Instalación
+## Instalación
 
 Se hace énfasis en el entorno de desarrollo porque facilitará la descripción de la siguiente guía.
 
@@ -61,7 +61,7 @@ Se hace énfasis en el entorno de desarrollo porque facilitará la descripción 
     
 8.  **IMPORTANTE** Crear una copia del archivo secretkeystemplate.conf y llamarlo localhost.conf, ubicar todas las claves/apis/secrey keys/etc en el nuevo localhost.conf, este archivo no se le hace seguimiento por git por lo que sólo se mantiene en la computadora local.
 
-##Ejecución
+## Ejecución
 
 1.  Desde IntelliJ abrir el proyecto y esperar a que termine de descargar/indexar todos los componentes (toma un largo tiempo la primera vez)
 2.  Abrir la consola sbt o **sbt shell**
@@ -73,12 +73,12 @@ Se hace énfasis en el entorno de desarrollo porque facilitará la descripción 
 4.  En el navegador http://localhost:9000 debería visualizarse la página inicial.
 
 
-###Licencia
+## Licencia
 
 La licencia está bajo los términos de  Apache License, Version 2.0, January 2004
 Más detalles en el archivo LICENSE.
 
-###Intención de colaboración
+## Intención de colaboración
 Cualquier aporte a este software es bienvenido, pero ese aporte también se hará en los términos de la LICENSE.
 
 
