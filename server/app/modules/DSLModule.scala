@@ -2,7 +2,7 @@ package modules
 
 import com.google.inject.AbstractModule
 import models.daos.{MatchResultDAO, MatchResultDAOImpl, ParticipantDAO, ParticipantDAOImpl, ReplayMatchDAO, ReplayMatchDAOImpl, TournamentDAO, TournamentDAOImpl, UserSmurfDAO, UserSmurfDAOImpl}
-import models.services.{ChallongeTournamentService, ChallongeTournamentServiceImpl, DiscordFileService, DiscordFileServiceImpl, DiscordUserService, DiscordUserServiceImpl, ParticipantsService, ParticipantsServiceImpl, SmurfService, SmurfServiceImpl, TournamentService, TournamentServiceImpl}
+import models.services.{ChallongeTournamentService, ChallongeTournamentServiceImpl, DiscordUserService, DiscordUserServiceImpl, ParticipantsService, ParticipantsServiceImpl, SmurfService, SmurfServiceImpl, TournamentService, TournamentServiceImpl}
 import net.codingwell.scalaguice.ScalaModule
 
 /**
