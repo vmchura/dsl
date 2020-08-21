@@ -21,7 +21,6 @@ class DSLModule extends AbstractModule with ScalaModule {
     bind[TournamentService].to[TournamentServiceImpl]
 
     bind[DiscordUserService].to[DiscordUserServiceImpl]
-    bind[DiscordFileService].to[DiscordFileServiceImpl]
     bind[ChallongeTournamentService].to[ChallongeTournamentServiceImpl]
 
     bind[ReplayMatchDAO].to[ReplayMatchDAOImpl]
