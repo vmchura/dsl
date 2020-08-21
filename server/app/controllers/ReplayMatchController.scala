@@ -2,9 +2,10 @@ package controllers
 import java.util.UUID
 
 import javax.inject._
-import jobs.{CannotSaveResultMatch, CannotSmurf, ParseFile, ReplayService}
+import jobs.{CannotSaveResultMatch, CannotSmurf, ReplayService}
 import models.{MatchPK, MatchResult, MatchSmurf}
 import models.daos.{MatchResultDAO, ReplayMatchDAO, UserSmurfDAO}
+import models.services.ParseReplayFileService
 import play.api.mvc._
 import play.api.i18n.I18nSupport
 import play.api.libs.Files
@@ -19,7 +20,7 @@ import scala.util.{Failure, Success}
 class ReplayMatchController @Inject()(scc: SilhouetteControllerComponents,
                                       replayService: ReplayService,
                                       matchResultDAO: MatchResultDAO,
-                                      parseFile: ParseFile,
+                                      parseFile: ParseReplayFileService,
                                       smurfDAO: UserSmurfDAO,
                                       replayMatchDAO: ReplayMatchDAO
 

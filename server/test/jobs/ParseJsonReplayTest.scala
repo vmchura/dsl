@@ -1,12 +1,13 @@
 package jobs
 
+import models.services.ParseReplayFileService
 import org.scalatestplus.play.PlaySpec
 import org.scalatestplus.play.guice.GuiceOneAppPerSuite
 
 import scala.language.postfixOps
 
 class ParseJsonReplayTest extends PlaySpec with GuiceOneAppPerSuite{
-  val fileParser: ParseFile = app.injector.instanceOf(classOf[ParseFile])
+  val fileParser: ParseReplayFileService = app.injector.instanceOf(classOf[ParseReplayFileService])
 
   "Parse Json Replay" should {
     "get something" in {

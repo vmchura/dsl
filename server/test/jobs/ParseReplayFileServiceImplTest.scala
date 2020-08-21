@@ -5,6 +5,7 @@ import java.util.UUID
 
 import models.{DiscordUser, MatchPK, MatchSmurf}
 import models.daos.UserSmurfDAO
+import models.services.ParseReplayFileService
 import org.scalatestplus.play.PlaySpec
 import org.scalatestplus.play.guice.GuiceOneAppPerSuite
 import shared.models.ActionByReplay
@@ -14,8 +15,8 @@ import scala.language.postfixOps
 import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.duration.DurationInt
 
-class ParseFileTest extends PlaySpec with GuiceOneAppPerSuite{
-  val fileParser: ParseFile = app.injector.instanceOf(classOf[ParseFile])
+class ParseReplayFileServiceImplTest extends PlaySpec with GuiceOneAppPerSuite{
+  val fileParser: ParseReplayFileService = app.injector.instanceOf(classOf[ParseReplayFileService])
   val userDAO: UserSmurfDAO = app.injector.instanceOf(classOf[UserSmurfDAO])
 
   "ParseFile" should {

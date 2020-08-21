@@ -1,24 +1,22 @@
-package jobs
+package models.services
 
-
-import play.api.libs.json.{JsArray, JsString, Json}
+import java.io.{File, FileInputStream}
 import java.util.Base64
 
-import sttp.client._
 import javax.inject.Inject
-import play.api.Configuration
-import java.io.{File, FileInputStream}
-
 import models.UserSmurf
 import models.daos.UserSmurfDAO
-import sttp.client.asynchttpclient.future.AsyncHttpClientFutureBackend
+import play.api.Configuration
+import play.api.libs.json.{JsArray, JsString, Json}
 import shared.models.{ActionByReplay, ActionBySmurf, ReplayDescriptionShared}
+import sttp.client._
 import sttp.client.asynchttpclient.WebSocketHandler
+import sttp.client.asynchttpclient.future.AsyncHttpClientFutureBackend
 
 import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.Future
 
-class ParseFile @Inject() (configuration: Configuration, userSmurfDAO: UserSmurfDAO) {
+class ParseReplayFileServiceImpl @Inject()(configuration: Configuration, userSmurfDAO: UserSmurfDAO) extends ParseReplayFileService{
   private val lambda_x_api_key = configuration.get[String]("lambda.apikey")
 
   def parseFile(file: File): Future[Either[String,String]] = {
