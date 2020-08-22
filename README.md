@@ -49,10 +49,14 @@ Se hace énfasis en el entorno de desarrollo porque facilitará la descripción 
     3.  En el panel "OAuth2" agregar la url de redirección: http://localhost:9000/authenticate/discord
     4.  En producción esta url debe ser actualizada acorde y modificada en silhouette.discord.redirectURL=${?REDIRECT_URL}
      
-6.  [**OPCIONAL**]Discord BOT, subir archivos a un canal de discord.
-    1.  Conseguir discordBotToken: "qwdasd4....d2131lk" (59 caracteres varios) 
-    2.  Agregar el bot al guild de discord con el siguiente enlace: https://discord.com/api/oauth2/authorize?client_id=$discordClientID&scope=bot&permissions=34816
-        1.  Con el número 34816 el bot tiene permiso para escribir mensajes.     
+6.  Discord BOT, subir archivos a un canal de discord.
+    1.  Conseguir discordBotToken: "qwdasd4....d2131lk" (59 caracteres varios)
+    2.  Agregar el bot al guild de discord con el siguiente enlace: https://discord.com/api/oauth2/authorize?client_id=$discordClientID&scope=bot&permissions=524288
+            1.  Con el número 524288 el bot tiene permiso para conocer a los integrantes del guild. 
+    3.  [**OPCIONAL**]Agregar el bot al guild de discord con el siguiente enlace: https://discord.com/api/oauth2/authorize?client_id=$discordClientID&scope=bot&permissions=34816
+        1.  Con el número 34816 el bot tiene permiso para escribir mensajes.
+        
+             
 7.  [**Opcional**] Dropbox: Generar una app en https://www.dropbox.com/developers/documentation (App Console) y conseguir access token
     1.  dropboxAccessToken: "qwdq...qj3" (64 caracteres)
 8.  [**Opcional**] AWS Lambda: Para procesar las replays.
@@ -72,6 +76,17 @@ Se hace énfasis en el entorno de desarrollo porque facilitará la descripción 
     sbt> run
     ```
 4.  En el navegador http://localhost:9000 debería visualizarse la página inicial.
+
+## Pasos para crear un torneo
+
+Para este paso se debe ser Admin en la aplicación y haber realizado el paso Opcional Discord BOT
+1.  Ir a la dirección: /tournament/create
+2.  En discordGuildID escribir el ID del canal de discord (18 números)
+3.  En challongeID escribir el ID del torneo en challonge, por ejemplo del torneo https://challonge.com/bq8mhaqk su ID es bq8mhaqk
+4.  [**OPCIONAL**] si el módulo de subir replays a un canal de discord está habilitado usar el ID del canal (18 números)
+5.  Enviar formulario
+6.  El torneo se creó, pero falta relacionar a los participantes de Challonge con los integrantes del canal de Discord.
+7.  En el panel que se redirecciona realizar las mencionadas relaciones, se implementó un algoritmo para que el emparejamiento sea simple, pero en caso de ser necesario buscar en la lista de opciones al integrante de discord adecuado.
 
 
 ## Licencia
