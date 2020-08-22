@@ -43,23 +43,24 @@ Se hace énfasis en el entorno de desarrollo porque facilitará la descripción 
         3. host: localhost
         4. port: 27017
         5. database: dsl                
-4.  Discord: Login y bot: crear un aplicación y bot de Discord en https://discord.com/developers/applications y conseguir
+4.  Challonge: Generar una API KEY en https://challonge.com/settings/developer
+    1. challongeApiKey: "adj...ad1" (40 caracteres)
+5.  Discord: Login, crear un aplicación de Discord en https://discord.com/developers/applications y conseguir
     1.  Conseguir discordClientID: "123456789012345678" (18 dígitos)
     2.  Conseguir discordClientSecret: "abscs.....314a" (32 caracteres alfanuméricos)
     3.  Se necesitará un url de redirección una vez se acepta la unión, en un entorno de desarrollo la url de retorno será http://localhost:9000/authenticate/discord 
-    4.  Conseguir discordBotToken: "qwdasd4....d2131lk" (59 caracteres varios) 
-    5.  Agregar el bot al guild de discord con el siguiente enlace: https://discord.com/api/oauth2/authorize?client_id=$discordClientID&scope=bot&permissions=34816
-        1.  Con el número 34816 el bot tiene permiso para escribir mensajes.
-5.  Challonge: Generar una API KEY en https://challonge.com/settings/developer
-    1. challongeApiKey: "adj...ad1" (40 caracteres)
-6.  [**Opcional**] Dropbox: Generar una app en https://www.dropbox.com/developers/documentation (App Console) y conseguir access token
+6.  [**OPCIONAL**]Discord BOT, subir archivos a un canal de discord.
+    1.  Conseguir discordBotToken: "qwdasd4....d2131lk" (59 caracteres varios) 
+    2.  Agregar el bot al guild de discord con el siguiente enlace: https://discord.com/api/oauth2/authorize?client_id=$discordClientID&scope=bot&permissions=34816
+        1.  Con el número 34816 el bot tiene permiso para escribir mensajes.     
+7.  [**Opcional**] Dropbox: Generar una app en https://www.dropbox.com/developers/documentation (App Console) y conseguir access token
     1.  dropboxAccessToken: "qwdq...qj3" (64 caracteres)
-7.  [**Opcional**] AWS Lambda: Para procesar las replays.
+8.  [**Opcional**] AWS Lambda: Para procesar las replays.
     1. Crear un terminal Lambda - REST usando la función: https://github.com/vmchura/screplambda
     2. Realizar los pasos mencionados para en la documentación oficial de AWS y obtener lambdaApiKey
         1. lambdaApiKey: "adqow41r...qwe" (40 caracteres) 
     
-8.  **IMPORTANTE** Crear una copia del archivo secretkeystemplate.conf y llamarlo localhost.conf, ubicar todas las claves/apis/secrey keys/etc en el nuevo localhost.conf, este archivo no se le hace seguimiento por git por lo que sólo se mantiene en la computadora local.
+9.  **IMPORTANTE** Crear una copia del archivo secretkeystemplate.conf y llamarlo localhost.conf, ubicar todas las claves/apis/secrey keys/etc en el nuevo localhost.conf, este archivo no se le hace seguimiento por git por lo que sólo se mantiene en la computadora local.
 
 ## Ejecución
 
