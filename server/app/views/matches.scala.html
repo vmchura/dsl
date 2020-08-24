@@ -20,14 +20,14 @@
             <tr>
                 <td>@m.round</td>
                 <td>@m.userSmurf1.discordUser.userName
-                    @for(smurfDefined <- m.userSmurf1.matchSmurf){
+                    @for(smurfDefined <- m.userSmurf1.matchSmurf.distinctBy(_.smurf)){
                         <span class="badge rounded-pill bg-primary">@smurfDefined.smurf </span>
                     }
                 </td>
                 <td>@m.userSmurf2.discordUser.userName
-                @for(smurfDefined <- m.userSmurf2.matchSmurf){
-                    <span class="badge rounded-pill bg-primary">@smurfDefined.smurf </span>
-                }
+                    @for(smurfDefined <- m.userSmurf2.matchSmurf.distinctBy(_.smurf)){
+                        <span class="badge rounded-pill bg-primary">@smurfDefined.smurf </span>
+                    }
                 </td>
                 <td>
 
