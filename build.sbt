@@ -37,8 +37,10 @@ lazy val server = (project in file("server"))
       "com.dropbox.core" % "dropbox-core-sdk" % "3.1.4",
       "com.softwaremill.sttp.client" %% "core" % "2.2.3",
       "com.github.seratch" %% "awscala" % "0.8.+",
-      // https://mvnrepository.com/artifact/net.dv8tion/JDA
+      // https://mvnrepository.com/artifact/net.dv8tion/JDA  //DISCORD REST
       "net.dv8tion" % "JDA" % "4.2.0_181",
+      // https://mvnrepository.com/artifact/com.google.apis/google-api-services-drive
+      "com.google.apis" % "google-api-services-drive" % "v3-rev197-1.25.0",
 
         ehcache,
         guice,
