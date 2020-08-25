@@ -1,7 +1,7 @@
 package modules
 
 import com.google.inject.AbstractModule
-import models.services.{DropBoxFilesService,DropBoxFilesServiceEmptyImpl}
+import models.services.{DropBoxFilesService, DropBoxFilesServiceEmptyImpl, DropBoxFilesServiceImpl}
 import net.codingwell.scalaguice.ScalaModule
 
 class DropboxModule  extends AbstractModule with ScalaModule {
@@ -10,8 +10,8 @@ class DropboxModule  extends AbstractModule with ScalaModule {
    * Usar DropBoxFilesServiceImpl si se quiere agregar un archivo al dropbox
    */
   override def configure(): Unit = {
-    bind[DropBoxFilesService].to[DropBoxFilesServiceEmptyImpl]
-    //bind[DiscordFileService].to[DiscordFileServiceImpl]
+    //bind[DropBoxFilesService].to[DropBoxFilesServiceEmptyImpl]
+    bind[DropBoxFilesService].to[DropBoxFilesServiceImpl]
   }
 
 

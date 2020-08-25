@@ -1,7 +1,7 @@
 package modules
 
 import com.google.inject.AbstractModule
-import models.services.{DiscordFileService, DiscordFileServiceEmptyImpl}
+import models.services.{DiscordFileService, DiscordFileServiceEmptyImpl, DiscordFileServiceImpl}
 import net.codingwell.scalaguice.ScalaModule
 
 class DiscordFileModule  extends AbstractModule with ScalaModule {
@@ -10,8 +10,8 @@ class DiscordFileModule  extends AbstractModule with ScalaModule {
    * Usar DiscordFileServiceImpl si se quiere agregar un archivo al canal de discord
    */
   override def configure(): Unit = {
-    bind[DiscordFileService].to[DiscordFileServiceEmptyImpl]
-    //bind[DiscordFileService].to[DiscordFileServiceImpl]
+    //bind[DiscordFileService].to[DiscordFileServiceEmptyImpl]
+    bind[DiscordFileService].to[DiscordFileServiceImpl]
   }
 
 
