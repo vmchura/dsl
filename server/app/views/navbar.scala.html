@@ -42,7 +42,7 @@
                             }
                     }
                 }{ u =>
-                    <li><a class="nav-link active" href="#!">Bienvenido <img src="@u.avatarURL.getOrElse(assets.path("images/silhouette.png"))" height="40px" /> </a> </li>
+                    <li><a class="nav-link active" href="#!">Bienvenido @u.fullName.getOrElse("campeón") <img src="@u.avatarURL.getOrElse(assets.path("images/silhouette.png"))" height="40px" /> </a> </li>
                 }
             </ul>
 

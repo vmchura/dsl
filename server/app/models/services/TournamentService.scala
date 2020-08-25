@@ -12,6 +12,7 @@ trait TournamentService {
   def saveTournament(tournament: Tournament): Future[Boolean]
   def loadTournament(challongeID: Long): Future[Option[Tournament]]
   def findAllTournamentsByPlayer(userID: UUID): Future[Seq[Tournament]]
+  def findAllTournamentsByPlayer(challongeID: String): Future[Seq[Tournament]]
   def findAllActiveTournamentsByPlayer(userID: UUID): Future[Seq[Tournament]]
   def dropTournament(challongeID: Long): Future[Boolean]
 }

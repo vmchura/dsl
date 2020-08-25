@@ -25,6 +25,15 @@ class TournamentServiceImpl @Inject() (tournamentDAO: TournamentDAO, participant
       tournaments.flatten
     }
   }
+  private def findTournamentByPlayer(participantID: String, tournamentQuery: Long => Future[Option[Tournament]]) = {
+    for {
+      participants    <- participantDAO.findByDiscordUserID(participantID)
+      tournamentsID   <- Future.successful(participants.map(_.participantPK.challongeID).distinct)
+      tournaments     <- Future.sequence(tournamentsID.map(tournamentQuery))
+    }yield{
+      tournaments.flatten
+    }
+  }
 
   override def findAllTournamentsByPlayer(userID: UUID): Future[Seq[Tournament]] = findTournamentByPlayer(userID,loadTournament)
 
@@ -32,4 +41,6 @@ class TournamentServiceImpl @Inject() (tournamentDAO: TournamentDAO, participant
   override def findAllActiveTournamentsByPlayer(userID: UUID): Future[Seq[Tournament]] = findTournamentByPlayer(userID,findTournamentIfActive)
 
   override def dropTournament(challongeID: Long): Future[Boolean] = tournamentDAO.remove(challongeID)
+
+  override def findAllTournamentsByPlayer(challongeID: String): Future[Seq[Tournament]] = findTournamentByPlayer(challongeID,loadTournament)
 }
