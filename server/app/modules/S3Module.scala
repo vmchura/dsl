@@ -10,8 +10,8 @@ class S3Module extends AbstractModule with ScalaModule {
    * Usar S3FilesServiceImpl si se quiere agregar un archivo al AWS S3
    */
   override def configure(): Unit = {
-    //bind[S3FilesService].to[S3FilesServiceEmptyImpl]
-    bind[S3FilesService].to[S3FilesServiceImpl]
+    bind[S3FilesService].to[S3FilesServiceEmptyImpl]
+    //bind[S3FilesService].to[S3FilesServiceImpl]
   }
 
 
