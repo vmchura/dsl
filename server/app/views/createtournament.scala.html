@@ -4,9 +4,9 @@
 @import forms.CreateTournamentForm.Data
 @import com.mohiva.play.silhouette.impl.providers.SocialProviderRegistry
 @this()(implicit assets: AssetsFinder)
-@(createTournamentForm: Form[Data],socialProviders: SocialProviderRegistry)(implicit request: RequestHeader, messages: Messages)
+@(createTournamentForm: Form[Data],socialProviders: SocialProviderRegistry)(implicit request: RequestHeader, messages: Messages, menues: Seq[MenuGroup])
 
-@main("Crea un torneo: Discord + Challonge",None,Nil,socialProviders){
+@main("Crea un torneo: Discord + Challonge",None,socialProviders){
     <div class="card container-cela-form">
         <div class="card-content">
             <div class="card-title">@messages("tournament.create.title")</div>

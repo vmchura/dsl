@@ -6,7 +6,7 @@
 @import views.html.helper._
 
 @import com.mohiva.play.silhouette.impl.providers.SocialProviderRegistry
-@(title: String,user: Option[models.User] = None, menues: Seq[MenuGroup],socialProviders: SocialProviderRegistry)(content: Html)(implicit request: RequestHeader, messages: Messages, assets: AssetsFinder)
+@(title: String,user: Option[models.User] = None,socialProviders: SocialProviderRegistry)(content: Html)(implicit request: RequestHeader, messages: Messages, assets: AssetsFinder, menues: Seq[MenuGroup])
 
 <!doctype html>
 <html lang="en">

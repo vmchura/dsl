@@ -1,8 +1,8 @@
 @import views.html.helper._
 @import com.mohiva.play.silhouette.impl.providers.SocialProviderRegistry
 @this()(implicit assets: AssetsFinder)
-@(user: Option[models.User],menues: Seq[MenuGroup],matches: Seq[MatchDiscord],socialProviders: SocialProviderRegistry)(implicit request: RequestHeader, messages: Messages)
-@main("Partidas del torneo",user,menues,socialProviders){
+@(user: Option[models.User],matches: Seq[MatchDiscord],socialProviders: SocialProviderRegistry)(implicit request: RequestHeader, messages: Messages,menues: Seq[MenuGroup])
+@main("Partidas del torneo",user,socialProviders){
 
     <div id="container-matches-finder"></div>
 

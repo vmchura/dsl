@@ -3,9 +3,9 @@
 @import controllers.AssetsFinder
 @import com.mohiva.play.silhouette.impl.providers.SocialProviderRegistry
 @this()(implicit assets: AssetsFinder)
-@(socialProviders: SocialProviderRegistry)(implicit request: RequestHeader, messages: Messages)
+@(socialProviders: SocialProviderRegistry)(implicit request: RequestHeader, messages: Messages, menues: Seq[MenuGroup])
 
-@main("Regístrate con tu cuenta de Discord!",None, Nil,socialProviders){
+@main("Regístrate con tu cuenta de Discord!",None,socialProviders){
     <h2>Este es el contenido para registrarse</h2>
     @if(socialProviders.providers.nonEmpty) {
         <div class="social-providers">

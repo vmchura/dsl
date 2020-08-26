@@ -24,12 +24,14 @@ class SmurfController @Inject()(scc: SilhouetteControllerComponents,
                                )extends   AbstractAuthController(scc) with I18nSupport {
 
   def view(): Action[AnyContent] = silhouette.SecuredAction(WithAdmin()).async { implicit request =>
-    for {
-      menues <- sideBarMenuService.buildSideBar(Some(request.identity))
-      usersNotDefined <- userSmurfDAO.findUsersNotCompletelyDefined()
+    sideBarMenuService.buildLoggedSideBar().flatMap { implicit menues =>
+      for {
+        usersNotDefined <- userSmurfDAO.findUsersNotCompletelyDefined()
 
-    } yield {
-      Ok(smurfsToCheck(Some(request.identity),menues, usersNotDefined,socialProviderRegistry))
+      } yield {
+
+        Ok(smurfsToCheck(Some(request.identity), usersNotDefined, socialProviderRegistry))
+      }
     }
   }
   def accept(discordUserID: String,matchID: UUID): Action[AnyContent] = silhouette.SecuredAction(WithAdmin()).async { implicit request =>

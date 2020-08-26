@@ -4,9 +4,9 @@
 
 @import com.mohiva.play.silhouette.impl.providers.SocialProviderRegistry
 @this()(implicit assets: AssetsFinder)
-@(user: Option[models.User] = None, menues: Seq[MenuGroup],socialProviders: SocialProviderRegistry)(implicit request: RequestHeader, messages: Messages)
+@(user: Option[models.User] = None,socialProviders: SocialProviderRegistry)(implicit request: RequestHeader, messages: Messages, menues: Seq[MenuGroup])
 
-@main("Pagina inicial",user,menues,socialProviders){
+@main("Pagina inicial",user,socialProviders){
     <div id="home-page-id">
         <img src="@controllers.routes.Assets.versioned("images/fondo.jpg")" id="fondoimage" alt="fondo"/>
         <img src="@controllers.routes.Assets.versioned("images/DeathFate_Title.png")" id="deathfatelogo" alt="DeathFateLogo"/>

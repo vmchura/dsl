@@ -1,8 +1,8 @@
 
 @import com.mohiva.play.silhouette.impl.providers.SocialProviderRegistry
 @this()(implicit assets: AssetsFinder)
-@(user: Option[models.User],menues: Seq[MenuGroup],smurfsToUpdate: Seq[UserSmurf],socialProviders: SocialProviderRegistry)(implicit request: RequestHeader, messages: Messages)
-@main("Update Smurfs",user,menues,socialProviders){
+@(user: Option[models.User],smurfsToUpdate: Seq[UserSmurf],socialProviders: SocialProviderRegistry)(implicit request: RequestHeader, messages: Messages,menues: Seq[MenuGroup])
+@main("Update Smurfs",user,socialProviders){
     <ul class="list-group">
     @for(smurftou <- smurfsToUpdate){
 
