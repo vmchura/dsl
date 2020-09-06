@@ -35,7 +35,7 @@ class ChallongeTournamentServiceImpl @Inject()(configuration: Configuration) ext
           }).toSeq
 
           def findParticipantBySomeID(id: Long): Option[Participant] = {
-            participants.find(p => p.participant.participantPK.challongeID == id || p.groupIDs.contains(id)).map(_.participant)
+            participants.find(p => p.participant.participantPK.chaNameID == id || p.groupIDs.contains(id)).map(_.participant)
 
           }
           case class ChallongeMatch(match1v1: Match, round: Int, groupID: Option[Long])

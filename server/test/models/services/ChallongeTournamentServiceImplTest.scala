@@ -33,7 +33,18 @@ class ChallongeTournamentServiceImplTest extends PlaySpec with GuiceOneAppPerSui
       Await.result(queryExecution,30 seconds)
       queryExecution
     }
+    "get correct users on brackets" in {
+      val queryExecution = service.findChallongeTournament("-")("ozrcvcvb").map {
+        tournamentOpt =>{
 
+          assertResult(Some(8837171))(tournamentOpt.map(_.tournament.challongeID))
+          assert(tournamentOpt.exists(_.matches.exists(m => m.round.contains("Bracket") && m.player1Name.nonEmpty)))
+        }
+
+      }
+      Await.result(queryExecution,30 seconds)
+      queryExecution
+    }
 
 
   }
