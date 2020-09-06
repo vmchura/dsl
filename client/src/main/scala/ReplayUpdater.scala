@@ -3,19 +3,21 @@ import org.scalajs.dom.html.{Button, Div}
 import com.thoughtworks.binding.Binding.{BindingSeq, Var}
 import com.thoughtworks.binding.Binding
 import org.lrng.binding.html.NodeBinding
-import org.scalajs.dom.raw.{FormData, HTMLInputElement}
+import org.scalajs.dom.raw.{Event, FormData, HTMLInputElement}
 
 import scala.util.{Failure, Success}
-import org.scalajs.dom.{Event, Node, document}
+import org.scalajs.dom.{Event, Node, document, window}
 import shared.models.ActionByReplay
 import upickle.default.read
 import shared.models.ActionBySmurf._
+
 import scala.scalajs.concurrent.JSExecutionContext.Implicits.queue
-import scala.xml.NodeBuffer
 
 class ReplayUpdater(fieldDiv: Div, player1: String, player2: String, discord1: String, discord2: String) {
 
 
+  implicit def makeIntellijHappy[T<:org.scalajs.dom.raw.Node](x: scala.xml.Node): Binding[T] =
+    throw new AssertionError("This should never execute.")
 
   abstract class WithMessageResult(val messageToShow: String)
 
@@ -94,7 +96,7 @@ class ReplayUpdater(fieldDiv: Div, player1: String, player2: String, discord1: S
 
 
   @html
-  def nameAndWinner(mapName: String, winner: Int, smurf1: String, smurf2: String): BindingSeq[Node] = {
+  def nameAndWinner(mapName: String, winner: Int, smurf1: String, smurf2: String) = {
     <div class="mapname">{mapName}</div>
       <div class="winner">{if(winner==1) smurf1 else smurf2}</div>
   }
@@ -111,6 +113,23 @@ class ReplayUpdater(fieldDiv: Div, player1: String, player2: String, discord1: S
     </div>
   }
 
+  private val selection_Same: Binding[HTMLInputElement] = buildInput(1,"radioSelectID1")
+
+  private val selection_Cross: Binding[HTMLInputElement] = buildInput(2,"radioSelectID2")
+
+  private def selectChoice(selection: Option[Int]): Unit = Binding{
+    selection match {
+      case Some(1) => selection_Same.bind.select()
+      case Some(2) => selection_Cross.bind.select()
+      case _ => ()
+
+    }
+  }
+  private def selectParallel(): Unit = selectChoice(Some(1))
+  private def selectCruzado(): Unit = selectChoice(Some(2))
+
+
+
   @html
   private def buildBoxSmurfs(actionBySmurf: ActionBySmurf, smurf1: String, smurf2: String, winner: Int, mapName: String) = {
 
@@ -120,23 +139,29 @@ class ReplayUpdater(fieldDiv: Div, player1: String, player2: String, discord1: S
       case SmurfsEmpty =>
         bc(
           <div>
-          <div class="btn-group-vertical">
-            {selection_Same.bind}
-            <label class="btn btn-outline-primary" for="radioSelectID1">
-              <div>
-                <p>{s"[$player1 -> ${smurf1}]"} </p>
-                <p>{s"[$player2 -> ${smurf2}]"} </p>
+          <div class="container-smurfs-select">
+            <div class="card-question">¿Cuál es la relación correcta entre nombre Discord y smurf/nick usado en el juego?</div>
+            <div class="smurf-container-option">
+              <div class="smurf-user-name">{player1}</div>
+              <div class="smurf-optionLeft">
+                <button onclick={_: Event => selectParallel()}>{smurf1}</button>
               </div>
-
-            </label>
-            {selection_Cross.bind}
-            <label class="btn btn-outline-primary" for="radioSelectID2">
-              <div>
-                <p>{s"[$player1 -> ${smurf2}]"} </p>
-                <p>{s"[$player2 -> ${smurf1}]"} </p>
+              <div class="smurf-optionRight">
+                <button onclick={_: Event => selectCruzado()}>{smurf2}</button>
               </div>
-            </label>
+            </div>
+            <div class="smurf-container-option">
+              <div class="smurf-user-name">{player2}</div>
+              <div class="smurf-optionLeft">
+                <button onclick={_: Event => selectCruzado()}>{smurf1}</button>
+              </div>
+              <div class="smurf-optionRight">
+                <button onclick={_: Event => selectParallel()}>{smurf2}</button>
+              </div>
+            </div>
           </div>
+          {selection_Same.bind}
+          {selection_Cross.bind}
           <input type="hidden" name="player1" value={smurf1}/>
           <input type="hidden" name="player2" value={smurf2}/>
           <input type="hidden" name="winner" value={winner.toString}/>
@@ -222,17 +247,16 @@ class ReplayUpdater(fieldDiv: Div, player1: String, player2: String, discord1: S
 
   @html
   private def buildInput(value: Int,id: String): Binding[HTMLInputElement] = Binding{
-    val input: NodeBinding[HTMLInputElement] = <input class="btn-check"  name="nicks" type="radio" value={s"$value"} id={id} />
-    input.value.onclick = _ => {
+    val input: NodeBinding[HTMLInputElement] = <input class="btn-check"  name="nicks" type="hidden" value={s"$value"} id={id}  />
+    input.value.onselect = _ => {
       stateUploadProcess.value = ReadyToSend
     }
+
+
 
     input.bind
   }
 
-  private val selection_Same: Binding[HTMLInputElement] = buildInput(1,"radioSelectID1")
-
-  private val selection_Cross: Binding[HTMLInputElement] = buildInput(2,"radioSelectID2")
 
 
   @html
