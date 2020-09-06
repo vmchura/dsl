@@ -159,7 +159,7 @@ class ReplayUpdater(fieldDiv: Div, player1: String, player2: String, discord1: S
   @html
   private val correlateTags = Binding {
     replayParsed.bind.map {
-      case ActionByReplay(_,Some(smurf1),Some(smurf2),SmurfsEmpty, winner) =>
+      case ActionByReplay(_,Some(smurf1),Some(smurf2),SmurfsEmpty, winner,_) =>
         <div class="container">
           <div class="form-check">
             {selection_Same.bind}
@@ -179,19 +179,19 @@ class ReplayUpdater(fieldDiv: Div, player1: String, player2: String, discord1: S
           <input type="hidden" name="winner" value={winner.toString}/>
         </div>
 
-        case ActionByReplay(_,player1,player2,ImpossibleToDefine, _) =>
+        case ActionByReplay(_,player1,player2,ImpossibleToDefine, _,_) =>
           stateUploadProcess.value = ErrorImpossibleMessage(player1, player2)
           <div>Error</div>
-        case ActionByReplay(_,_,_,CorrelatedCruzadoDefined, _) =>
+        case ActionByReplay(_,_,_,CorrelatedCruzadoDefined, _,_) =>
           stateUploadProcess.value = ReadyToSend
           <div>Los nicks ya están definidos :)</div>
-        case ActionByReplay(_,_,_,CorrelatedParallelDefined, _) =>
+        case ActionByReplay(_,_,_,CorrelatedParallelDefined, _,_) =>
           stateUploadProcess.value = ReadyToSend
           <div>Los nicks ya están definidos :)</div>
-        case ActionByReplay(true,Some(_),Some(_),_, _) =>
+        case ActionByReplay(true,Some(_),Some(_),_, _,_) =>
           stateUploadProcess.value = ReadyToSend
           <div>Puedes enviar el replay! aunque un nick falta ser aprobado por los moderadores. :)</div>
-        case ActionByReplay(_,player1,player2,_, _) =>
+        case ActionByReplay(_,player1,player2,_, _,_) =>
           stateUploadProcess.value = ErrorImpossibleMessage(player1, player2)
           <div>Error</div>
 

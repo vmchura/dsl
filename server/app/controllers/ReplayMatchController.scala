@@ -59,38 +59,38 @@ class ReplayMatchController @Inject()(scc: SilhouetteControllerComponents,
       val execution = for {
         action            <- parseFile.parseFileAndBuildAction(file, discordUser1,discordUser2)
         nicks <- action match {
-          case Right(ActionByReplay(_, _, _, Correlated1d1rDefined, _)) => Future.successful(1)
-          case Right(ActionByReplay(_, _, _, Correlated2d2rDefined, _)) => Future.successful(1)
-          case Right(ActionByReplay(_, _, _, Correlated1d2rDefined, _)) => Future.successful(2)
-          case Right(ActionByReplay(_, _, _, Correlated2d1rDefined, _)) => Future.successful(2)
-          case Right(ActionByReplay(_, _, _, CorrelatedParallelDefined, _)) => Future.successful(1)
-          case Right(ActionByReplay(_, _, _, CorrelatedCruzadoDefined, _)) => Future.successful(1)
-          case Right(ActionByReplay(_, _, _, SmurfsEmpty, _)) => request.body.dataParts.get("nicks").flatMap(_.headOption.flatMap(_.toIntOption)) match {
+          case Right(ActionByReplay(_, _, _, Correlated1d1rDefined, _,_)) => Future.successful(1)
+          case Right(ActionByReplay(_, _, _, Correlated2d2rDefined, _,_)) => Future.successful(1)
+          case Right(ActionByReplay(_, _, _, Correlated1d2rDefined, _,_)) => Future.successful(2)
+          case Right(ActionByReplay(_, _, _, Correlated2d1rDefined, _,_)) => Future.successful(2)
+          case Right(ActionByReplay(_, _, _, CorrelatedParallelDefined, _,_)) => Future.successful(1)
+          case Right(ActionByReplay(_, _, _, CorrelatedCruzadoDefined, _,_)) => Future.successful(1)
+          case Right(ActionByReplay(_, _, _, SmurfsEmpty, _,_)) => request.body.dataParts.get("nicks").flatMap(_.headOption.flatMap(_.toIntOption)) match {
             case Some(value) => Future.successful(value)
             case None => Future.failed(new IllegalArgumentException("no nicks provided when needed"))
           }
           case _ => Future.failed(new IllegalArgumentException("no nicks can be calculated"))
         }
         player1 <- action match {
-          case Right(ActionByReplay(_,Some(smurf1),Some(_),_,_)) => Future.successful(smurf1)
+          case Right(ActionByReplay(_,Some(smurf1),Some(_),_,_,_)) => Future.successful(smurf1)
           case _ => Future.failed(new IllegalArgumentException("no player1 provided when needed"))
         }
         player2 <- action match {
-          case Right(ActionByReplay(_,Some(_),Some(smurf2),_,_)) => Future.successful(smurf2)
+          case Right(ActionByReplay(_,Some(_),Some(smurf2),_,_,_)) => Future.successful(smurf2)
           case _ => Future.failed(new IllegalArgumentException("no player2 provided when needed"))
         }
         winner <- action match {
-          case Right(ActionByReplay(_,Some(_),Some(_),_,win)) => Future.successful(win)
+          case Right(ActionByReplay(_,Some(_),Some(_),_,win,_)) => Future.successful(win)
           case _ => Future.failed(new IllegalArgumentException("no winner provided when needed"))
         }
         smurfForDiscord1 <- Future.successful(action match {
-          case Right(ActionByReplay(_, smurf1, _, Correlated1d1rDefined, _)) => Left(smurf1)
-          case Right(ActionByReplay(_, smurf1, _, Correlated2d2rDefined, _)) => Right(smurf1)
-          case Right(ActionByReplay(_, _, smurf2, Correlated1d2rDefined, _)) => Left(smurf2)
-          case Right(ActionByReplay(_, _, smurf2, Correlated2d1rDefined, _)) => Right(smurf2)
-          case Right(ActionByReplay(_, smurf1, _, CorrelatedParallelDefined, _)) => Left(smurf1)
-          case Right(ActionByReplay(_, _, smurf2, CorrelatedCruzadoDefined, _)) => Left(smurf2)
-          case Right(ActionByReplay(_, smurf1, smurf2, SmurfsEmpty, _)) => nicks match {
+          case Right(ActionByReplay(_, smurf1, _, Correlated1d1rDefined, _,_)) => Left(smurf1)
+          case Right(ActionByReplay(_, smurf1, _, Correlated2d2rDefined, _,_)) => Right(smurf1)
+          case Right(ActionByReplay(_, _, smurf2, Correlated1d2rDefined, _,_)) => Left(smurf2)
+          case Right(ActionByReplay(_, _, smurf2, Correlated2d1rDefined, _,_)) => Right(smurf2)
+          case Right(ActionByReplay(_, smurf1, _, CorrelatedParallelDefined, _,_)) => Left(smurf1)
+          case Right(ActionByReplay(_, _, smurf2, CorrelatedCruzadoDefined, _,_)) => Left(smurf2)
+          case Right(ActionByReplay(_, smurf1, smurf2, SmurfsEmpty, _,_)) => nicks match {
             case 1 => Right(smurf1)
             case 2 => Right(smurf2)
             case _ => Right(None)
@@ -100,13 +100,13 @@ class ReplayMatchController @Inject()(scc: SilhouetteControllerComponents,
 
 
         smurfForDiscord2 <- Future.successful(action match {
-          case Right(ActionByReplay(_, _, smurf2, Correlated1d1rDefined, _)) => Right(smurf2)
-          case Right(ActionByReplay(_, _, smurf2, Correlated2d2rDefined, _)) => Left(smurf2)
-          case Right(ActionByReplay(_, smurf1, _, Correlated1d2rDefined, _)) => Right(smurf1)
-          case Right(ActionByReplay(_, smurf1, _, Correlated2d1rDefined, _)) => Left(smurf1)
-          case Right(ActionByReplay(_, _, smurf2, CorrelatedParallelDefined, _)) => Left(smurf2)
-          case Right(ActionByReplay(_, smurf1, _, CorrelatedCruzadoDefined, _)) => Left(smurf1)
-          case Right(ActionByReplay(_, smurf1, smurf2, SmurfsEmpty, _)) => nicks match {
+          case Right(ActionByReplay(_, _, smurf2, Correlated1d1rDefined, _,_)) => Right(smurf2)
+          case Right(ActionByReplay(_, _, smurf2, Correlated2d2rDefined, _,_)) => Left(smurf2)
+          case Right(ActionByReplay(_, smurf1, _, Correlated1d2rDefined, _,_)) => Right(smurf1)
+          case Right(ActionByReplay(_, smurf1, _, Correlated2d1rDefined, _,_)) => Left(smurf1)
+          case Right(ActionByReplay(_, _, smurf2, CorrelatedParallelDefined, _,_)) => Left(smurf2)
+          case Right(ActionByReplay(_, smurf1, _, CorrelatedCruzadoDefined, _,_)) => Left(smurf1)
+          case Right(ActionByReplay(_, smurf1, smurf2, SmurfsEmpty, _,_)) => nicks match {
             case 1 => Right(smurf2)
             case 2 => Right(smurf1)
             case _ => Right(None)

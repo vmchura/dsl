@@ -28,8 +28,9 @@ trait ParseReplayFileService {
       p1 <- players.find(_.team ==1).map(_.name)
       p2 <- players.find(_.team ==2).map(_.name)
       winnerTeam <- (json \ "Computed" \ "WinnerTeam").asOpt[Int]
+      mapName <- (json \ "Header" \ "Map").asOpt[String]
     }yield{
-      Right(ReplayDescriptionShared(p1,p2, winnerTeam))
+      Right(ReplayDescriptionShared(p1, p2, winnerTeam, mapName))
     }).getOrElse(Left("Cant find players"))
 
   }

@@ -42,7 +42,8 @@ case class ActionByReplay(defined: Boolean,
                           player1: Option[String],
                           player2: Option[String],
                           actionBySmurf: ActionBySmurf,
-                          winner: Int)
+                          winner: Int,
+                          mapName: String)
 object ActionByReplay{
   implicit val rw: RW[ActionByReplay] = macroRW
 }
