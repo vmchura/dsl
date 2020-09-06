@@ -16,11 +16,12 @@ import scala.xml.NodeBuffer
 class ReplayUpdater(fieldDiv: Div, player1: String, player2: String, discord1: String, discord2: String) {
 
 
-  sealed trait StateSettingResult {
-    def stateType: String
-  }
+
   abstract class WithMessageResult(val messageToShow: String)
 
+  sealed trait StateSettingResult extends WithMessageResult {
+    def stateType: String
+  }
   sealed trait DangerState extends StateSettingResult {
     override def stateType: String = "danger"
   }
@@ -39,18 +40,17 @@ class ReplayUpdater(fieldDiv: Div, player1: String, player2: String, discord1: S
   object FileSelectedNotSmallSyze extends WithMessageResult("El archivo debe ser menor a 1Mb") with DangerState
   object FileSelectedOk extends WithMessageResult("Archivo seleccionado de manera correcta") with SuccessState
   object FileParsedCorrectly extends WithMessageResult("Archivo leído correctamente") with SuccessState
-  case class FileErrorReceivingParse(error: String) extends WithMessageResult(s"Error en la conexión con el servidor: $error") with DangerState
+  case class FileErrorReceivingParse(error: String) extends WithMessageResult(s"Error en la conexión con el servidor, vuelva a intentarlo luego o comuníquese con el admin") with DangerState
   object  FileParsedIncorrectly extends WithMessageResult("El archivo no se pudo interpretar como replay") with DangerState
   object FileOnProcessToParse extends WithMessageResult("Esperando el PRE procesamiento del archivo") with InfoState
   object FileIsNotOne extends WithMessageResult("Sólo se debe escoger UN archivo") with WarningState
   object MatchingUsers extends WithMessageResult("Relacione al usuario con el nick en el juego") with InfoState
   object ReadyToSend extends WithMessageResult(":) Listo para subir el archivo al servidor") with SuccessState
-  case class ErrorByServerParsing(message: String) extends WithMessageResult(s"ERROR en el servidor: $message") with DangerState
+  case class ErrorByServerParsing(message: String) extends WithMessageResult(s"ERROR en el servidor, posiblemente replay corrupta, comuníquese con el admin") with DangerState
   case class ErrorImpossibleMessage(smurf1: Option[String], smurf2: Option[String]) extends WithMessageResult(
     (smurf1,smurf2) match {
-      case (Some(x), Some(y)) => s"El smurf $x o $y ya está asignado a otro usuario."
-      case (None, _) => s"El replay no se pudo interpretar correctamente"
-      case (_, None) => s"El replay no se pudo interpretar correctamente"
+      case (Some(x), Some(y)) => s"El smurf $x o $y ya está asignado a otro usuario. Si crees que es un error, comuníquese con el admin."
+      case _ => s"El replay no se pudo interpretar correctamente.  Si crees que es un error, comuníquese con el admin."
     }) with DangerState
 
   private val stateUploadProcess = Var[StateSettingResult](FileUnselected)
@@ -64,7 +64,7 @@ class ReplayUpdater(fieldDiv: Div, player1: String, player2: String, discord1: S
   }
 
   private def secureRelation(playerName: String, smurf: String) = createRelation("primary","sentiment_very_satisfied")(playerName,smurf)
-  private def pendingRelation(playerName: String, smurf: String) = createRelation("primary","sentiment_neutral")(playerName,smurf)
+  private def pendingRelation(playerName: String, smurf: String) = createRelation("secondary","sentiment_neutral")(playerName,smurf)
 
   @html
   private def createSecureRelations(smurfForPlayer1: String, smurfForPlayer2: String) = {
@@ -104,6 +104,9 @@ class ReplayUpdater(fieldDiv: Div, player1: String, player2: String, discord1: S
       {nameAndWinner(mapName,winner,smurf1,smurf2)}
       <div class="smurfs">
         {content}
+      </div>
+      <div class="smurfsmessage">
+        Si consideras que existe un error, comunícate con el admin de la plataforma.
       </div>
     </div>
   }
@@ -151,7 +154,7 @@ class ReplayUpdater(fieldDiv: Div, player1: String, player2: String, discord1: S
   }
 
   @html
-  private val messageState = Binding{stateUploadProcess.bind.toString}
+  private val messageState = Binding{stateUploadProcess.bind.messageToShow}
 
 
 
