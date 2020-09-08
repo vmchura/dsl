@@ -4,7 +4,8 @@ import com.mohiva.play.silhouette.api.actions.{SecuredRequest, UserAwareRequest}
 import forms.CreateTournamentForm
 import javax.inject._
 import jobs.{CannontAccessChallongeTournament, CannotAccesDiscordGuild, TournamentBuilder}
-import models.services.SideBarMenuService
+import models.Tournament
+import models.services.{SideBarMenuService, TournamentService}
 import play.api.mvc._
 import play.api.i18n.I18nSupport
 import shared.utils.BasicComparableByLabel
@@ -18,6 +19,7 @@ class TournamentController @Inject()(scc: SilhouetteControllerComponents,
                                      showmatches: views.html.matches,
                                      showmatchessimple: views.html.matchessimple,
                                      tournamentBuilder: TournamentBuilder,
+                                    tournamentService: TournamentService,
                                     sideBarMenuService: SideBarMenuService
                            ) (
                              implicit
@@ -88,13 +90,14 @@ class TournamentController @Inject()(scc: SilhouetteControllerComponents,
     sideBarMenuService.buildUserAwareSideBar().flatMap { implicit menues =>
 
       for {
+        tournamentOpt <- tournamentService.findTournament(challongeTournamentID)
+        tournament <- tournamentOpt.fold(Future.failed(new IllegalArgumentException("Not a valid torunament ID")): Future[Tournament])(Future.successful)
         matchesResult <- tournamentBuilder.getMatchesDiscord(challongeTournamentID, None)
       } yield {
         matchesResult match {
           case Left(error) => Ok(s"error: ${error.toString}")
           case Right(matches) =>
-
-            Ok(showmatchessimple(request.identity, matches, socialProviderRegistry))
+            Ok(showmatchessimple(request.identity, matches,tournament, socialProviderRegistry))
         }
       }
     }
