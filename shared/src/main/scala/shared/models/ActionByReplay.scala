@@ -5,7 +5,9 @@ import upickle.default.{macroRW, ReadWriter => RW}
 
 
 object ActionBySmurf extends Enumeration {
-  protected case class Val(str: String) extends super.Val
+  protected case class Val(str: String) extends super.Val{
+    override def toString(): String = str
+  }
   import scala.language.implicitConversions
   implicit def valueToStrVal(x: Value): Val = x.asInstanceOf[Val]
 
@@ -16,7 +18,6 @@ object ActionBySmurf extends Enumeration {
   val Correlated2d1rDefined: Val = Val("Correlated2d1rDefined")
   val CorrelatedParallelDefined: Val = Val("CorrelatedParallelDefined")
   val CorrelatedCruzadoDefined: Val = Val("CorrelatedCruzadoDefined")
-  val CorrelatedBoth: Val = Val("CorrelatedBoth")
   val SmurfsEmpty: Val = Val("SmurfsEmpty")
   val ImpossibleToDefine: Val = Val("ImpossibleToDefine")
 
@@ -29,7 +30,6 @@ object ActionBySmurf extends Enumeration {
       case "Correlated2d1rDefined" => Correlated2d1rDefined
       case "CorrelatedParallelDefined" => CorrelatedParallelDefined
       case "CorrelatedCruzadoDefined" => CorrelatedCruzadoDefined
-      case "CorrelatedBoth" => CorrelatedBoth
       case "SmurfsEmpty" => SmurfsEmpty
       case "ImpossibleToDefine" => ImpossibleToDefine
       case x =>
@@ -42,7 +42,8 @@ case class ActionByReplay(defined: Boolean,
                           player1: Option[String],
                           player2: Option[String],
                           actionBySmurf: ActionBySmurf,
-                          winner: Int)
+                          winner: Int,
+                          mapName: String)
 object ActionByReplay{
   implicit val rw: RW[ActionByReplay] = macroRW
 }

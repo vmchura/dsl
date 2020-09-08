@@ -62,7 +62,7 @@ class ParseReplayFileServiceImplTest extends PlaySpec with GuiceOneAppPerSuite{
         assert(i1 && i2 && d1 && d2)
         println(action)
         val actionMade = action match {
-          case Right(ActionByReplay(_,_,_, actionToTake, _)) => Some(actionToTake)
+          case Right(ActionByReplay(_,_,_, actionToTake, _,_)) => Some(actionToTake)
           case _ => None
         }
         assertResult(Some(SmurfsEmpty))(actionMade)
@@ -91,7 +91,7 @@ class ParseReplayFileServiceImplTest extends PlaySpec with GuiceOneAppPerSuite{
         assert(i1 && i2 && d1 && d2 && i3)
         println(action)
         val actionMade = action match {
-          case Right(ActionByReplay(_,_,_, actionToTake, _)) => Some(actionToTake)
+          case Right(ActionByReplay(_,_,_, actionToTake, _,_)) => Some(actionToTake)
           case _ => None
         }
         assertResult(Some(Correlated1d2rDefined))(actionMade)
@@ -120,7 +120,7 @@ class ParseReplayFileServiceImplTest extends PlaySpec with GuiceOneAppPerSuite{
         assert(i1 && i2 && d1 && d2 && i3 && i4)
         println(action)
         val actionMade = action match {
-          case Right(ActionByReplay(_,_,_, actionToTake, _)) => Some(actionToTake)
+          case Right(ActionByReplay(_,_,_, actionToTake, _,_)) => Some(actionToTake)
           case _ => None
         }
         assertResult(Some(CorrelatedCruzadoDefined))(actionMade)
@@ -152,7 +152,7 @@ class ParseReplayFileServiceImplTest extends PlaySpec with GuiceOneAppPerSuite{
         assert(i1 && i2 && d1 && d2 && i3 && i4 && ix && d3)
         println(action)
         val actionMade = action match {
-          case Right(ActionByReplay(_,_,_, actionToTake, _)) => Some(actionToTake)
+          case Right(ActionByReplay(_,_,_, actionToTake, _,_)) => Some(actionToTake)
           case _ => None
         }
         assertResult(Some(ImpossibleToDefine))(actionMade)

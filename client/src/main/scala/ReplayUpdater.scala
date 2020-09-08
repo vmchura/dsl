@@ -9,81 +9,172 @@ import scala.util.{Failure, Success}
 import org.scalajs.dom.{Event, Node, document}
 import shared.models.ActionByReplay
 import upickle.default.read
+import shared.models.ActionBySmurf._
 
 import scala.scalajs.concurrent.JSExecutionContext.Implicits.queue
 
-class ReplayUpdater(fieldDiv: Div, player1: String, player2: String, discord1: String, discord2: String) {
+class ReplayUpdater(fieldDiv: Div, player1: String, player2: String, discord1: String, discord2: String, playerViewing: String) {
 
 
-  sealed trait StateSettingResult {
+  implicit def makeIntellijHappy[T<:org.scalajs.dom.raw.Node](x: scala.xml.Node): Binding[T] =
+    throw new AssertionError("This should never execute.")
+
+  abstract class WithMessageResult(val messageToShow: String)
+
+  sealed trait StateSettingResult extends WithMessageResult {
     def stateType: String
   }
-  object FileUnselected extends StateSettingResult {
-    override def toString: String = "Seleccione el replay de la partida"
-
+  sealed trait DangerState extends StateSettingResult {
+    override def stateType: String = "danger"
+  }
+  sealed trait WarningState extends StateSettingResult {
     override def stateType: String = "warning"
   }
-  object FileSelectedWrongType extends StateSettingResult {
-    override def toString: String = "El archivo seleccionado debe terminar en .rep"
-    override def stateType: String = "danger"
-  }
-  object FileSelectedNotSmallSyze extends StateSettingResult {
-    override def toString: String = "El archivo debe ser menor a 1Mb"
-    override def stateType: String = "danger"
-  }
-  object FileSelectedOk extends StateSettingResult{
-    override def toString: String = "Archivo seleccionado de manera correcta"
-    override def stateType: String = "success"
-
-  }
-  object FileParsedCorrectly extends StateSettingResult{
-    override def toString: String = "Archivo leído correctamente"
+  sealed trait SuccessState extends StateSettingResult {
     override def stateType: String = "success"
   }
-  case class FileErrorReceivingParse(error: String) extends StateSettingResult{
-    override def toString: String = s"Error en la conexión con el servidor: $error"
-    override def stateType: String = "danger"
-  }
-  object  FileParsedIncorrectly extends StateSettingResult{
-    override def toString: String = "El archivo no se pudo interpretar como replay"
-    override def stateType: String = "danger"
-  }
-  object FileOnProcessToParse extends StateSettingResult{
-    override def toString: String = "Esperando el PRE procesamiento del archivo"
+  sealed trait InfoState extends StateSettingResult {
     override def stateType: String = "info"
   }
-  object FileIsNotOne extends StateSettingResult{
-    override def toString: String = "Sólo se debe escoger UN archivo"
-    override def stateType: String = "warning"
-  }
-  object MatchingUsers extends StateSettingResult{
-    override def toString: String = "Relacione al usuario con el nick en el juego"
-    override def stateType: String = "info"
-  }
-  object ReadyToSend extends StateSettingResult{
-    override def toString: String = ":) Listo para subir el archivo al servidor"
-    override def stateType: String = "success"
-  }
-  case class ErrorByServerParsing(message: String) extends StateSettingResult {
-    override def toString: String = s"ERROR en el servidor: $message"
-    override def stateType: String = "danger"
-  }
-
-  case class ErrorImpossibleMessage(smurf1: Option[String], smurf2: Option[String]) extends StateSettingResult{
-    override def toString: String = (smurf1,smurf2) match {
-      case (Some(x), Some(y)) => s"El smurf $x o $y ya está asignado a otro usuario."
-      case (None, _) => s"El replay no se pudo interpretar correctamente"
-      case (_, None) => s"El replay no se pudo interpretar correctamente"
-    }
-    override def stateType: String = "danger"
-  }
+  
+  object FileUnselected extends WithMessageResult("Seleccione el replay de la partida") with WarningState
+  object FileSelectedWrongType extends WithMessageResult("El archivo seleccionado debe terminar en .rep") with DangerState
+  object FileSelectedNotSmallSyze extends WithMessageResult("El archivo debe ser menor a 1Mb") with DangerState
+  object FileSelectedOk extends WithMessageResult("Archivo seleccionado de manera correcta") with SuccessState
+  object FileParsedCorrectly extends WithMessageResult("Archivo leído correctamente") with SuccessState
+  case class FileErrorReceivingParse(error: String) extends WithMessageResult(s"Error en la conexión con el servidor, vuelva a intentarlo luego o comuníquese con el admin") with DangerState
+  object  FileParsedIncorrectly extends WithMessageResult("El archivo no se pudo interpretar como replay") with DangerState
+  object FileOnProcessToParse extends WithMessageResult("Esperando el PRE procesamiento del archivo") with InfoState
+  object FileIsNotOne extends WithMessageResult("Sólo se debe escoger UN archivo") with DangerState
+  object MatchingUsers extends WithMessageResult("Relacione al usuario con el nick en el juego") with SuccessState
+  object ReadyToSend extends WithMessageResult(":) Listo para subir el archivo al servidor") with SuccessState
+  case class ErrorByServerParsing(message: String) extends WithMessageResult(s"ERROR en el servidor, posiblemente replay corrupta, comuníquese con el admin") with DangerState
+  case class ErrorImpossibleMessage(smurf1: Option[String], smurf2: Option[String]) extends WithMessageResult(
+    (smurf1,smurf2) match {
+      case (Some(x), Some(y)) => s"El smurf $x o $y ya está asignado a otro usuario. Si crees que es un error, comuníquese con el admin."
+      case _ => s"El replay no se pudo interpretar correctamente.  Si crees que es un error, comuníquese con el admin."
+    }) with DangerState
 
   private val stateUploadProcess = Var[StateSettingResult](FileUnselected)
   private val replayParsed = Var[Option[ActionByReplay]](None)
   private val fileNameSelected = Var[Option[String]](None)
 
   @html
-  private val messageState = Binding{stateUploadProcess.bind.toString}
+  private def createRelation(primarySecondaryColor: String)(playerName: String, smurf: String) = {
+    <p>{playerName}<span class={s"badge rounded-pill bg-$primarySecondaryColor"}>{smurf} </span> </p>
+  }
+
+  private def secureRelation(playerName: String, smurf: String) = createRelation("primary")(playerName,smurf)
+  private def pendingRelation(playerName: String, smurf: String) = createRelation("secondary")(playerName,smurf)
+
+  @html
+  private def createSecureRelations(smurfForPlayer1: String, smurfForPlayer2: String) = {
+
+        <div>
+          <span class="font-weight-bold">Jugadores:</span>
+          {secureRelation(player1,smurfForPlayer1)}
+          {secureRelation(player2,smurfForPlayer2)}
+        </div>
+  }
+
+  @html
+  private def createSecureForFirstPlayer(smurfForPlayer1: String, smurfForPlayer2: String) = {
+
+        <div>
+          <span class="font-weight-bold">Jugadores:</span>
+          {secureRelation(player1,smurfForPlayer1)}
+          {pendingRelation(player2,smurfForPlayer2)}
+        </div>
+  }
+  @html
+  private def createSecureForSecondPlayer(smurfForPlayer1: String, smurfForPlayer2: String) = {
+
+        <div>
+          <span class="font-weight-bold">Jugadores:</span>
+          {pendingRelation(player1,smurfForPlayer1)}
+          {secureRelation(player2,smurfForPlayer2)}
+        </div>
+  }
+
+
+  @html
+  def nameAndWinner(mapName: String, winner: Int, smurf1: String, smurf2: String) = {
+    <div>
+      <span> <span class="font-weight-bold">Mapa:</span> {mapName}</span>
+    </div>
+    <div>
+      <span> <span class="font-weight-bold">Ganador:</span> {if(winner==1) smurf1 else smurf2}</span>
+    </div>
+
+  }
+  @html
+  def buildContainer(mapName: String, winner: Int, smurf1: String, smurf2: String)(content: Binding[Node]): Binding[Node] = {
+    <div class="container emptysmurfcontainer">
+      {nameAndWinner(mapName,winner,smurf1,smurf2)}
+      <div class="smurfs">
+        {content}
+      </div>
+      <div class="alert alert-info" data:role="alert">
+        Si consideras que existe un error, comunícate con el admin de la plataforma.
+      </div>
+    </div>
+  }
+
+  @html
+  def buildInput(playerViewing: Int,option: Int, idForInput: String) = {
+    val valueIfClicked = if(playerViewing == option) "1" else "2"
+    val input: NodeBinding[HTMLInputElement] = <input type="radio" class="form-check-input" name="nicks" id={idForInput} autocomplete="off" value={valueIfClicked}/>
+    input.value.onclick = _ => stateUploadProcess.value = ReadyToSend
+
+    input
+
+  }
+
+  @html
+  private def buildBoxSmurfs(actionBySmurf: ActionBySmurf, smurf1: String, smurf2: String, winner: Int, mapName: String) = {
+
+    def bc(content: Binding[Node]) = buildContainer(mapName, winner, smurf1,smurf2)(content)
+    val emptyDiv: Binding[Node] = <div></div>
+    playerViewing.toIntOption.fold(emptyDiv){ playerQuerying =>
+      actionBySmurf match {
+        case SmurfsEmpty =>
+          bc(
+            <div>
+              <span>Hola <span class="font-weight-bold">{if(playerQuerying==1) player1 else player2}</span>,
+                ¿Con qué nombre jugaste esta partida?</span>
+              <div class="form-check">
+                {buildInput(playerQuerying,1,"firstOptionID1")}
+                <label class="form-check-label" for="firstOptionID1">
+                {smurf1}
+                </label>
+              </div>
+              <div class="form-check">
+                {buildInput(playerQuerying,2,"firstOptionID2")}
+                <label class="form-check-label" for="firstOptionID2">
+                  {smurf2}
+                </label>
+              </div>
+              <input type="hidden" name="player1" value={smurf1}/>
+              <input type="hidden" name="player2" value={smurf2}/>
+              <input type="hidden" name="winner" value={winner.toString}/>
+            </div>
+          )
+        case CorrelatedParallelDefined => bc(createSecureRelations(smurf1, smurf2))
+        case CorrelatedCruzadoDefined => bc(createSecureRelations(smurf2, smurf1))
+        case Correlated1d1rDefined => bc(createSecureForFirstPlayer(smurf1, smurf2))
+        case Correlated1d2rDefined => bc(createSecureForFirstPlayer(smurf2, smurf1))
+        case Correlated2d1rDefined => bc(createSecureForSecondPlayer(smurf2, smurf1))
+        case Correlated2d2rDefined => bc(createSecureForSecondPlayer(smurf1, smurf2))
+        case _ => emptyDiv
+      }
+    }
+
+  }
+
+  @html
+  private val messageState = Binding{stateUploadProcess.bind.messageToShow}
+
+
 
   @html
   private val inputFile = {
@@ -120,7 +211,9 @@ class ReplayUpdater(fieldDiv: Div, player1: String, player2: String, discord1: S
         val playAjax = new PlayAjax(parseReplay)
         val data = new FormData()
         data.append("replay_file", file)
+
         val futValue = playAjax.callByAjaxWithParser(dyn => read[Either[String,ActionByReplay]](dyn.response.toString), data).map(_.flatten)
+
 
         futValue.onComplete {
           case Success(Left(error)) => stateUploadProcess.value = ErrorByServerParsing(error)
@@ -141,59 +234,36 @@ class ReplayUpdater(fieldDiv: Div, player1: String, player2: String, discord1: S
   }
 
 
-  @html
-  private def buildInput(value: Int,id: String): Binding[HTMLInputElement] = Binding{
-    val input: NodeBinding[HTMLInputElement] = <input class="form-check-input"  name="nicks" type="radio" value={s"$value"} id={id} />
-    input.value.onclick = _ => {
-      stateUploadProcess.value = ReadyToSend
-    }
 
-    input.bind
-  }
 
-  private val selection_Same: Binding[HTMLInputElement] = buildInput(1,"radioSelectID1")
-
-  private val selection_Cross: Binding[HTMLInputElement] = buildInput(2,"radioSelectID2")
-
-  import shared.models.ActionBySmurf._
   @html
   private val correlateTags = Binding {
-    replayParsed.bind.map {
-      case ActionByReplay(_,Some(smurf1),Some(smurf2),SmurfsEmpty, winner) =>
-        <div class="container">
-          <div class="form-check">
-            {selection_Same.bind}
-              <label class="form-check-label" for="radioSelectID1">
-                {s"[$player1 -> ${smurf1}] y [$player2 -> ${smurf2}]"}
-              </label>
-            </div>
-          <div class="form-check">
-            {selection_Cross.bind}
-            <label class="form-check-label" for="radioSelectID2">
-              {s"[$player1 -> ${smurf2}] y [$player2 -> ${smurf1}]"}
-            </label>
-          </div>
+    replayParsed.bind.map { acbrep =>
+      val ActionByReplay(_, smurf1, smurf2, actionBySmurf ,winner,mapName) = acbrep
+      (smurf1, smurf2) match {
+        case (Some(smurfPlayer1),Some(smurfPlayer2)) =>
+          actionBySmurf match {
+            case SmurfsEmpty =>
+              buildBoxSmurfs(actionBySmurf, smurfPlayer1, smurfPlayer2, winner, mapName)
+            case Correlated1d1rDefined |
+                 Correlated2d2rDefined |
+                 Correlated1d2rDefined |
+                 Correlated2d1rDefined |
+                 CorrelatedParallelDefined |
+                 CorrelatedCruzadoDefined =>
 
-          <input type="hidden" name="player1" value={smurf1}/>
-          <input type="hidden" name="player2" value={smurf2}/>
-          <input type="hidden" name="winner" value={winner.toString}/>
-        </div>
+              stateUploadProcess.value = ReadyToSend
+              buildBoxSmurfs(actionBySmurf, smurfPlayer1, smurfPlayer2, winner, mapName)
 
-        case ActionByReplay(_,player1,player2,ImpossibleToDefine, _) =>
-          stateUploadProcess.value = ErrorImpossibleMessage(player1, player2)
+
+            case ImpossibleToDefine =>
+              stateUploadProcess.value = ErrorImpossibleMessage(Some(smurfPlayer1), Some(smurfPlayer2))
+              <div>Error</div>
+          }
+        case _ =>
+          stateUploadProcess.value = ErrorImpossibleMessage(smurf1, smurf2)
           <div>Error</div>
-        case ActionByReplay(_,_,_,CorrelatedCruzadoDefined, _) =>
-          stateUploadProcess.value = ReadyToSend
-          <div>Los nicks ya están definidos :)</div>
-        case ActionByReplay(_,_,_,CorrelatedParallelDefined, _) =>
-          stateUploadProcess.value = ReadyToSend
-          <div>Los nicks ya están definidos :)</div>
-        case ActionByReplay(true,Some(_),Some(_),_, _) =>
-          stateUploadProcess.value = ReadyToSend
-          <div>Puedes enviar el replay! aunque un nick falta ser aprobado por los moderadores. :)</div>
-        case ActionByReplay(_,player1,player2,_, _) =>
-          stateUploadProcess.value = ErrorImpossibleMessage(player1, player2)
-          <div>Error</div>
+      }
 
 
 
@@ -223,13 +293,21 @@ class ReplayUpdater(fieldDiv: Div, player1: String, player2: String, discord1: S
             <span class="form-file-button">Seleccionar replay</span>
           </label>
       </div>
-      <div class={s"alert alert-${stateUploadProcess.bind.stateType}"} data:role="alert">
-        {
-        messageState.bind
+      {
+        stateUploadProcess.bind match {
+          case _: DangerState | _: InfoState =>
+            <div class={s"alert alert-${stateUploadProcess.bind.stateType}"} data:role="alert">
+              {
+              messageState.bind
+              }
+            </div>
+          case _ =>
+            <div></div>
         }
-      </div>
+      }
 
-      {correlateTags.bind}
+
+      {correlateTags}
       {buttonSubmit.bind}
 
 
@@ -259,8 +337,9 @@ object ReplayUpdater{
         p2 <- div.dataset.get("player2")
         d1 <- div.dataset.get("discord1")
         d2 <- div.dataset.get("discord2")
+        pv <- div.dataset.get("playerviewing")
       }yield{
-        val ru = new ReplayUpdater(div,p1,p2,d1,d2)
+        val ru = new ReplayUpdater(div,p1,p2,d1,d2,pv)
         ru.render()
       }
 

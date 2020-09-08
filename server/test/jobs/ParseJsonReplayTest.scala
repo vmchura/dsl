@@ -20,6 +20,7 @@ class ParseJsonReplayTest extends PlaySpec with GuiceOneAppPerSuite{
       assert(replayParsed.winner == 1 || replayParsed.winner == 2)
       assert(replayParsed.player1.nonEmpty)
       assert(replayParsed.player2.nonEmpty)
+      assert(replayParsed.mapName.contains("Neo Sylphid"))
     }
   }
 

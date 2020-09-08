@@ -7,8 +7,8 @@ import javax.inject.Inject
 import models.UserSmurf
 import models.daos.UserSmurfDAO
 import play.api.Configuration
-import play.api.libs.json.{JsArray, JsString, Json}
-import shared.models.{ActionByReplay, ActionBySmurf, ReplayDescriptionShared}
+import play.api.libs.json.{JsString, Json}
+import shared.models.{ActionByReplay, ActionBySmurf}
 import sttp.client._
 import sttp.client.asynchttpclient.WebSocketHandler
 import sttp.client.asynchttpclient.future.AsyncHttpClientFutureBackend
@@ -90,7 +90,7 @@ class ParseReplayFileServiceImpl @Inject()(configuration: Configuration, userSmu
           case (_,DiscordUserRegistered(false,true,_,pk1),DiscordUserRegistered(false,true,_,pk2))  if keyIsSame(pk1,discordUserID2) && keyIsSame(pk2,discordUserID1)  => CorrelatedCruzadoDefined
           case _ => ImpossibleToDefine
         }
-        ActionByReplay(defined = true,Some(replayParsed.player1), Some(replayParsed.player2), action, replayParsed.winner)
+        ActionByReplay(defined = true,Some(replayParsed.player1), Some(replayParsed.player2), action, replayParsed.winner, replayParsed.mapName)
       }
 
       message.map(v => Right(v)).recover(e => Left(e.toString))
