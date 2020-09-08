@@ -79,7 +79,7 @@ class TournamentController @Inject()(scc: SilhouetteControllerComponents,
           case Left(error) => Ok(s"error: ${error.toString}")
           case Right(matches) =>
 
-            Ok(showmatches(Some(request.identity), matches, socialProviderRegistry))
+            Ok(showmatches(request.identity, matches, socialProviderRegistry))
         }
       }
     }

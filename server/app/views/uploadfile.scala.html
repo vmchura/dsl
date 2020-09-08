@@ -3,7 +3,7 @@
 @import controllers.AssetsFinder
 
 @import helper._
-@(m: MatchDiscord, modalID: String)(implicit request: RequestHeader, messages: Messages,assets: AssetsFinder)
+@(m: MatchDiscord, modalID: String, user: User)(implicit request: RequestHeader, messages: Messages,assets: AssetsFinder)
 
 <div class="modal fade" id=@modalID tabindex="-1" aria-labelledby="@{modalID+"label"}" aria-hidden="true">
     <div class="modal-dialog">
@@ -25,7 +25,9 @@
                         data-player1=@{m.userSmurf1.discordUser.userName}
                         data-player2=@{m.userSmurf2.discordUser.userName}
                         data-discord1=@{m.userSmurf1.discordUser.discordID}
-                        data-discord2=@{m.userSmurf2.discordUser.discordID}>
+                        data-discord2=@{m.userSmurf2.discordUser.discordID}
+                        data-playerviewing=@{if(m.userLoggedIsFirstPlayer) "1" else "2"}
+                    >
 
                     </div>
                 }

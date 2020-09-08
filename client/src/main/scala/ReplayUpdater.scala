@@ -1,20 +1,19 @@
-import com.thoughtworks.binding
 import org.lrng.binding.html
 import org.scalajs.dom.html.{Button, Div}
-import com.thoughtworks.binding.Binding.{BindingSeq, Var}
+import com.thoughtworks.binding.Binding.Var
 import com.thoughtworks.binding.Binding
 import org.lrng.binding.html.NodeBinding
-import org.scalajs.dom.raw.{Event, FormData, HTMLInputElement}
+import org.scalajs.dom.raw.{FormData, HTMLInputElement}
 
 import scala.util.{Failure, Success}
-import org.scalajs.dom.{Event, Node, document, window}
+import org.scalajs.dom.{Event, Node, document}
 import shared.models.ActionByReplay
 import upickle.default.read
 import shared.models.ActionBySmurf._
 
 import scala.scalajs.concurrent.JSExecutionContext.Implicits.queue
 
-class ReplayUpdater(fieldDiv: Div, player1: String, player2: String, discord1: String, discord2: String) {
+class ReplayUpdater(fieldDiv: Div, player1: String, player2: String, discord1: String, discord2: String, playerViewing: String) {
 
 
   implicit def makeIntellijHappy[T<:org.scalajs.dom.raw.Node](x: scala.xml.Node): Binding[T] =
@@ -46,8 +45,8 @@ class ReplayUpdater(fieldDiv: Div, player1: String, player2: String, discord1: S
   case class FileErrorReceivingParse(error: String) extends WithMessageResult(s"Error en la conexión con el servidor, vuelva a intentarlo luego o comuníquese con el admin") with DangerState
   object  FileParsedIncorrectly extends WithMessageResult("El archivo no se pudo interpretar como replay") with DangerState
   object FileOnProcessToParse extends WithMessageResult("Esperando el PRE procesamiento del archivo") with InfoState
-  object FileIsNotOne extends WithMessageResult("Sólo se debe escoger UN archivo") with WarningState
-  object MatchingUsers extends WithMessageResult("Relacione al usuario con el nick en el juego") with InfoState
+  object FileIsNotOne extends WithMessageResult("Sólo se debe escoger UN archivo") with DangerState
+  object MatchingUsers extends WithMessageResult("Relacione al usuario con el nick en el juego") with SuccessState
   object ReadyToSend extends WithMessageResult(":) Listo para subir el archivo al servidor") with SuccessState
   case class ErrorByServerParsing(message: String) extends WithMessageResult(s"ERROR en el servidor, posiblemente replay corrupta, comuníquese con el admin") with DangerState
   case class ErrorImpossibleMessage(smurf1: Option[String], smurf2: Option[String]) extends WithMessageResult(
@@ -61,18 +60,18 @@ class ReplayUpdater(fieldDiv: Div, player1: String, player2: String, discord1: S
   private val fileNameSelected = Var[Option[String]](None)
 
   @html
-  private def createRelation(primarySecondaryColor: String, iconString: String)(playerName: String, smurf: String) = {
-    <p>{playerName}<span class={s"badge rounded-pill bg-$primarySecondaryColor"}>{smurf} </span> <i class="material-icons">
-      {iconString}</i></p>
+  private def createRelation(primarySecondaryColor: String)(playerName: String, smurf: String) = {
+    <p>{playerName}<span class={s"badge rounded-pill bg-$primarySecondaryColor"}>{smurf} </span> </p>
   }
 
-  private def secureRelation(playerName: String, smurf: String) = createRelation("primary","sentiment_very_satisfied")(playerName,smurf)
-  private def pendingRelation(playerName: String, smurf: String) = createRelation("secondary","sentiment_neutral")(playerName,smurf)
+  private def secureRelation(playerName: String, smurf: String) = createRelation("primary")(playerName,smurf)
+  private def pendingRelation(playerName: String, smurf: String) = createRelation("secondary")(playerName,smurf)
 
   @html
   private def createSecureRelations(smurfForPlayer1: String, smurfForPlayer2: String) = {
 
         <div>
+          <span class="font-weight-bold">Jugadores:</span>
           {secureRelation(player1,smurfForPlayer1)}
           {secureRelation(player2,smurfForPlayer2)}
         </div>
@@ -82,6 +81,7 @@ class ReplayUpdater(fieldDiv: Div, player1: String, player2: String, discord1: S
   private def createSecureForFirstPlayer(smurfForPlayer1: String, smurfForPlayer2: String) = {
 
         <div>
+          <span class="font-weight-bold">Jugadores:</span>
           {secureRelation(player1,smurfForPlayer1)}
           {pendingRelation(player2,smurfForPlayer2)}
         </div>
@@ -90,6 +90,7 @@ class ReplayUpdater(fieldDiv: Div, player1: String, player2: String, discord1: S
   private def createSecureForSecondPlayer(smurfForPlayer1: String, smurfForPlayer2: String) = {
 
         <div>
+          <span class="font-weight-bold">Jugadores:</span>
           {pendingRelation(player1,smurfForPlayer1)}
           {secureRelation(player2,smurfForPlayer2)}
         </div>
@@ -98,13 +99,11 @@ class ReplayUpdater(fieldDiv: Div, player1: String, player2: String, discord1: S
 
   @html
   def nameAndWinner(mapName: String, winner: Int, smurf1: String, smurf2: String) = {
-    <div class="input-group">
-      <span class="input-group-text">Mapa</span>
-      <span class="form-control text-right" >{mapName}</span>
+    <div>
+      <span> <span class="font-weight-bold">Mapa:</span> {mapName}</span>
     </div>
-    <div class="input-group" style="width=100%;">
-      <span class="input-group-text">Ganador</span>
-      <span class="form-control text-right" >{if(winner==1) smurf1 else smurf2}</span>
+    <div>
+      <span> <span class="font-weight-bold">Ganador:</span> {if(winner==1) smurf1 else smurf2}</span>
     </div>
 
   }
@@ -112,42 +111,20 @@ class ReplayUpdater(fieldDiv: Div, player1: String, player2: String, discord1: S
   def buildContainer(mapName: String, winner: Int, smurf1: String, smurf2: String)(content: Binding[Node]): Binding[Node] = {
     <div class="container emptysmurfcontainer">
       {nameAndWinner(mapName,winner,smurf1,smurf2)}
-      <br style="margin-bottom=1rem;"></br>
       <div class="smurfs">
         {content}
       </div>
-      <br style="margin-bottom=1rem;"></br>
       <div class="alert alert-info" data:role="alert">
         Si consideras que existe un error, comunícate con el admin de la plataforma.
       </div>
     </div>
   }
 
-
-  private val isParallel = Var[Option[Boolean]](None)
-  private val filledIfParallel: Binding[String]= Binding{
-    isParallel.bind.fold("btn btn-outline-primary")(i => if(i) "btn btn-primary" else "btn btn-outline-primary")
-  }
-  private val filledIfCrossed: Binding[String]= Binding{
-    isParallel.bind.fold("btn btn-outline-primary")(i => if(i) "btn btn-outline-primary" else "btn btn-primary")
-  }
-
-  private def selectChoice(selection: Option[Int]): Unit = {
-    isParallel.value = selection.map(_ == 1)
-    selection.foreach(_ => stateUploadProcess.value = ReadyToSend)
-  }
-  private def selectParallel(): Unit = selectChoice(Some(1))
-  private def selectCruzado(): Unit = selectChoice(Some(2))
-
   @html
-  def buildInput(valueOnSelect: Int, idForInput: String) = {
-    val input: NodeBinding[HTMLInputElement] = <input type="radio" class="btn-check" name="nicks" id={idForInput} autocomplete="off" value={valueOnSelect.toString}/>
-    input.value.onclick = _ => {
-      if(valueOnSelect == 1)
-        selectParallel()
-      else
-        selectCruzado()
-    }
+  def buildInput(playerViewing: Int,option: Int, idForInput: String) = {
+    val valueIfClicked = if(playerViewing == option) "1" else "2"
+    val input: NodeBinding[HTMLInputElement] = <input type="radio" class="form-check-input" name="nicks" id={idForInput} autocomplete="off" value={valueIfClicked}/>
+    input.value.onclick = _ => stateUploadProcess.value = ReadyToSend
 
     input
 
@@ -157,55 +134,39 @@ class ReplayUpdater(fieldDiv: Div, player1: String, player2: String, discord1: S
   private def buildBoxSmurfs(actionBySmurf: ActionBySmurf, smurf1: String, smurf2: String, winner: Int, mapName: String) = {
 
     def bc(content: Binding[Node]) = buildContainer(mapName, winner, smurf1,smurf2)(content)
-    println(actionBySmurf)
-    actionBySmurf match {
-      case SmurfsEmpty =>
-        bc(
-          <div>
-          <div class="container-smurfs-select">
-            <div class="card border-primary" >
-              <div class="card-header border-primary">
-                ¿Cuál es el smurf/nick de <span class="font-weight-bold">{player1}</span>?
+    val emptyDiv: Binding[Node] = <div></div>
+    playerViewing.toIntOption.fold(emptyDiv){ playerQuerying =>
+      actionBySmurf match {
+        case SmurfsEmpty =>
+          bc(
+            <div>
+              <span>Hola <span class="font-weight-bold">{if(playerQuerying==1) player1 else player2}</span>,
+                ¿Con qué nombre jugaste esta partida?</span>
+              <div class="form-check">
+                {buildInput(playerQuerying,1,"firstOptionID1")}
+                <label class="form-check-label" for="firstOptionID1">
+                {smurf1}
+                </label>
               </div>
-              <div class="card-footer bg-transparent border-primary">
-                <div class="btn-group" style="width:100%;">
-                  {buildInput(1,"firstOptionPlayer1")}
-                  <label class={filledIfParallel.bind} for="firstOptionPlayer1">{smurf1}</label>
-                  {buildInput(2,"secondOptionPlayer1")}
-                  <label class={filledIfCrossed.bind} for="secondOptionPlayer1">{smurf2}</label>
-                </div>
+              <div class="form-check">
+                {buildInput(playerQuerying,2,"firstOptionID2")}
+                <label class="form-check-label" for="firstOptionID2">
+                  {smurf2}
+                </label>
               </div>
+              <input type="hidden" name="player1" value={smurf1}/>
+              <input type="hidden" name="player2" value={smurf2}/>
+              <input type="hidden" name="winner" value={winner.toString}/>
             </div>
-            <br style="margin-bottom=1rem;"></br>
-
-            <div class="card border-primary" >
-              <div class="card-header border-primary">
-                ¿Cuál es el smurf/nick de <span class="font-weight-bold">{player2}</span>?
-              </div>
-              <div class="card-footer bg-transparent border-primary">
-            <div class="btn-group" style="width:100%;">
-              {buildInput(2,"firstOptionPlayer2")}
-              <label class={filledIfCrossed.bind} for="firstOptionPlayer2">{smurf1}</label>
-              {buildInput(1,"secondOptionPlayer2")}
-              <label class={filledIfParallel.bind} for="secondOptionPlayer2">{smurf2}</label>
-            </div>
-              </div>
-            </div>
-
-          </div>
-
-          <input type="hidden" name="player1" value={smurf1}/>
-          <input type="hidden" name="player2" value={smurf2}/>
-          <input type="hidden" name="winner" value={winner.toString}/>
-          </div>
-        )
-      case CorrelatedParallelDefined => bc(createSecureRelations(smurf1,smurf2))
-      case CorrelatedCruzadoDefined => bc(createSecureRelations(smurf2,smurf1))
-      case Correlated1d1rDefined => bc(createSecureForFirstPlayer(smurf1,smurf2))
-      case Correlated1d2rDefined => bc(createSecureForFirstPlayer(smurf2,smurf1))
-      case Correlated2d1rDefined => bc(createSecureForSecondPlayer(smurf2,smurf1))
-      case Correlated2d2rDefined => bc(createSecureForSecondPlayer(smurf1,smurf2))
-      case _ => <div></div>
+          )
+        case CorrelatedParallelDefined => bc(createSecureRelations(smurf1, smurf2))
+        case CorrelatedCruzadoDefined => bc(createSecureRelations(smurf2, smurf1))
+        case Correlated1d1rDefined => bc(createSecureForFirstPlayer(smurf1, smurf2))
+        case Correlated1d2rDefined => bc(createSecureForFirstPlayer(smurf2, smurf1))
+        case Correlated2d1rDefined => bc(createSecureForSecondPlayer(smurf2, smurf1))
+        case Correlated2d2rDefined => bc(createSecureForSecondPlayer(smurf1, smurf2))
+        case _ => emptyDiv
+      }
     }
 
   }
@@ -251,17 +212,13 @@ class ReplayUpdater(fieldDiv: Div, player1: String, player2: String, discord1: S
         val data = new FormData()
         data.append("replay_file", file)
 
-        val futValue = playAjax.callByAjaxWithParser(dyn => read[Either[String,ActionByReplay]]({
-          println(dyn.response.toString)
-          dyn.response.toString
-        }), data).map(_.flatten)
+        val futValue = playAjax.callByAjaxWithParser(dyn => read[Either[String,ActionByReplay]](dyn.response.toString), data).map(_.flatten)
 
 
         futValue.onComplete {
           case Success(Left(error)) => stateUploadProcess.value = ErrorByServerParsing(error)
           case Success(Right(value)) =>
             stateUploadProcess.value = MatchingUsers
-            println(value)
             replayParsed.value = Some(value)
           case Failure(exception) => stateUploadProcess.value = FileErrorReceivingParse(exception.toString)
         }
@@ -282,7 +239,6 @@ class ReplayUpdater(fieldDiv: Div, player1: String, player2: String, discord1: S
   @html
   private val correlateTags = Binding {
     replayParsed.bind.map { acbrep =>
-      println(acbrep)
       val ActionByReplay(_, smurf1, smurf2, actionBySmurf ,winner,mapName) = acbrep
       (smurf1, smurf2) match {
         case (Some(smurfPlayer1),Some(smurfPlayer2)) =>
@@ -337,11 +293,19 @@ class ReplayUpdater(fieldDiv: Div, player1: String, player2: String, discord1: S
             <span class="form-file-button">Seleccionar replay</span>
           </label>
       </div>
-      <div class={s"alert alert-${stateUploadProcess.bind.stateType}"} data:role="alert">
-        {
-        messageState.bind
+      {
+        stateUploadProcess.bind match {
+          case _: DangerState | _: InfoState =>
+            <div class={s"alert alert-${stateUploadProcess.bind.stateType}"} data:role="alert">
+              {
+              messageState.bind
+              }
+            </div>
+          case _ =>
+            <div></div>
         }
-      </div>
+      }
+
 
       {correlateTags}
       {buttonSubmit.bind}
@@ -373,8 +337,9 @@ object ReplayUpdater{
         p2 <- div.dataset.get("player2")
         d1 <- div.dataset.get("discord1")
         d2 <- div.dataset.get("discord2")
+        pv <- div.dataset.get("playerviewing")
       }yield{
-        val ru = new ReplayUpdater(div,p1,p2,d1,d2)
+        val ru = new ReplayUpdater(div,p1,p2,d1,d2,pv)
         ru.render()
       }
 

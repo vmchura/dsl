@@ -1,8 +1,8 @@
 
 @import com.mohiva.play.silhouette.impl.providers.SocialProviderRegistry
 @this()(implicit assets: AssetsFinder)
-@(user: Option[models.User],matches: Seq[MatchDiscord],socialProviders: SocialProviderRegistry)(implicit request: RequestHeader, messages: Messages,menues: Seq[MenuGroup])
-@main("Partidas del torneo",user,socialProviders){
+@(user: models.User,matches: Seq[MatchDiscord],socialProviders: SocialProviderRegistry)(implicit request: RequestHeader, messages: Messages,menues: Seq[MenuGroup])
+@main("Partidas del torneo",Some(user),socialProviders){
 
     <div id="makePairsID"></div>
     <table class="table table-striped" >
@@ -51,7 +51,7 @@
     </table>
 
     @for(m <- matches){
-        @uploadfile(m,s"modal_${m.matchPK.challongeMatchID}")
+        @uploadfile(m,s"modal_${m.matchPK.challongeMatchID}",user)
     }
 
     @for(m <- matches){
