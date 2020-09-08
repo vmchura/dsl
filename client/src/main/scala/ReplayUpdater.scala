@@ -1,3 +1,4 @@
+import com.thoughtworks.binding
 import org.lrng.binding.html
 import org.scalajs.dom.html.{Button, Div}
 import com.thoughtworks.binding.Binding.{BindingSeq, Var}
@@ -97,38 +98,60 @@ class ReplayUpdater(fieldDiv: Div, player1: String, player2: String, discord1: S
 
   @html
   def nameAndWinner(mapName: String, winner: Int, smurf1: String, smurf2: String) = {
-    <div class="mapname">{mapName}</div>
-      <div class="winner">{if(winner==1) smurf1 else smurf2}</div>
+    <div class="input-group">
+      <span class="input-group-text">Mapa</span>
+      <span class="form-control text-right" >{mapName}</span>
+    </div>
+    <div class="input-group" style="width=100%;">
+      <span class="input-group-text">Ganador</span>
+      <span class="form-control text-right" >{if(winner==1) smurf1 else smurf2}</span>
+    </div>
+
   }
   @html
   def buildContainer(mapName: String, winner: Int, smurf1: String, smurf2: String)(content: Binding[Node]): Binding[Node] = {
     <div class="container emptysmurfcontainer">
       {nameAndWinner(mapName,winner,smurf1,smurf2)}
+      <br style="margin-bottom=1rem;"></br>
       <div class="smurfs">
         {content}
       </div>
-      <div class="smurfsmessage">
+      <br style="margin-bottom=1rem;"></br>
+      <div class="alert alert-info" data:role="alert">
         Si consideras que existe un error, comunícate con el admin de la plataforma.
       </div>
     </div>
   }
 
-  private val selection_Same: Binding[HTMLInputElement] = buildInput(1,"radioSelectID1")
 
-  private val selection_Cross: Binding[HTMLInputElement] = buildInput(2,"radioSelectID2")
+  private val isParallel = Var[Option[Boolean]](None)
+  private val filledIfParallel: Binding[String]= Binding{
+    isParallel.bind.fold("btn btn-outline-primary")(i => if(i) "btn btn-primary" else "btn btn-outline-primary")
+  }
+  private val filledIfCrossed: Binding[String]= Binding{
+    isParallel.bind.fold("btn btn-outline-primary")(i => if(i) "btn btn-outline-primary" else "btn btn-primary")
+  }
 
-  private def selectChoice(selection: Option[Int]): Unit = Binding{
-    selection match {
-      case Some(1) => selection_Same.bind.select()
-      case Some(2) => selection_Cross.bind.select()
-      case _ => ()
-
-    }
+  private def selectChoice(selection: Option[Int]): Unit = {
+    isParallel.value = selection.map(_ == 1)
+    selection.foreach(_ => stateUploadProcess.value = ReadyToSend)
   }
   private def selectParallel(): Unit = selectChoice(Some(1))
   private def selectCruzado(): Unit = selectChoice(Some(2))
 
+  @html
+  def buildInput(valueOnSelect: Int, idForInput: String) = {
+    val input: NodeBinding[HTMLInputElement] = <input type="radio" class="btn-check" name="nicks" id={idForInput} autocomplete="off" value={valueOnSelect.toString}/>
+    input.value.onclick = _ => {
+      if(valueOnSelect == 1)
+        selectParallel()
+      else
+        selectCruzado()
+    }
 
+    input
+
+  }
 
   @html
   private def buildBoxSmurfs(actionBySmurf: ActionBySmurf, smurf1: String, smurf2: String, winner: Int, mapName: String) = {
@@ -140,28 +163,37 @@ class ReplayUpdater(fieldDiv: Div, player1: String, player2: String, discord1: S
         bc(
           <div>
           <div class="container-smurfs-select">
-            <div class="card-question">¿Cuál es la relación correcta entre nombre Discord y smurf/nick usado en el juego?</div>
-            <div class="smurf-container-option">
-              <div class="smurf-user-name">{player1}</div>
-              <div class="smurf-optionLeft">
-                <button onclick={_: Event => selectParallel()}>{smurf1}</button>
+            <div class="card border-primary" >
+              <div class="card-header border-primary">
+                ¿Cuál es el smurf/nick de <span class="font-weight-bold">{player1}</span>?
               </div>
-              <div class="smurf-optionRight">
-                <button onclick={_: Event => selectCruzado()}>{smurf2}</button>
-              </div>
-            </div>
-            <div class="smurf-container-option">
-              <div class="smurf-user-name">{player2}</div>
-              <div class="smurf-optionLeft">
-                <button onclick={_: Event => selectCruzado()}>{smurf1}</button>
-              </div>
-              <div class="smurf-optionRight">
-                <button onclick={_: Event => selectParallel()}>{smurf2}</button>
+              <div class="card-footer bg-transparent border-primary">
+                <div class="btn-group" style="width:100%;">
+                  {buildInput(1,"firstOptionPlayer1")}
+                  <label class={filledIfParallel.bind} for="firstOptionPlayer1">{smurf1}</label>
+                  {buildInput(2,"secondOptionPlayer1")}
+                  <label class={filledIfCrossed.bind} for="secondOptionPlayer1">{smurf2}</label>
+                </div>
               </div>
             </div>
+            <br style="margin-bottom=1rem;"></br>
+
+            <div class="card border-primary" >
+              <div class="card-header border-primary">
+                ¿Cuál es el smurf/nick de <span class="font-weight-bold">{player2}</span>?
+              </div>
+              <div class="card-footer bg-transparent border-primary">
+            <div class="btn-group" style="width:100%;">
+              {buildInput(2,"firstOptionPlayer2")}
+              <label class={filledIfCrossed.bind} for="firstOptionPlayer2">{smurf1}</label>
+              {buildInput(1,"secondOptionPlayer2")}
+              <label class={filledIfParallel.bind} for="secondOptionPlayer2">{smurf2}</label>
+            </div>
+              </div>
+            </div>
+
           </div>
-          {selection_Same.bind}
-          {selection_Cross.bind}
+
           <input type="hidden" name="player1" value={smurf1}/>
           <input type="hidden" name="player2" value={smurf2}/>
           <input type="hidden" name="winner" value={winner.toString}/>
@@ -244,18 +276,6 @@ class ReplayUpdater(fieldDiv: Div, player1: String, player2: String, discord1: S
     input
   }
 
-
-  @html
-  private def buildInput(value: Int,id: String): Binding[HTMLInputElement] = Binding{
-    val input: NodeBinding[HTMLInputElement] = <input class="btn-check"  name="nicks" type="hidden" value={s"$value"} id={id}  />
-    input.value.onselect = _ => {
-      stateUploadProcess.value = ReadyToSend
-    }
-
-
-
-    input.bind
-  }
 
 
 
