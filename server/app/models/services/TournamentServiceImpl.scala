@@ -43,4 +43,6 @@ class TournamentServiceImpl @Inject() (tournamentDAO: TournamentDAO, participant
   override def dropTournament(challongeID: Long): Future[Boolean] = tournamentDAO.remove(challongeID)
 
   override def findAllTournamentsByPlayer(challongeID: String): Future[Seq[Tournament]] = findTournamentByPlayer(challongeID,loadTournament)
+
+  override def findTournament(challongeID: Long): Future[Option[Tournament]] = tournamentDAO.load(challongeID)
 }

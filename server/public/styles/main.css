@@ -111,6 +111,35 @@ main {
     object-fit: cover;
 }
 
+#container-matches-finder{
+    margin-top: 1rem;
+}
+
+#container-tournament-info{
+    text-align: center;
+    padding-top: 1rem;
+}
+
+#title-tournament-name{
+    color: #495057;
+    text-transform: uppercase;
+    font-weight: bold;
+    font-size: 1.5rem;
+}
+
+#container-tournament-links{
+}
+
+.tournament-links{
+}
+
+a:link, a:visited, a:active {
+    text-decoration:none;
+}
+
+
+
+
 
 
 
