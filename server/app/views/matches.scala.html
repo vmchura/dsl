@@ -8,6 +8,7 @@
     <table class="table table-striped" >
         <thead>
             <tr>
+                <th>Torneo</th>
                 <th>Round</th>
                 <th>Player 1</th>
                 <th>Player 2</th>
@@ -18,6 +19,9 @@
         <tbody>
         @for(m <- matches){
             <tr>
+                <td>
+                    <a href="#">@m.tournamentName</a>
+                </td>
                 <td>@m.round</td>
                 <td>@m.userSmurf1.discordUser.userName
                     @for(smurfDefined <- m.userSmurf1.matchSmurf.distinctBy(_.smurf)){
@@ -32,7 +36,7 @@
                 <td>
 
                     <button type="button" class="btn btn-primary" data-toggle="modal" data-target="@{s"#modal_list_${m.matchPK.challongeMatchID}"}">
-                        <span class="material-icons">replay</span>
+                        <span class="material-icons">info_outline</span>
                     </button>
                 </td>
                 <td>

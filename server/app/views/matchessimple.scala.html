@@ -3,6 +3,19 @@
 @this()(implicit assets: AssetsFinder)
 @(user: Option[models.User],matches: Seq[MatchDiscord],socialProviders: SocialProviderRegistry)(implicit request: RequestHeader, messages: Messages,menues: Seq[MenuGroup])
 @main("Partidas del torneo",user,socialProviders){
+    <div id="container-tournament-info">
+        <span id="title-tournament-name">@matches.headOption.map(_.tournamentName).getOrElse("Torneo sin partidas")</span>
+        <div id="container-tournament-links">
+            <a id="title-normas-link" class="tournament-links" href="https://docs.google.com/document/d/1EAx-NbajNBR3Hu14oVUQopbC9-9VSy37qvEtSHnmCm0/edit?usp=sharing">
+                <span>Normas del torneo</span>
+            </a>
+            <br/>
+            <a id="title-challonge-link" class="tournament-links" href="https://challonge.com/es/DeathfateChallengerStarLeague3">
+                <i class='fab fa-google-drive'></i>
+                <span>Challonge del torneo</span>
+            </a>
+        </div>
+    </div>
 
     <div id="container-matches-finder"></div>
 
@@ -32,7 +45,7 @@
                 <td>
 
                     <button type="button" class="btn btn-primary" data-toggle="modal" data-target="@{s"#modal_list_${m.matchPK.challongeMatchID}"}">
-                        <span class="material-icons right">replay</span>
+                        <span class="material-icons right">info_outline</span>
                     </button>
                 </td>
 
