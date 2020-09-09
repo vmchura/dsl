@@ -34,7 +34,7 @@ class ReplayService  @Inject()(tournamentService: TournamentService,
       _ <- s3Insertion.withFailure(CannotInsertS3)
       discordInsertion <- tournament.channelDiscordReplay.fold(Future.successful(true))(ch => discordFileService.pushFileOnChannel(ch,replay,"",matchChallonge.asMatchName(newIDForThisReplay).pathFileOnCloud))
       _ <- discordInsertion.withFailure(CannotInsertDiscord)
-      insertionOnDB <- replayMatchDAO.add(ReplayRecord(newIDForThisReplay,
+      insertionOnDB <- replayMatchDAO.add(ReplayRecord(newIDForThisReplay,ReplayRecord.md5HashString(replay),
         matchChallonge.asMatchName(newIDForThisReplay).pathFileOnCloud,
         fileName,tournamentID,matchID,enabled = true,user.loginInfo.providerKey))
     }yield{
