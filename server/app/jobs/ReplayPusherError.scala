@@ -12,3 +12,4 @@ object CannotInsertOnDropBox extends ReplayPusherError
 object CannotInsertS3 extends ReplayPusherError
 object CannotInsertDiscord extends ReplayPusherError
 object CannotSmurf extends ReplayPusherError
+object FileIsAlreadyRegistered extends ReplayPusherError

@@ -19,7 +19,9 @@ class ReplayUpdater(fieldDiv: Div, player1: String, player2: String, discord1: S
   implicit def makeIntellijHappy[T<:org.scalajs.dom.raw.Node](x: scala.xml.Node): Binding[T] =
     throw new AssertionError("This should never execute.")
 
-  abstract class WithMessageResult(val messageToShow: String)
+  abstract class WithMessageResult(private val messageToShow: String){
+    def getMessageToShow(): String = messageToShow
+  }
 
   sealed trait StateSettingResult extends WithMessageResult {
     def stateType: String
@@ -42,13 +44,29 @@ class ReplayUpdater(fieldDiv: Div, player1: String, player2: String, discord1: S
   object FileSelectedNotSmallSyze extends WithMessageResult("El archivo debe ser menor a 1Mb") with DangerState
   object FileSelectedOk extends WithMessageResult("Archivo seleccionado de manera correcta") with SuccessState
   object FileParsedCorrectly extends WithMessageResult("Archivo leído correctamente") with SuccessState
-  case class FileErrorReceivingParse(error: String) extends WithMessageResult(s"Error en la conexión con el servidor, vuelva a intentarlo luego o comuníquese con el admin") with DangerState
+  case class FileErrorReceivingParse(error: String) extends WithMessageResult(s"Error en la conexión con el servidor, vuelva a intentarlo luego o comuníquese con el admin") with DangerState{
+    override def getMessageToShow(): String = {
+      println(error)
+      if(error.contains("IsAlreadyRegistered"))
+        s"${super.getMessageToShow()} / Replay ya está registrada"
+      else
+        super.getMessageToShow()
+    }
+  }
   object  FileParsedIncorrectly extends WithMessageResult("El archivo no se pudo interpretar como replay") with DangerState
   object FileOnProcessToParse extends WithMessageResult("Esperando el PRE procesamiento del archivo") with InfoState
   object FileIsNotOne extends WithMessageResult("Sólo se debe escoger UN archivo") with DangerState
   object MatchingUsers extends WithMessageResult("Relacione al usuario con el nick en el juego") with SuccessState
   object ReadyToSend extends WithMessageResult(":) Listo para subir el archivo al servidor") with SuccessState
-  case class ErrorByServerParsing(message: String) extends WithMessageResult(s"ERROR en el servidor, posiblemente replay corrupta, comuníquese con el admin") with DangerState
+  case class ErrorByServerParsing(message: String) extends WithMessageResult(s"ERROR en el servidor, posiblemente replay corrupta, comuníquese con el admin") with DangerState{
+    override def getMessageToShow(): String = {
+      println(message)
+      if(message.contains("IsAlreadyRegistered"))
+        s"${super.getMessageToShow()} / Replay ya está registrada"
+      else
+        super.getMessageToShow()
+    }
+  }
   case class ErrorImpossibleMessage(smurf1: Option[String], smurf2: Option[String]) extends WithMessageResult(
     (smurf1,smurf2) match {
       case (Some(x), Some(y)) => s"El smurf $x o $y ya está asignado a otro usuario. Si crees que es un error, comuníquese con el admin."
@@ -172,7 +190,7 @@ class ReplayUpdater(fieldDiv: Div, player1: String, player2: String, discord1: S
   }
 
   @html
-  private val messageState = Binding{stateUploadProcess.bind.messageToShow}
+  private val messageState = Binding{stateUploadProcess.bind.getMessageToShow}
 
 
 

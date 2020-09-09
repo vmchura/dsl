@@ -1,5 +1,6 @@
 package models.daos
 
+import java.io.File
 import java.util.UUID
 
 import javax.inject.Inject
@@ -47,5 +48,11 @@ class ReplayMatchDAOImpl  @Inject() (val reactiveMongoApi: ReactiveMongoApi) ext
     val query = Json.obj("replayID" -> replayID)
     collection.flatMap(_.find(query,Option.empty[ReplayRecord]).one[ReplayRecord])
 
+  }
+
+  override def isNotRegistered(file: File): Future[Boolean] = {
+    val hash = ReplayRecord.md5HashString(file)
+    val query = Json.obj("replayMD5Hash" -> hash)
+    collection.flatMap(_.find(query,Option.empty[ReplayRecord]).one[ReplayRecord]).map(_.isEmpty)
   }
 }

@@ -4,8 +4,9 @@ import java.io.{File, FileInputStream}
 import java.util.Base64
 
 import javax.inject.Inject
+import jobs.{FileIsAlreadyRegistered, flag2Future}
 import models.UserSmurf
-import models.daos.UserSmurfDAO
+import models.daos.{ReplayMatchDAO, UserSmurfDAO}
 import play.api.Configuration
 import play.api.libs.json.{JsString, Json}
 import shared.models.{ActionByReplay, ActionBySmurf}
@@ -16,7 +17,7 @@ import sttp.client.asynchttpclient.future.AsyncHttpClientFutureBackend
 import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.Future
 
-class ParseReplayFileServiceImpl @Inject()(configuration: Configuration, userSmurfDAO: UserSmurfDAO) extends ParseReplayFileService{
+class ParseReplayFileServiceImpl @Inject()(configuration: Configuration, userSmurfDAO: UserSmurfDAO, replayMatchDAO: ReplayMatchDAO) extends ParseReplayFileService{
   private val lambda_x_api_key = configuration.get[String]("lambda.apikey")
 
   def parseFile(file: File): Future[Either[String,String]] = {
@@ -68,6 +69,8 @@ class ParseReplayFileServiceImpl @Inject()(configuration: Configuration, userSmu
 
     val result = {
       val message = for{
+        fileIsUnique                  <- replayMatchDAO.isNotRegistered(file)
+        _                             <- fileIsUnique.withFailure(FileIsAlreadyRegistered)
         jsonStringEither              <- parseFile(file)
         jsonString                    <- jsonStringEither.withFailure()
         replayParsedEither            <- Future.successful(parseJsonResponse(jsonString))
