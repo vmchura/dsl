@@ -18,7 +18,7 @@ case class WithAdmin() extends Authorization[User, CookieAuthenticator] {
 object WithAdmin{
   private val moderadoresID = List(
     "361607214156480512",  //kogler
-    "578353624699109435", //kishigel
+    "562728682712465415", //kishigel
     "662869207633100840", //araknoides
     "698648718999814165"  //vmchq
   )
