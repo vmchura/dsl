@@ -22,6 +22,7 @@ class SideBarMenuService @Inject()(tournamentService: TournamentService) {
         MenuActionDefined(torneo.tournamentName,
           routes.TournamentController.showMatchesToUploadReplay(torneo.challongeID).url
         ))))
+
       val todos = MenuGroup("Torneos",torneos.map(torneo =>
         MenuActionDefined(torneo.tournamentName,
           routes.TournamentController.showMatches(torneo.challongeID).url
@@ -29,7 +30,10 @@ class SideBarMenuService @Inject()(tournamentService: TournamentService) {
 
       val admin = user.flatMap(u => if(WithAdmin.isModeradorID(u.loginInfo.providerKey)) Some(MenuGroup("Admin",List(MenuActionDefined("Smurfs",routes.SmurfController.view().url)))) else None)
 
-      List(misTorneos,Some(todos),admin).flatten
+      val myStats = user.map(_ =>
+        MenuGroup("Mis stats", List(MenuActionDefined("Mis Stats",routes.UserStatsAPI.viewMyStats().url)))
+      )
+      List(misTorneos,Some(todos),admin,myStats).flatten
     }
   }
 

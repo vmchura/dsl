@@ -31,6 +31,12 @@
 
         <link @{CSPNonce.attr} rel="stylesheet" media="screen" href="@controllers.routes.Assets.versioned("styles/bootstrap.css")">
         <link @{CSPNonce.attr} rel="stylesheet" media="screen" href="@controllers.routes.Assets.versioned("styles/main.css")">
+
+        @*Vuetify*@
+        <link href="https://fonts.googleapis.com/css?family=Roboto:100,300,400,500,700,900" rel="stylesheet">
+        <link href="https://cdn.jsdelivr.net/npm/@@mdi/font@@5.x/css/materialdesignicons.min.css" rel="stylesheet">
+        <link href="https://cdn.jsdelivr.net/npm/vuetify@@2.x/dist/vuetify.min.css" rel="stylesheet">
+
             <!-- Compiled and minified CSS -->
             <!--
       <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/materialize/1.0.0/css/materialize.min.css">
@@ -71,13 +77,12 @@
             }
         </div>
         <script @{CSPNonce.attr} type="text/javascript" src="@routes.JavaScriptRouter.javascriptRoutes()"></script>
-
+        <script @{CSPNonce.attr} src="https://cdn.jsdelivr.net/npm/vue@@2.x/dist/vue.js"></script>
+        <script @{CSPNonce.attr} src="https://cdn.jsdelivr.net/npm/vuetify@@2.x/dist/vuetify.js"></script>
+        <script @{CSPNonce.attr} src="@controllers.routes.Assets.versioned("javascript/userStats.js")"></script>
 
         @content
 
-        <div id="hello-world-app">
-          <h1>{{ msg }}</h1>
-        </div>
 
 
 
@@ -87,8 +92,7 @@
         <script @{CSPNonce.attr} src="https://cdn.jsdelivr.net/npm/popper.js@@1.16.0/dist/umd/popper.min.js" integrity="sha384-Q6E9RHvbIyZFJoft+2mJbHaEWldlvI9IOYy5n3zV9zzTtmI3UksdQRVvoxMfooAo" crossorigin="anonymous"></script>
         <script @{CSPNonce.attr} src="https://stackpath.bootstrapcdn.com/bootstrap/5.0.0-alpha1/js/bootstrap.min.js" integrity="sha384-oesi62hOLfzrys4LxRF63OJCXdXDipiYWBnvTl9Y9/TRlw5xlKIEHpNyvvDShgf/" crossorigin="anonymous"></script>
 
-        <script @{CSPNonce.attr} src="https://cdnjs.cloudflare.com/ajax/libs/vue/2.1.6/vue.min.js"></script>
-        <script @{CSPNonce.attr} src="@controllers.routes.Assets.versioned("javascript/hellovue.js")"></script>
+
 
         </body>
 </html>

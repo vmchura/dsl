@@ -32,4 +32,7 @@ GET         /smurfs/accept/:discordUserID/:matchID                        contro
 GET         /smurfs/decline/:discordUserID/:matchID                       controllers.SmurfController.decline(discordUserID: String, matchID: java.util.UUID)
 GET         /smurfs/list                                                  controllers.SmurfController.showListSmurfsDefined()
 
+# STATS
+GET         /userstats/view                     controllers.UserStatsAPI.viewMyStats()
+GET         /userstats/:discordUserID           controllers.UserStatsAPI.buildRelation(discordUserID: String)
 GET     /javascriptRoutes                       controllers.JavaScriptRouter.javascriptRoutes
