@@ -41,12 +41,13 @@
                             @if(isAdmin) {
                                 @if(m.enabled) {
                                     <td>
-                                        <a class="waves-effect waves-light btn-small" href=@controllers.routes.ReplayMatchController.deleteReplay(m.replayID)>
-                                            <i class="material-icons left">cancel</i></a>
+                                        <button type="button" class="btn btn-danger btn-small" data-toggle="modal" data-target=@{"#"+modalID+m.matchID.toString}>
+                                            <i class="material-icons left">delete</i>
+                                        </button>
                                     </td>
                                 }else{
                                     <td>
-                                        <span><i class="material-icons left">cancel</i></span>
+                                        <span><i class="material-icons left">delete</i></span>
                                     </td>
                                 }
                             }
@@ -62,3 +63,25 @@
         </div>
     </div>
 </div>
+@for(m <- matchReplay.replaysAttached){
+    <div class="modal fade alert-danger" id="@{modalID+m.matchID.toString}" tabindex="-1" aria-labelledby="@{modalID+m.matchID.toString+"confirm-label"}" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="@{modalID+m.matchID.toString+"confirm-label"}" >¿Estás seguro?</h5>
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+                </div>
+                <div class="modal-body">
+                ¿Estás seguro de eliminar @{m.nombreOriginal}?
+                </div>
+                <div class="modal-footer">
+                    <a class="btn btn-small btn-danger" href=@controllers.routes.ReplayMatchController.deleteReplay(m.replayID)>
+                        Sí, ELIMINAR</a>
+                    <button type="button" class="btn btn-secondary" data-dismiss="modal">No</button>
+                </div>
+            </div>
+        </div>
+    </div>
+}
