@@ -34,10 +34,16 @@
                     }
                 </td>
                 <td>
+                    @if(m.replaysAttached.nonEmpty){
+                        <button type="button" class="btn btn-primary" data-toggle="modal" data-target="@{s"#modal_list_${m.matchPK.challongeMatchID}"}">
+                            <span class="material-icons">info_outline</span>
+                        </button>
+                    }else{
+                        <button type="button" class="btn btn-primary" disabled>
+                            <span class="material-icons">info_outline</span>
+                        </button>
+                    }
 
-                    <button type="button" class="btn btn-primary" data-toggle="modal" data-target="@{s"#modal_list_${m.matchPK.challongeMatchID}"}">
-                        <span class="material-icons">info_outline</span>
-                    </button>
                 </td>
                 <td>
 
