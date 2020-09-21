@@ -5,7 +5,7 @@ import java.util.UUID
 import javax.inject.Inject
 import models.{ReplayRecord, User}
 import models.daos.ReplayMatchDAO
-import models.services.{ChallongeTournamentService, DiscordFileService, DropBoxFilesService, S3FilesService, TournamentService}
+import models.services.{ChallongeTournamentService, DiscordFileService, DropBoxFilesService, ParseReplayFileService, S3FilesService, TournamentService}
 
 import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.Future
@@ -15,11 +15,10 @@ class ReplayService  @Inject()(tournamentService: TournamentService,
                                dropBoxFilesService: DropBoxFilesService,
                                replayMatchDAO: ReplayMatchDAO,
                                s3FilesService: S3FilesService,
-                               discordFileService: DiscordFileService) {
-  def formFuture[A](f: Future[A]): Future[Either[JobError,A]] = {
-    convertToEither(s => UnknowReplayPusherError(s))(f)
+                               discordFileService: DiscordFileService,
+                               parseReplayFiseService: ParseReplayFileService) {
 
-  }
+  def formFuture[A](f: Future[A]): Future[Either[JobError,A]] = convertToEither(UnknowReplayPusherError)(f)
 
   def pushReplay(tournamentID: Long, matchID: Long, replay: File, user: User, fileName: String)(newIDForThisReplay: UUID): Future[Either[JobError,Boolean]] = {
     val executionFuture = for{
@@ -28,6 +27,8 @@ class ReplayService  @Inject()(tournamentService: TournamentService,
       challongeTournamentOpt <- challongeTournamentService.findChallongeTournament(tournament.discordServerID)(tournament.urlID)
       challongeTournament <- challongeTournamentOpt.withFailure(TournamentNotFoundOnChallonge(tournament.urlID))
       matchChallonge <- challongeTournament.matches.find(_.matchPK.challongeMatchID == matchID).withFailure(MatchNotFoundOnChallonge(matchID))
+      parsedEither <- parseReplayFiseService.parseFileAndBuildDescription(replay)
+      parsed <- parsedEither.withFailure
       insertionOnDropBox <- dropBoxFilesService.push(replay,matchChallonge.asMatchName(newIDForThisReplay))
       _ <- insertionOnDropBox.withFailure(CannotInsertOnDropBox)
       s3Insertion <- s3FilesService.push(replay,matchChallonge.asMatchName(newIDForThisReplay))
@@ -36,7 +37,7 @@ class ReplayService  @Inject()(tournamentService: TournamentService,
       _ <- discordInsertion.withFailure(CannotInsertDiscord)
       insertionOnDB <- replayMatchDAO.add(ReplayRecord(newIDForThisReplay,ReplayRecord.md5HashString(replay),
         matchChallonge.asMatchName(newIDForThisReplay).pathFileOnCloud,
-        fileName,tournamentID,matchID,enabled = true,user.loginInfo.providerKey))
+        fileName,tournamentID,matchID,enabled = true,user.loginInfo.providerKey,parsed.dateGame))
     }yield{
       insertionOnDB
     }

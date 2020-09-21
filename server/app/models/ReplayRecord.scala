@@ -10,8 +10,8 @@ case class ReplayRecord(replayID: UUID,
                         replayMD5Hash: String,
                         matchName: String, nombreOriginal: String,
                         tournamentID: Long, matchID: Long, enabled: Boolean,
-                        uploaderDiscordID: String){
-  def sharedVersion(): ReplayRecordShared = ReplayRecordShared(replayID,matchName,nombreOriginal,enabled)
+                        uploaderDiscordID: String, dateGame: Option[String]){
+  def sharedVersion(): ReplayRecordShared = ReplayRecordShared(replayID,matchName,nombreOriginal,enabled,dateGame)
 }
 object ReplayRecord{
   implicit val jsonFormat: OFormat[ReplayRecord] = Json.format[ReplayRecord]
