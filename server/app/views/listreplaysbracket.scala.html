@@ -1,0 +1,22 @@
+@import play.api.i18n.Messages
+@import play.api.mvc.RequestHeader
+@import controllers.AssetsFinder
+@import views.html.helper._
+@import shared.UtilParser
+@import upickle.default._
+@import com.mohiva.play.silhouette.impl.providers.SocialProviderRegistry
+@this()(implicit assets: AssetsFinder)
+@(user: models.User,tournament: String, replays: Seq[ReplayRecord],socialProviders: SocialProviderRegistry)(implicit request: RequestHeader, messages: Messages,menues: Seq[MenuGroup])
+
+@main("Ordenar bracket",Some(user),socialProviders){
+
+    <div id="panel-order-replays-container">
+
+    </div>
+    <script
+        @{CSPNonce.attr} >
+        panelorder = new OrderGames("@tournament", "@{UtilParser.safeJson2String(write(replays.map(_.sharedVersion)))}","panel-order-replays-container");
+        panelorder.showPanel();
+    </script>
+}
+

@@ -49,6 +49,12 @@
                 </div>
 
             </div>
+            @if(matchReplay.replaysAttached.length > 1) {
+                <div class="modal-footer">
+                    <a class="btn btn-primary" href="@controllers.routes.OrderReplaysController.view(matchReplay.matchPK.challongeID,matchReplay.matchPK.challongeMatchID)">Editar Orden</a>
+                    <button type="button" class="btn btn-secondary" data-dismiss="modal">Cerrar</button>
+                </div>
+            }
     </div>
 </div>
 </div>
