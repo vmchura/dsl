@@ -50,8 +50,8 @@ class ParseReplayFileServiceImplTest extends PlaySpec with GuiceOneAppPerSuite{
       import shared.models.ActionBySmurf._
       val file = new File("/home/vmchura/Games/starcraft-remastered/drive_c/users/vmchura/My Documents/StarCraft/Maps/Replays/ReplaysSaved-SC/dtfastexpand.rep")
 
-      val u1 = DiscordUser("1","1Name")
-      val u2 = DiscordUser("2","2Name")
+      val u1 = DiscordUser("1","1Name",Some("1234"))
+      val u2 = DiscordUser("2","2Name",Some("1234"))
       val execution = for{
         i1 <- userDAO.addUser(u1)
         i2 <- userDAO.addUser(u2)
@@ -78,8 +78,8 @@ class ParseReplayFileServiceImplTest extends PlaySpec with GuiceOneAppPerSuite{
       import shared.models.ActionBySmurf._
       val file = new File("/home/vmchura/Games/starcraft-remastered/drive_c/users/vmchura/My Documents/StarCraft/Maps/Replays/ReplaysSaved-SC/dtfastexpand.rep")
 
-      val u1 = DiscordUser("1","1Name")
-      val u2 = DiscordUser("2","2Name")
+      val u1 = DiscordUser("1","1Name",Some("1234"))
+      val u2 = DiscordUser("2","2Name",Some("1234"))
       val execution = for{
         i1 <- userDAO.addUser(u1)
         i2 <- userDAO.addUser(u2)
@@ -106,8 +106,8 @@ class ParseReplayFileServiceImplTest extends PlaySpec with GuiceOneAppPerSuite{
       import shared.models.ActionBySmurf._
       val file = new File("/home/vmchura/Games/starcraft-remastered/drive_c/users/vmchura/My Documents/StarCraft/Maps/Replays/ReplaysSaved-SC/dtfastexpand.rep")
 
-      val u1 = DiscordUser("1","1Name")
-      val u2 = DiscordUser("2","2Name")
+      val u1 = DiscordUser("1","1Name",Some("1234"))
+      val u2 = DiscordUser("2","2Name",Some("1234"))
       val execution = for{
         i1 <- userDAO.addUser(u1)
         i2 <- userDAO.addUser(u2)
@@ -135,9 +135,9 @@ class ParseReplayFileServiceImplTest extends PlaySpec with GuiceOneAppPerSuite{
       import shared.models.ActionBySmurf._
       val file = new File("/home/vmchura/Games/starcraft-remastered/drive_c/users/vmchura/My Documents/StarCraft/Maps/Replays/ReplaysSaved-SC/dtfastexpand.rep")
 
-      val u1 = DiscordUser("1","1Name")
-      val u2 = DiscordUser("2","2Name")
-      val u3 = DiscordUser("3","3Name")
+      val u1 = DiscordUser("1","1Name",Some("1234"))
+      val u2 = DiscordUser("2","2Name",Some("1234"))
+      val u3 = DiscordUser("3","3Name",Some("1234"))
       val execution = for{
         i1 <- userDAO.addUser(u1)
         i2 <- userDAO.addUser(u2)

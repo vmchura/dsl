@@ -27,7 +27,7 @@ class DiscordUserServiceImpl @Inject()(configuration: Configuration) extends Dis
             val jsArray = Json.parse(body).as[JsArray]
 
             Some(jsArray.value.map(v => {
-              DiscordUser((v \ "user" \ "id").as[String], (v \ "user" \ "username").as[String])
+              DiscordUser((v \ "user" \ "id").as[String], (v \ "user" \ "username").as[String], (v \ "user" \ "discriminator").asOpt[String])
             }).toSeq)
           } catch {
             case _ : Throwable =>

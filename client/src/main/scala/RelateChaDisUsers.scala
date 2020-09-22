@@ -46,7 +46,7 @@ class RelateChaDisUsers (firstParam: String, secondParam: String, container: Str
       <td>{pm.disuser.map(_.stringLabel).getOrElse("¿?")}</td>
       <td>
 
-        <select  onchange={e: Event => {
+        <select class="form-select" onchange={e: Event => {
           val selectionValue = e.currentTarget.asInstanceOf[HTMLSelectElement]
           val value = selectionValue.value
           second.find(_.id.equals(value)) match {
@@ -81,9 +81,10 @@ class RelateChaDisUsers (firstParam: String, secondParam: String, container: Str
   }
 
   @html
-  private val p = <table>
+  private val p = <div class="container">
+    <table class="table table-hover">
     {pairsEnabled.map(pairComponent)}
-  </table>
+  </table></div>
 
   @JSExport("showPanel")
   def showPanel(): Unit = {

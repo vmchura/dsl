@@ -29,7 +29,7 @@ class UserSmurfDaoImplTest extends PlaySpec with GuiceOneAppPerSuite{
   }
   "add and delete smurf" in {
     val smurfTest = "randomSmurf"
-    val du = DiscordUser("asd","xyz")
+    val du = DiscordUser("asd","xyz",Some("1234"))
     val matchSmurf = MatchSmurf(UUID.randomUUID(),MatchPK(0L,141L), smurfTest)
     val queryExecution = for{
       inserted      <- dao.addUser(du)
@@ -50,7 +50,7 @@ class UserSmurfDaoImplTest extends PlaySpec with GuiceOneAppPerSuite{
   }
   "find by smurf" in {
     val smurfTest = "randomSmurf"
-    val du = DiscordUser("asd","xyz")
+    val du = DiscordUser("asd","xyz",Some("1234"))
 
     val queryExecution = for{
       inserted    <- dao.addUser(du)

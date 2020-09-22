@@ -66,7 +66,7 @@ class TournamentController @Inject()(scc: SilhouetteControllerComponents,
         case Left(error) => Ok(s"error: ${error.toString}")
         case Right((tournament, participants, discordusers)) => Ok(matchpairs(tournament,
           participants.map(p => BasicComparableByLabel(p.chaname, write(p.participantPK))),
-          discordusers.map(p => BasicComparableByLabel(p.userName, write(p.discordID))), socialProviderRegistry))
+          discordusers.map(p => BasicComparableByLabel(s"${p.userName}#${p.discriminator.getOrElse("????")}", write(p.discordID))), socialProviderRegistry))
       }
     }
 
