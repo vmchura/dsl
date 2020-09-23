@@ -4,8 +4,9 @@ import java.util.UUID
 import javax.inject._
 import jobs.{CannotSaveResultMatch, CannotSmurf, ReplayService}
 import models.{MatchPK, MatchResult, MatchSmurf}
-import models.daos.{MatchResultDAO, ReplayMatchDAO, UserSmurfDAO}
+import models.daos.{MatchResultDAO, ReplayMatchDAO, TicketReplayDAO, UserSmurfDAO}
 import models.services.ParseReplayFileService
+import org.joda.time.DateTime
 import play.api.mvc._
 import play.api.i18n.I18nSupport
 import play.api.libs.Files
@@ -22,7 +23,8 @@ class ReplayMatchController @Inject()(scc: SilhouetteControllerComponents,
                                       matchResultDAO: MatchResultDAO,
                                       parseFile: ParseReplayFileService,
                                       smurfDAO: UserSmurfDAO,
-                                      replayMatchDAO: ReplayMatchDAO
+                                      replayMatchDAO: ReplayMatchDAO,
+                                      ticketReplayDAO: TicketReplayDAO
 
                                      )(
                                        implicit
@@ -44,95 +46,95 @@ class ReplayMatchController @Inject()(scc: SilhouetteControllerComponents,
         case _ => (_,_) => Future.successful(true)
       }
     }
-    val outerExecution = for{
-      replay_file <- request.body.file("replay_file")
-      /*
-      player1 <- request.body.dataParts.get("player1").flatMap(_.headOption)
-      player2 <- request.body.dataParts.get("player2").flatMap(_.headOption)
-      winner <- request.body.dataParts.get("winner").flatMap(_.headOption.flatMap(_.toIntOption))
-      nicks <- request.body.dataParts.get("nicks").flatMap(_.headOption.flatMap(_.toIntOption))
+    if(ticketReplayDAO.ableToUpload(request.identity.userID,DateTime.now())) {
 
-       */
-    }yield{
-      val file = replay_file.ref.toFile
-      val newReplayMatchID = UUID.randomUUID()
-      val execution = for {
-        action            <- parseFile.parseFileAndBuildAction(file, discordUser1,discordUser2)
-        nicks <- action match {
-          case Right(ActionByReplay(_, _, _, Correlated1d1rDefined, _,_)) => Future.successful(1)
-          case Right(ActionByReplay(_, _, _, Correlated2d2rDefined, _,_)) => Future.successful(1)
-          case Right(ActionByReplay(_, _, _, Correlated1d2rDefined, _,_)) => Future.successful(2)
-          case Right(ActionByReplay(_, _, _, Correlated2d1rDefined, _,_)) => Future.successful(2)
-          case Right(ActionByReplay(_, _, _, CorrelatedParallelDefined, _,_)) => Future.successful(1)
-          case Right(ActionByReplay(_, _, _, CorrelatedCruzadoDefined, _,_)) => Future.successful(1)
-          case Right(ActionByReplay(_, _, _, SmurfsEmpty, _,_)) => request.body.dataParts.get("nicks").flatMap(_.headOption.flatMap(_.toIntOption)) match {
-            case Some(value) => Future.successful(value)
-            case None => Future.failed(new IllegalArgumentException("no nicks provided when needed"))
+      ticketReplayDAO.uploading(request.identity.userID,DateTime.now())
+
+      val outerExecution = for {
+        replay_file <- request.body.file("replay_file")
+
+      } yield {
+        val file = replay_file.ref.toFile
+        val newReplayMatchID = UUID.randomUUID()
+        val execution = for {
+          action <- parseFile.parseFileAndBuildAction(file, discordUser1, discordUser2)
+          nicks <- action match {
+            case Right(ActionByReplay(_, _, _, Correlated1d1rDefined, _, _)) => Future.successful(1)
+            case Right(ActionByReplay(_, _, _, Correlated2d2rDefined, _, _)) => Future.successful(1)
+            case Right(ActionByReplay(_, _, _, Correlated1d2rDefined, _, _)) => Future.successful(2)
+            case Right(ActionByReplay(_, _, _, Correlated2d1rDefined, _, _)) => Future.successful(2)
+            case Right(ActionByReplay(_, _, _, CorrelatedParallelDefined, _, _)) => Future.successful(1)
+            case Right(ActionByReplay(_, _, _, CorrelatedCruzadoDefined, _, _)) => Future.successful(1)
+            case Right(ActionByReplay(_, _, _, SmurfsEmpty, _, _)) => request.body.dataParts.get("nicks").flatMap(_.headOption.flatMap(_.toIntOption)) match {
+              case Some(value) => Future.successful(value)
+              case None => Future.failed(new IllegalArgumentException("no nicks provided when needed"))
+            }
+            case _ => Future.failed(new IllegalArgumentException("no nicks can be calculated"))
           }
-          case _ => Future.failed(new IllegalArgumentException("no nicks can be calculated"))
-        }
-        player1 <- action match {
-          case Right(ActionByReplay(_,Some(smurf1),Some(_),_,_,_)) => Future.successful(smurf1)
-          case _ => Future.failed(new IllegalArgumentException("no player1 provided when needed"))
-        }
-        player2 <- action match {
-          case Right(ActionByReplay(_,Some(_),Some(smurf2),_,_,_)) => Future.successful(smurf2)
-          case _ => Future.failed(new IllegalArgumentException("no player2 provided when needed"))
-        }
-        winner <- action match {
-          case Right(ActionByReplay(_,Some(_),Some(_),_,win,_)) => Future.successful(win)
-          case _ => Future.failed(new IllegalArgumentException("no winner provided when needed"))
-        }
-        smurfForDiscord1 <- Future.successful(action match {
-          case Right(ActionByReplay(_, smurf1, _, Correlated1d1rDefined, _,_)) => Left(smurf1)
-          case Right(ActionByReplay(_, smurf1, _, Correlated2d2rDefined, _,_)) => Right(smurf1)
-          case Right(ActionByReplay(_, _, smurf2, Correlated1d2rDefined, _,_)) => Left(smurf2)
-          case Right(ActionByReplay(_, _, smurf2, Correlated2d1rDefined, _,_)) => Right(smurf2)
-          case Right(ActionByReplay(_, smurf1, _, CorrelatedParallelDefined, _,_)) => Left(smurf1)
-          case Right(ActionByReplay(_, _, smurf2, CorrelatedCruzadoDefined, _,_)) => Left(smurf2)
-          case Right(ActionByReplay(_, smurf1, smurf2, SmurfsEmpty, _,_)) => nicks match {
-            case 1 => Right(smurf1)
-            case 2 => Right(smurf2)
+          player1 <- action match {
+            case Right(ActionByReplay(_, Some(smurf1), Some(_), _, _, _)) => Future.successful(smurf1)
+            case _ => Future.failed(new IllegalArgumentException("no player1 provided when needed"))
+          }
+          player2 <- action match {
+            case Right(ActionByReplay(_, Some(_), Some(smurf2), _, _, _)) => Future.successful(smurf2)
+            case _ => Future.failed(new IllegalArgumentException("no player2 provided when needed"))
+          }
+          winner <- action match {
+            case Right(ActionByReplay(_, Some(_), Some(_), _, win, _)) => Future.successful(win)
+            case _ => Future.failed(new IllegalArgumentException("no winner provided when needed"))
+          }
+          smurfForDiscord1 <- Future.successful(action match {
+            case Right(ActionByReplay(_, smurf1, _, Correlated1d1rDefined, _, _)) => Left(smurf1)
+            case Right(ActionByReplay(_, smurf1, _, Correlated2d2rDefined, _, _)) => Right(smurf1)
+            case Right(ActionByReplay(_, _, smurf2, Correlated1d2rDefined, _, _)) => Left(smurf2)
+            case Right(ActionByReplay(_, _, smurf2, Correlated2d1rDefined, _, _)) => Right(smurf2)
+            case Right(ActionByReplay(_, smurf1, _, CorrelatedParallelDefined, _, _)) => Left(smurf1)
+            case Right(ActionByReplay(_, _, smurf2, CorrelatedCruzadoDefined, _, _)) => Left(smurf2)
+            case Right(ActionByReplay(_, smurf1, smurf2, SmurfsEmpty, _, _)) => nicks match {
+              case 1 => Right(smurf1)
+              case 2 => Right(smurf2)
+              case _ => Right(None)
+            }
             case _ => Right(None)
-          }
-          case _ => Right(None)
-        })
+          })
 
 
-        smurfForDiscord2 <- Future.successful(action match {
-          case Right(ActionByReplay(_, _, smurf2, Correlated1d1rDefined, _,_)) => Right(smurf2)
-          case Right(ActionByReplay(_, _, smurf2, Correlated2d2rDefined, _,_)) => Left(smurf2)
-          case Right(ActionByReplay(_, smurf1, _, Correlated1d2rDefined, _,_)) => Right(smurf1)
-          case Right(ActionByReplay(_, smurf1, _, Correlated2d1rDefined, _,_)) => Left(smurf1)
-          case Right(ActionByReplay(_, _, smurf2, CorrelatedParallelDefined, _,_)) => Left(smurf2)
-          case Right(ActionByReplay(_, smurf1, _, CorrelatedCruzadoDefined, _,_)) => Left(smurf1)
-          case Right(ActionByReplay(_, smurf1, smurf2, SmurfsEmpty, _,_)) => nicks match {
-            case 1 => Right(smurf2)
-            case 2 => Right(smurf1)
+          smurfForDiscord2 <- Future.successful(action match {
+            case Right(ActionByReplay(_, _, smurf2, Correlated1d1rDefined, _, _)) => Right(smurf2)
+            case Right(ActionByReplay(_, _, smurf2, Correlated2d2rDefined, _, _)) => Left(smurf2)
+            case Right(ActionByReplay(_, smurf1, _, Correlated1d2rDefined, _, _)) => Right(smurf1)
+            case Right(ActionByReplay(_, smurf1, _, Correlated2d1rDefined, _, _)) => Left(smurf1)
+            case Right(ActionByReplay(_, _, smurf2, CorrelatedParallelDefined, _, _)) => Left(smurf2)
+            case Right(ActionByReplay(_, smurf1, _, CorrelatedCruzadoDefined, _, _)) => Left(smurf1)
+            case Right(ActionByReplay(_, smurf1, smurf2, SmurfsEmpty, _, _)) => nicks match {
+              case 1 => Right(smurf2)
+              case 2 => Right(smurf1)
+              case _ => Right(None)
+            }
             case _ => Right(None)
-          }
-          case _ => Right(None)
-        })
-        replayPushedTry <- replayService.pushReplay(tournamentID,matchID,file, request.identity, secureName(replay_file.filename))(newReplayMatchID)
-        _               <- replayPushedTry.withFailure
-        resultSaved     <- matchResultDAO.save(MatchResult(newReplayMatchID,tournamentID, matchID, discordUser1, discordUser2,player1,player2, winner))
-        _ <- resultSaved.withFailure(CannotSaveResultMatch)
-        insertionSmurf1 <- insertOnProperlySmurfList(smurfForDiscord1,discordUser1)(newReplayMatchID,MatchPK(tournamentID,matchID))
-        insertionSmurf2 <- insertOnProperlySmurfList(smurfForDiscord2,discordUser2)(newReplayMatchID,MatchPK(tournamentID,matchID))
-        _ <- insertionSmurf1.withFailure(CannotSmurf)
-        _ <- insertionSmurf2.withFailure(CannotSmurf)
-      }yield{
-        result.flashing("success" -> s"${secureName(replay_file.filename)} guardado!")
+          })
+          replayPushedTry <- replayService.pushReplay(tournamentID, matchID, file, request.identity, secureName(replay_file.filename))(newReplayMatchID)
+          _ <- replayPushedTry.withFailure
+          resultSaved <- matchResultDAO.save(MatchResult(newReplayMatchID, tournamentID, matchID, discordUser1, discordUser2, player1, player2, winner))
+          _ <- resultSaved.withFailure(CannotSaveResultMatch)
+          insertionSmurf1 <- insertOnProperlySmurfList(smurfForDiscord1, discordUser1)(newReplayMatchID, MatchPK(tournamentID, matchID))
+          insertionSmurf2 <- insertOnProperlySmurfList(smurfForDiscord2, discordUser2)(newReplayMatchID, MatchPK(tournamentID, matchID))
+          _ <- insertionSmurf1.withFailure(CannotSmurf)
+          _ <- insertionSmurf2.withFailure(CannotSmurf)
+        } yield {
+          result.flashing("success" -> s"${secureName(replay_file.filename)} guardado!")
+        }
+
+        execution.transformWith {
+          case Success(value) => Future.successful(value)
+          case Failure(_) => Future.successful(result.flashing("error" -> s"${secureName(replay_file.filename)} ERROR!"))
+        }
       }
 
-      execution.transformWith{
-        case Success(value) =>  Future.successful(value)
-        case Failure(_) => Future.successful(result.flashing("error" -> s"${secureName(replay_file.filename)} ERROR!"))
-      }
+      outerExecution.getOrElse(Future.successful(result.flashing("error" -> s"intentas hackearme? ERROR!")))
+    }else{
+      Future.successful(result.flashing("error" -> s"we need more energy, procesando anterior replay, espera un poco y vuelve a intentarlo"))
     }
-
-    outerExecution.getOrElse(Future.successful(result.flashing("error" -> s"intentas hackearme? ERROR!")))
-
 
   }
 
@@ -151,6 +153,7 @@ class ReplayMatchController @Inject()(scc: SilhouetteControllerComponents,
   }
 
   def downloadReplay(replayID: UUID, replayName: String): Action[AnyContent] = Action.async{ implicit request =>
+
     replayService.downloadReplay(replayID, replayName).map{
       case Left(error) => Redirect(routes.Application.index()).flashing("error" -> error.toString)
       case Right(file) => Ok.sendFile(file,inline = true, _ => Some(replayName))
