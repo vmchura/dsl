@@ -8,7 +8,7 @@ import scala.scalajs.js.annotation.{JSExport, JSExportTopLevel}
 object Main {
 
   def main(args: Array[String]): Unit = {
-
+    println("dsl")
   }
   @JSExport("init")
   def init(): Unit = {
