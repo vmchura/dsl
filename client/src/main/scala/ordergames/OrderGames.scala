@@ -12,9 +12,13 @@ import scala.scalajs.js.annotation.{JSExport, JSExportTopLevel}
 class OrderGames(tournamentName: String, matchesString: String,  container: String){
   private val matches = Vars[GameAsItem](read[Seq[ReplayRecordShared]](UtilParser.safeString2Json(matchesString)).zipWithIndex.map{case (g,i) => GameAsItem(g,i+1)}: _*)
   val organizableMatches = new Organizable(matches)
-
+  val bof = new BestOfBlock()
   @html
   val module = {
+    <div class="input-group mb-3">
+      <span class="input-group-text" id="basic-addon1">Best of </span>
+      {bof.textInput}
+    </div>
     <ul class="list-group">
       {for (g <- organizableMatches.sortedElements) yield {
       <li class="list-group-item">
@@ -38,6 +42,15 @@ class OrderGames(tournamentName: String, matchesString: String,  container: Stri
       </li>
       }}
     </ul>
+    <button disabled={bof.numberOfGames.bind.isEmpty}>
+      Ordenar y crear carpetas
+    </button>
+    <button>
+      Marcar como secreto
+    </button>
+    <button>
+      Liberar del secreto
+    </button>
   }
 
   @JSExport("showPanel")
