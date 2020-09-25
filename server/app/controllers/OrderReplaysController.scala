@@ -1,25 +1,16 @@
 package controllers
-import java.util.UUID
 
+import forms.OrderGamesForm
 import javax.inject._
-import jobs.{CannotSaveResultMatch, CannotSmurf, ReplayService}
-import models.{Match, MatchPK, MatchResult, MatchSmurf}
-import models.daos.{MatchResultDAO, ReplayMatchDAO, UserSmurfDAO}
-import models.services.{ParseReplayFileService, SideBarMenuService, TournamentService}
-import play.api.mvc._
+import models.daos.ReplayMatchDAO
+import models.services.{SideBarMenuService, TournamentService}
 import play.api.i18n.I18nSupport
-import play.api.libs.Files
-import play.api.libs.json.Json
-import shared.models.ActionByReplay
-import shared.models.ActionBySmurf._
-import upickle.default._
 
 import scala.concurrent.{ExecutionContext, Future}
-import scala.util.{Failure, Success}
+import forms.OrderGamesForm.Data
+import play.api.mvc.{Action, AnyContent}
 @Singleton
 class OrderReplaysController @Inject()(scc: SilhouetteControllerComponents,
-                                      replayService: ReplayService,
-                                      matchResultDAO: MatchResultDAO,
                                       replayMatchDAO: ReplayMatchDAO,
                                       sideBarMenuService: SideBarMenuService,
                                       orderreplays: views.html.listreplaysbracket,
@@ -30,7 +21,7 @@ class OrderReplaysController @Inject()(scc: SilhouetteControllerComponents,
                                        ex: ExecutionContext
                                      )extends   AbstractAuthController(scc) with I18nSupport {
 
-  def view(tournamentID: Long,matchID: Long) = silhouette.SecuredAction(WithAdmin()).async { implicit request =>
+  def view(tournamentID: Long,matchID: Long): Action[AnyContent] = silhouette.SecuredAction(WithAdmin()).async { implicit request =>
     sideBarMenuService.buildLoggedSideBar().flatMap { implicit menues =>
       for{
         tournamentOpt <- tournamentService.findTournament(tournamentID)
@@ -40,11 +31,21 @@ class OrderReplaysController @Inject()(scc: SilhouetteControllerComponents,
         }
         replays <- replayMatchDAO.loadAllByMatch(tournamentID, matchID)
       }yield{
-
-        Ok(orderreplays(request.identity,tournament.tournamentName,replays,socialProviderRegistry))
+        Ok(orderreplays(request.identity,tournament.tournamentName, tournamentID, matchID,replays, OrderGamesForm.form.fill(Data(3,replays.map(_.replayID.toString).toList)),socialProviderRegistry))
       }
 
     }
+
+  }
+  def submit(tournamentID: Long,matchID: Long): Action[AnyContent] = silhouette.SecuredAction(WithAdmin()).async { implicit request =>
+
+      OrderGamesForm.form.bindFromRequest.fold(
+        _ => Future.successful(Redirect(routes.OrderReplaysController.view(tournamentID, matchID))),
+        data => {
+          println(data.bof)
+          println(data.replayID.mkString("\n"))
+          Future.successful(Ok(""))
+        })
 
   }
 }

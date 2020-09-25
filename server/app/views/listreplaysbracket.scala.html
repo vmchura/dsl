@@ -5,13 +5,24 @@
 @import shared.UtilParser
 @import upickle.default._
 @import com.mohiva.play.silhouette.impl.providers.SocialProviderRegistry
+@import helper._
+@import forms.OrderGamesForm.Data
 @this()(implicit assets: AssetsFinder)
-@(user: models.User,tournament: String, replays: Seq[ReplayRecord],socialProviders: SocialProviderRegistry)(implicit request: RequestHeader, messages: Messages,menues: Seq[MenuGroup])
+@(user: models.User,tournament: String,tournamentID: Long, matchID: Long, replays: Seq[ReplayRecord], myForm: Form[Data],socialProviders: SocialProviderRegistry)(implicit request: RequestHeader, messages: Messages,menues: Seq[MenuGroup])
 
 @main("Ordenar bracket",Some(user),socialProviders){
 
-    <div id="panel-order-replays-container">
+    <div>
+        @helper.form(action = routes.OrderReplaysController.submit(tournamentID, matchID),Symbol("id") -> "formOrderGames") {
+            @CSRF.formField
+            <div class="input-group mb-3">
+                <span class="input-group-text">Best Of </span>
+                <input type="number" class="form-control" aria-label="Number of games" name="@myForm("bof").name" id="@myForm("bof").id" value="@myForm("bof").value" />
+            </div>
+            <div id="panel-order-replays-container">
 
+            </div>
+        }
     </div>
     <script
         @{CSPNonce.attr} >
