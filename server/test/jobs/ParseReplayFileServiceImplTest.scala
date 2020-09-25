@@ -21,7 +21,8 @@ class ParseReplayFileServiceImplTest extends PlaySpec with GuiceOneAppPerSuite{
 
   "ParseFile" should {
     "get something" in {
-      val file = new File("/home/vmchura/Games/starcraft-remastered/drive_c/users/vmchura/My Documents/StarCraft/Maps/Replays/ReplaysSaved-SC/dtfastexpand.rep")
+      //val file = new File("/home/vmchura/Games/screp/cmd/screp/queen_kevin1.rep")
+      val file = new File("/home/vmchura/Games/screp/cmd/screp/LastReplay.rep")
 
 
       val bodyResponse = fileParser.parseFile(file).map{

@@ -24,16 +24,19 @@ trait ParseReplayFileService {
         Player(team,name)
       }
 
-    }
+    }.sortBy(_.team)
+
+
 
     (for{
-      p1 <- players.find(_.team ==1).map(_.name)
-      p2 <- players.find(_.team ==2).map(_.name)
+      _<- if(players.length==2) Some(2) else None
+      p1 <- players.headOption.map(_.name)
+      p2 <- players.tail.headOption.map(_.name)
       winnerTeam <- (json \ "Computed" \ "WinnerTeam").asOpt[Int]
       mapName <- (json \ "Header" \ "Map").asOpt[String]
       startTime <- (json \ "Header" \ "StartTime").asOpt[String]
     }yield{
-      Right(ReplayDescriptionShared(p1, p2, winnerTeam, mapName,Some(startTime)))
+      Right(ReplayDescriptionShared(p1, p2, if(winnerTeam==1) winnerTeam else 2, mapName,Some(startTime)))
     }).getOrElse(Left("Cant find players"))
 
   }
