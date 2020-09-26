@@ -17,58 +17,61 @@
                 <table class="table">
                     <tr>
                         <th>Nombre original</th>
-                        <th>Habilitado</th>
                         @if(isAdmin) {
                             <th>Quitar</th>
                         }
-
                         <th>Descargar</th>
-
-
                     </tr>
                     @for(m <- matchReplay.replaysAttached){
-                        <tr>
+                        <tr class=@if(!m.enabled){"table-danger"}>
                             <td>@m.nombreOriginal</td>
                             <td>
-                                <i class="material-icons">
-                                @if(m.enabled){
-                                    check
-                                }else{
-                                    cancel
-                                }
-                                </i>
-                            </td>
                             @if(isAdmin) {
                                 @if(m.enabled) {
-                                    <td>
-                                        <button type="button" class="btn btn-danger btn-small" data-toggle="modal" data-target=@{"#"+modalID+m.matchID.toString}>
+
+                                        <button type="button" class="btn btn-danger btn-small" data-toggle="modal" data-target=@{"#"+modalID+m.replayID.toString}>
                                             <i class="material-icons left">delete</i>
                                         </button>
-                                    </td>
+
                                 }else{
-                                    <td>
+
                                         <span><i class="material-icons left">delete</i></span>
-                                    </td>
+
                                 }
                             }
+                            </td>
 
                             <td>
-                                <a class="waves-effect waves-light btn-small" href=@controllers.routes.ReplayMatchController.downloadReplay(m.replayID,m.nombreOriginal)>
-                                    <i class="material-icons left">cloud_download</i></a>
+                                @if(m.matchName.contains("et")) {
+                                    @if(isAdmin) {
+                                        <a class="waves-effect waves-light btn-small" href=@controllers.routes.ReplayMatchController.downloadReplay(m.replayID, m.nombreOriginal)>
+                                            <i class="material-icons left">cloud_download</i></a>
+                                    }else{
+                                        <span><i class="material-icons left">cloud_download</i></span>
+                                    }
+                                }else{
+                                    <span><i class="material-icons left">cloud_download</i></span>
+                                }
                             </td>
                         </tr>
                     }
                 </table>
             </div>
+            @if(matchReplay.replaysAttached.length > 1) {
+                <div class="modal-footer">
+                    <a class="btn btn-primary" href="@controllers.routes.OrderReplaysController.view(matchReplay.matchPK.challongeID,matchReplay.matchPK.challongeMatchID)">Editar Orden</a>
+                    <button type="button" class="btn btn-secondary" data-dismiss="modal">Cerrar</button>
+                </div>
+            }
         </div>
     </div>
 </div>
 @for(m <- matchReplay.replaysAttached){
-    <div class="modal fade alert-danger" id="@{modalID+m.matchID.toString}" tabindex="-1" aria-labelledby="@{modalID+m.matchID.toString+"confirm-label"}" aria-hidden="true">
+    <div class="modal fade alert-danger" id="@{modalID+m.replayID.toString}" tabindex="-1" aria-labelledby="@{modalID+m.replayID.toString+"confirm-label"}" aria-hidden="true">
         <div class="modal-dialog">
             <div class="modal-content">
                 <div class="modal-header">
-                    <h5 class="modal-title" id="@{modalID+m.matchID.toString+"confirm-label"}" >¿Estás seguro?</h5>
+                    <h5 class="modal-title" id="@{modalID+m.replayID.toString+"confirm-label"}" >¿Estás seguro?</h5>
                     <button type="button" class="close" data-dismiss="modal" aria-label="Close">
                         <span aria-hidden="true">&times;</span>
                     </button>

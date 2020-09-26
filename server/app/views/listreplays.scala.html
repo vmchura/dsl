@@ -20,41 +20,22 @@
                     <table class="table">
                         <tr>
                             <th>Nombre original</th>
-                            <th>Habilitado</th>
-                            <th>Verificado</th>
                             <th>Descargar</th>
                         </tr>
                         @for(m <- matchReplay.replaysAttached){
                             <tr>
                                 <td>@m.nombreOriginal</td>
                                 <td>
-                                    <i class="material-icons">
-                                    @if(m.enabled){
-                                        check
-                                    }else{
-                                        cancel
-                                    }
-                                    </i>
-                                </td>
-                                <td>@messages("to.be.implemented")</td>
-                                <td>
                                     <a class="waves-effect waves-light btn-small" href=@controllers.routes.ReplayMatchController.downloadReplay(m.replayID,m.nombreOriginal)>
                                         <i class="material-icons left">cloud_download</i></a>
-
                                 </td>
-
                             </tr>
                         }
                     </table>
                 </div>
 
             </div>
-            @if(matchReplay.replaysAttached.length > 1) {
-                <div class="modal-footer">
-                    <a class="btn btn-primary" href="@controllers.routes.OrderReplaysController.view(matchReplay.matchPK.challongeID,matchReplay.matchPK.challongeMatchID)">Editar Orden</a>
-                    <button type="button" class="btn btn-secondary" data-dismiss="modal">Cerrar</button>
-                </div>
-            }
+
     </div>
 </div>
 </div>

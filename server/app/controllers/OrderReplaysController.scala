@@ -35,7 +35,7 @@ class OrderReplaysController @Inject()(scc: SilhouetteControllerComponents,
         }
         replays <- replayMatchDAO.loadAllByMatch(tournamentID, matchID)
       }yield{
-        Ok(orderreplays(request.identity,tournament.tournamentName, tournamentID, matchID,replays, OrderGamesForm.form.fill(Data(3,replays.filter(_.enabled).map(_.replayID).toList)),socialProviderRegistry))
+        Ok(orderreplays(request.identity,tournament.tournamentName, tournamentID, matchID,replays.filter(_.enabled), OrderGamesForm.form.fill(Data(3,replays.filter(_.enabled).map(_.replayID).toList)),socialProviderRegistry))
       }
 
     }
@@ -47,7 +47,7 @@ class OrderReplaysController @Inject()(scc: SilhouetteControllerComponents,
         _ => Future.successful(Redirect(routes.OrderReplaysController.view(tournamentID, matchID))),
         data => {
           replayService.createFoldersAntiSpoilers(tournamentID, matchID, data.bof, data.replayID)
-          Future.successful(Ok(""))
+          Future.successful(Redirect(routes.TournamentController.showMatches(tournamentID)))
         })
 
   }

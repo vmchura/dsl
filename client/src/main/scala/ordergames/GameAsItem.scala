@@ -9,7 +9,7 @@ case class GameAsItem(replayRecordShared: ReplayRecordShared, ordering: Int) ext
 
   @html
   val content = <div>
-    <span class="order-gi font-weight-bold">Game {ordering.toString}</span>
+    <span class="order-gi font-weight-bold">Game {(ordering+1).toString}</span>
     <span class="time-gi">{replayRecordShared.dateGame.map(d => if(d.contains('T')) d.dropWhile(_ != 'T').tail else d ).getOrElse("???")}</span>
     <span class="name-gi font-weight-bold">{replayRecordShared.nombreOriginal}</span>
   </div>
