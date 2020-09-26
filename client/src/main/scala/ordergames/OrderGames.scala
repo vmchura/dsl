@@ -46,12 +46,6 @@ class OrderGames(tournamentName: String, matchesString: String,  container: Stri
     <button class="btn btn-primary" type="submit" disabled={bof.numberOfGames.bind.isEmpty}>
       Ordenar y crear carpetas
     </button>
-    <button>
-      Marcar como secreto
-    </button>
-    <button>
-      Liberar del secreto
-    </button>
   }
 
 
