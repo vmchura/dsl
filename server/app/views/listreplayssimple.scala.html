@@ -42,7 +42,8 @@
                             </td>
 
                             <td>
-                                @if(m.matchName.contains("et")) {
+                                @* //TODO find an correct way to hide *@
+                                @if(m.matchName.length > 7) {
                                     @if(isAdmin) {
                                         <a class="waves-effect waves-light btn-small" href=@controllers.routes.ReplayMatchController.downloadReplay(m.replayID, m.nombreOriginal)>
                                             <i class="material-icons left">cloud_download</i></a>

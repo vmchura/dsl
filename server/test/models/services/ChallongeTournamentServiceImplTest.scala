@@ -12,7 +12,7 @@ class ChallongeTournamentServiceImplTest extends PlaySpec with GuiceOneAppPerSui
   val service: ChallongeTournamentService = app.injector.instanceOf(classOf[ChallongeTournamentService])
 
   "A Challonge Tournament Service" should {
-    "get correct tournament" in {
+    "get correct tournament matches" in {
       val queryExecution = service.findChallongeTournament("-")("DeathfateStarLeague").map {
         tournament => {
           assertResult(Some(8415514))(tournament.map(_.tournament.challongeID))
@@ -38,7 +38,7 @@ class ChallongeTournamentServiceImplTest extends PlaySpec with GuiceOneAppPerSui
         tournamentOpt =>{
 
           assertResult(Some(8837171))(tournamentOpt.map(_.tournament.challongeID))
-          assert(tournamentOpt.exists(_.matches.exists(m => m.round.contains("Bracket") && m.player1Name.nonEmpty)))
+          assert(tournamentOpt.exists(_.matches.exists(m => m.round.contains("inales") && m.player1Name.nonEmpty)))
         }
 
       }

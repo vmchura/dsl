@@ -38,11 +38,12 @@ class ChallongeTournamentServiceImpl @Inject()(configuration: Configuration) ext
             participants.find(p => p.participant.participantPK.chaNameID == id || p.groupIDs.contains(id)).map(_.participant)
 
           }
-          case class ChallongeMatch(match1v1: Match, round: Int, groupID: Option[Long])
+          case class ChallongeMatch(match1v1: Match, round: Int, groupID: Option[Long], identifier: String)
           val matchesIncomplete = tournament("matches").as[JsArray].value.flatMap(m => {
             val match1v1 = m("match")
             val round = match1v1("round").as[Int]
             val group_id = match1v1("group_id").asOpt[Long]
+            val identifier = match1v1("identifier").as[String]
             for{
               playerID1 <- match1v1("player1_id").asOpt[Long]
               playerID2 <- match1v1("player2_id").asOpt[Long]
@@ -54,25 +55,42 @@ class ChallongeTournamentServiceImpl @Inject()(configuration: Configuration) ext
                 findParticipantBySomeID(playerID1).map(_.chaname),
                 findParticipantBySomeID(playerID2).map(_.chaname)
               )
-              ChallongeMatch(matchModel,round, group_id)
+              ChallongeMatch(matchModel,round, group_id,identifier)
             }
 
 
           }).toSeq
 
-          val mapGroup = matchesIncomplete.flatMap(_.groupID).distinct.sorted.zipWithIndex.map{
+          val mapIfDefined: Map[Long,String] = matchesIncomplete.flatMap(_.groupID).distinct.sorted.zipWithIndex.map{
             case (g,i) => g -> ('A'.toInt + i).toChar.toString
           }.toMap
-          def getMatchName(groupID: Option[Long],round: Int): String = {
-            val groupOrBracket =  groupID.fold("Bracket")(g => mapGroup.getOrElse(g,"Bracket"))
-            s"$groupOrBracket - $round"
+          def getMatchName(idOpt: Option[Long], round: Int, identifier: String): String = {
+            idOpt match {
+              case Some(id) => s"${mapIfDefined(id)} - $round"
+              case None =>
+                val countSimilar = matchesIncomplete.count(m => m.groupID.isEmpty && m.round == round)
+                val identifiersSimilar: Map[String, String] = {
+                  val ids = matchesIncomplete.filter(m => m.groupID.isEmpty && m.round == round).map(_.identifier).sorted
+                  ids.zipWithIndex.map{case(id, i) => id -> ('1'.toChar+i).toChar.toString}.toMap
+                }
+                val has3OnIdentifier = identifier.contains('3')
+
+                (countSimilar, has3OnIdentifier) match {
+                  case (_, true) => s"TercerPuesto - 1"
+                  case (1,false) => s"Finales - 1"
+                  case (2,false) => s"Semifinales - ${identifiersSimilar.getOrElse(identifier,"1")}"
+                  case (4,false) => s"Cuartos - ${identifiersSimilar.getOrElse(identifier,"1")}"
+                  case (8,false) => s"Octavos - ${identifiersSimilar.getOrElse(identifier,"1")}"
+                  case _ => s"Brackets - ${identifiersSimilar.getOrElse(identifier,"1")}"
+                }
+            }
           }
           def getChallongeUserID(player1ID: Long): Long = if(participants.map(_.participant.participantPK.chaNameID).contains(player1ID)) player1ID else participants.find(_.groupIDs.contains(player1ID)).map(_.participant.participantPK.chaNameID).getOrElse(player1ID)
           val matches = matchesIncomplete.map{ m =>
             val matchResult = m.match1v1
             matchResult.copy(firstChaNameID = getChallongeUserID(matchResult.firstChaNameID),
               secondChaNameID = getChallongeUserID(matchResult.secondChaNameID),
-              round = getMatchName(m.groupID,m.round))
+              round = getMatchName(m.groupID,m.round,m.identifier))
           }
           Some(ChallongeTournament(tournamentModel,participants.map(_.participant),matches))
 
