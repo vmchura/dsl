@@ -63,16 +63,50 @@ class ReplayService  @Inject()(tournamentService: TournamentService,
     }
     formFuture(executionFuture)
   }
-  def wrapIntoFolder(replayID: UUID, folderName: String): Future[Either[JobError, Boolean]] = {
-    val executionFuture = for{
-      replayOpt <- replayMatchDAO.find(replayID)
-      moveOption <- replayOpt.fold(Future.successful(true)) { replay =>
-        dropBoxFilesService.wrapIntoFolder(replay.matchName, folderName)
-      }
+  def wrapIntoFolder(replay: ReplayRecord, folderName: String): Future[Option[String]] = {
+    for{
+      moveOption <- dropBoxFilesService.wrapIntoFolder(replay.matchName, folderName)
+
     }yield{
       moveOption
     }
+  }
+
+
+  private def createFolders(anyRep: ReplayRecord, bof: Int): Future[Seq[String]] = {
+
+    val parentFolder = anyRep.matchName.substring(0,anyRep.matchName.lastIndexOf('/'))
+    val folders = (1 to bof).map(i => s"Game$i")
+    dropBoxFilesService.createFoldersAt(parentFolder,folders).map{ created =>
+      if(created) folders
+      else Nil
+    }
+
+
+  }
+  def createFoldersAntiSpoilers(tournamentID: Long,matchID: Long, bof: Int, order: Seq[UUID]): Future[Either[JobError,Boolean]] = {
+    val executionFuture = for{
+      replays <- replayMatchDAO.loadAllByMatch(tournamentID, matchID)
+      _ <- (order.sorted == replays.filter(_.enabled).map(_.replayID).sorted).withFailure(NotCompleteMatches)
+      anyrep <- replays.find(_.enabled).withFailure(NoReplaysEnabled)
+      folders <- createFolders(anyrep, bof)
+      _ <- (bof >= order.length).withFailure(TooManyGames)
+      wrapped <- Future.sequence(order.zipWithIndex.map { case (id, indx) =>
+        for {
+          replay <- replays.find(_.replayID == id).withFailure(BadOrderReplays)
+          pathResultOpt <- wrapIntoFolder(replay, folders(indx))
+          pathResult <- pathResultOpt.withFailure(CannotWrapIntoFolder)
+          locationUpdated <- replayMatchDAO.updateLocation(id,pathResult)
+        } yield {
+          locationUpdated
+        }
+      })
+    }yield{
+
+      wrapped.forall(i => i)
+    }
     formFuture(executionFuture)
+
   }
 
 

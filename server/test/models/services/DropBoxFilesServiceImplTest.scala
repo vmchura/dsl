@@ -22,7 +22,7 @@ class DropBoxFilesServiceImplTest extends  PlaySpec with GuiceOneAppPerSuite{
       val u = service.wrapIntoFolder("/From/gg.txt","Game1")
       Await.result(u,20.seconds)
       u.map{ r =>
-        assert(r)
+        assert(r.nonEmpty)
       }
     }
     "create folders" in {

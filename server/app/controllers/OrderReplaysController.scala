@@ -1,5 +1,7 @@
 package controllers
 
+import java.util.UUID
+
 import forms.OrderGamesForm
 import javax.inject._
 import models.daos.ReplayMatchDAO
@@ -8,13 +10,15 @@ import play.api.i18n.I18nSupport
 
 import scala.concurrent.{ExecutionContext, Future}
 import forms.OrderGamesForm.Data
+import jobs.ReplayService
 import play.api.mvc.{Action, AnyContent}
 @Singleton
 class OrderReplaysController @Inject()(scc: SilhouetteControllerComponents,
                                       replayMatchDAO: ReplayMatchDAO,
                                       sideBarMenuService: SideBarMenuService,
                                       orderreplays: views.html.listreplaysbracket,
-                                      tournamentService: TournamentService
+                                      tournamentService: TournamentService,
+                                      replayService: ReplayService
                                      )(
                                        implicit
                                        assets: AssetsFinder,
@@ -31,7 +35,7 @@ class OrderReplaysController @Inject()(scc: SilhouetteControllerComponents,
         }
         replays <- replayMatchDAO.loadAllByMatch(tournamentID, matchID)
       }yield{
-        Ok(orderreplays(request.identity,tournament.tournamentName, tournamentID, matchID,replays, OrderGamesForm.form.fill(Data(3,replays.map(_.replayID.toString).toList)),socialProviderRegistry))
+        Ok(orderreplays(request.identity,tournament.tournamentName, tournamentID, matchID,replays, OrderGamesForm.form.fill(Data(3,replays.filter(_.enabled).map(_.replayID).toList)),socialProviderRegistry))
       }
 
     }
@@ -42,8 +46,7 @@ class OrderReplaysController @Inject()(scc: SilhouetteControllerComponents,
       OrderGamesForm.form.bindFromRequest.fold(
         _ => Future.successful(Redirect(routes.OrderReplaysController.view(tournamentID, matchID))),
         data => {
-          println(data.bof)
-          println(data.replayID.mkString("\n"))
+          replayService.createFoldersAntiSpoilers(tournamentID, matchID, data.bof, data.replayID)
           Future.successful(Ok(""))
         })
 

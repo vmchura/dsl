@@ -13,4 +13,5 @@ trait ReplayMatchDAO {
   def loadAllByMatch(tournamentID: Long, matchID: Long): Future[Seq[ReplayRecord]]
   def find(replayID: UUID): Future[Option[ReplayRecord]]
   def isNotRegistered(file: File): Future[Boolean]
+  def updateLocation(replayID: UUID, cloudLocation: String): Future[Boolean]
 }

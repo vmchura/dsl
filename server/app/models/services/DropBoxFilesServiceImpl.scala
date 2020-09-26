@@ -77,17 +77,20 @@ class DropBoxFilesServiceImpl @Inject()(configuration: Configuration) extends Dr
     }
   }
 
-  override def wrapIntoFolder(currentPathFileOnCloud: String, folder: String): Future[Boolean] = {
+  override def wrapIntoFolder(currentPathFileOnCloud: String, folder: String): Future[Option[String]] = {
 
    withDBClient { implicit client =>
-     getFileName(currentPathFileOnCloud).fold(false) { fileName =>
+     getFileName(currentPathFileOnCloud).fold(Option.empty[String]) { fileName =>
        val i = currentPathFileOnCloud.lastIndexOf(fileName)
        if(i > 0) {
          val destinyFileOnCloud = currentPathFileOnCloud.substring(0,i) + folder+"/"+fileName
          val metadata = client.files().moveV2(currentPathFileOnCloud, destinyFileOnCloud)
-         metadata.getMetadata.getName.nonEmpty
+         if(metadata.getMetadata.getName.nonEmpty)
+           Some(destinyFileOnCloud)
+         else
+           None
        }else{
-         false
+         None
        }
      }
 

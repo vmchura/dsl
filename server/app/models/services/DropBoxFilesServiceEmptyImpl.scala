@@ -22,7 +22,13 @@ class DropBoxFilesServiceEmptyImpl extends DropBoxFilesService {
 
   override def delete(replayID: UUID): Future[Boolean] = Future.successful(true)
 
-  override def wrapIntoFolder(currentPathFileOnCloud: String, folder: String): Future[Boolean] = Future.successful(true)
+  override def wrapIntoFolder(currentPathFileOnCloud: String, folder: String): Future[Option[String]] = Future.successful{
+    println(s"The file $currentPathFileOnCloud it will be wrapped into $folder")
+    Some("/*/")
+  }
 
-  override def createFoldersAt(pathParent: String, folders: Seq[String]): Future[Boolean] = Future.successful(true)
+  override def createFoldersAt(pathParent: String, folders: Seq[String]): Future[Boolean] = Future.successful{
+    folders.foreach(f => println(s"Creating folder: $pathParent/$f"))
+    true
+  }
 }

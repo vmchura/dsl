@@ -1,5 +1,7 @@
 package forms
 
+import java.util.UUID
+
 import play.api.data.Form
 import play.api.data.Forms._
 
@@ -14,11 +16,11 @@ object OrderGamesForm {
   val form: Form[Data] = Form(
     mapping(
           "bof" -> number,
-      "replayID" -> list(nonEmptyText)
+      "replayID" -> list(uuid)
     )(Data.apply)(Data.unapply)
   )
 
   case class Data(bof: Int,
-                  replayID: List[String])
+                  replayID: List[UUID])
 }
 
