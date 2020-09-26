@@ -9,15 +9,13 @@ import shared.models.ReplayRecordShared
 import upickle.default.read
 
 import scala.scalajs.js.annotation.{JSExport, JSExportTopLevel}
-import scala.xml.NodeBuffer
 @JSExportTopLevel("OrderGames")
 class OrderGames(tournamentName: String, matchesString: String,  container: String){
   private val matches = Vars[GameAsItem](read[Seq[ReplayRecordShared]](UtilParser.safeString2Json(matchesString)).zipWithIndex.map{case (g,i) => GameAsItem(g,i)}: _*)
   val organizableMatches = new Organizable(matches)
   val bof = new BestOfBlock("bof")
   @html
-  val module: NodeBuffer = {
-
+  private val module = {
     <ul class="list-group">
       {for (g <- organizableMatches.sortedElements) yield {
 
