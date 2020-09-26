@@ -54,8 +54,10 @@ lazy val client = (project in file("client"))
   .settings(
     scalaJSUseMainModuleInitializer := true,
     libraryDependencies ++= Seq(
-      "org.scala-js" %%% "scalajs-dom" % "1.0.0"
+      "org.scala-js" %%% "scalajs-dom" % "1.0.0",
+      "com.lihaoyi" %%% "utest" % "0.7.5" % "test"
     ),
+    testFrameworks += new TestFramework("utest.runner.Framework"),
     scalacOptions ++= {
       import Ordering.Implicits._
       if (VersionNumber(scalaVersion.value).numbers >= Seq(2L, 13L)) {
@@ -64,6 +66,7 @@ lazy val client = (project in file("client"))
         Nil
       }
     },
+    jsEnv := new org.scalajs.jsenv.jsdomnodejs.JSDOMNodeJSEnv(),
     libraryDependencies += "org.lrng.binding" %%% "html" % "1.0.3+6-55950506",
     libraryDependencies += "com.thoughtworks.binding" %%% "futurebinding" % "12.0.0"
   )

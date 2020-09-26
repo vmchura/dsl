@@ -55,4 +55,10 @@ class ReplayMatchDAOImpl  @Inject() (val reactiveMongoApi: ReactiveMongoApi) ext
     val query = Json.obj("replayMD5Hash" -> hash)
     collection.flatMap(_.find(query,Option.empty[ReplayRecord]).one[ReplayRecord]).map(_.isEmpty)
   }
+
+  override def updateLocation(replayID: UUID, cloudLocation: String): Future[Boolean] = collection.
+    flatMap(_.update(ordered=true).
+      one(Json.obj("replayID" ->replayID),
+        Json.obj("$set" -> Json.obj("matchName" -> cloudLocation)), upsert = true)).
+    map(_.ok)
 }

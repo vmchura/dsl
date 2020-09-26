@@ -137,7 +137,26 @@ a:link, a:visited, a:active {
     text-decoration:none;
 }
 
+.order-gi{
+    border: 2px #1b1e21;
+    margin: 5px;
+    padding: 5px;
+}
+.time-gi{
+    border: 2px #1b1e21;
+    margin: 5px;
+    padding: 5px;
+}
+.name-gi{
+    border: 2px #1b1e21;
+    margin: 5px;
+    padding: 5px;
 
+}
+.row-gi{
+    display: flex;
+    flex-direction: row;
+}
 
 
 

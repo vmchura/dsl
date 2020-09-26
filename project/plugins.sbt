@@ -17,3 +17,5 @@ addSbtPlugin("com.typesafe.play"         % "sbt-plugin"                % "2.8.2"
 addSbtPlugin("org.portable-scala"        % "sbt-scalajs-crossproject"  % "1.0.0")
 addSbtPlugin("com.typesafe.sbt"          % "sbt-gzip"                  % "1.0.2")
 addSbtPlugin("com.typesafe.sbt"          % "sbt-digest"                % "1.1.4")
+//To make the DOM available, add the following to your project/plugins.sbt:
+libraryDependencies += "org.scala-js" %% "scalajs-env-jsdom-nodejs" % "1.0.0"

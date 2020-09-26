@@ -13,3 +13,9 @@ object CannotInsertS3 extends ReplayPusherError
 object CannotInsertDiscord extends ReplayPusherError
 object CannotSmurf extends ReplayPusherError
 object FileIsAlreadyRegistered extends ReplayPusherError
+
+object NotCompleteMatches extends ReplayPusherError
+object NoReplaysEnabled extends ReplayPusherError
+object TooManyGames extends ReplayPusherError
+object CannotWrapIntoFolder extends ReplayPusherError
+object BadOrderReplays extends ReplayPusherError
