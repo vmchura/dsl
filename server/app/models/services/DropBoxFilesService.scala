@@ -13,4 +13,6 @@ trait DropBoxFilesService {
   def download(replayID: UUID,fileName: String): Future[File]
   def delete(pathFileOnCloud: String): Future[Boolean]
   def delete(replayID: UUID): Future[Boolean]
+  def wrapIntoFolder(currentPathFileOnCloud: String, folder: String): Future[Boolean]
+  def createFoldersAt(pathParent: String, folders:Seq[String]): Future[Boolean]
 }

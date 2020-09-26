@@ -63,6 +63,17 @@ class ReplayService  @Inject()(tournamentService: TournamentService,
     }
     formFuture(executionFuture)
   }
+  def wrapIntoFolder(replayID: UUID, folderName: String): Future[Either[JobError, Boolean]] = {
+    val executionFuture = for{
+      replayOpt <- replayMatchDAO.find(replayID)
+      moveOption <- replayOpt.fold(Future.successful(true)) { replay =>
+        dropBoxFilesService.wrapIntoFolder(replay.matchName, folderName)
+      }
+    }yield{
+      moveOption
+    }
+    formFuture(executionFuture)
+  }
 
 
 

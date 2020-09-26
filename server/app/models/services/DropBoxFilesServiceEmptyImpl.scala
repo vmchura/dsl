@@ -21,4 +21,8 @@ class DropBoxFilesServiceEmptyImpl extends DropBoxFilesService {
   override def delete(pathFileOnCloud: String): Future[Boolean] = Future.successful(true)
 
   override def delete(replayID: UUID): Future[Boolean] = Future.successful(true)
+
+  override def wrapIntoFolder(currentPathFileOnCloud: String, folder: String): Future[Boolean] = Future.successful(true)
+
+  override def createFoldersAt(pathParent: String, folders: Seq[String]): Future[Boolean] = Future.successful(true)
 }
