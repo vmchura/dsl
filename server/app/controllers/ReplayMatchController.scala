@@ -129,7 +129,7 @@ class ReplayMatchController @Inject()(scc: SilhouetteControllerComponents,
           case Success(value) => Future.successful(value)
           case Failure(error) =>
             logger.error(error.toString)
-            Future.successful(result.flashing("error" -> s"${secureName(replay_file.filename)} ERROR!"))
+            Future.successful(result.flashing("error" -> s"${error.toString} ${secureName(replay_file.filename)} ERROR!"))
         }
       }
 
