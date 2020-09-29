@@ -38,11 +38,20 @@
                 @user.fold{
                     @if(socialProviders.providers.nonEmpty) {
                             @for(p <- socialProviders.providers) {
-                               <li><a class="nav-link active" href="@controllers.routes.SocialAuthController.authenticate(p.id)" class="provider @p.id" title="@messages(p.id)">Inicia sesión con @p.id.capitalize </a></li>
+                               <li><a class="nav-link" href="@controllers.routes.SocialAuthController.authenticate(p.id)" class="provider @p.id" title="@messages(p.id)">Inicia sesión con @p.id.capitalize </a></li>
                             }
                     }
                 }{ u =>
-                    <li><a class="nav-link active" href="#!">Bienvenido @u.fullName.getOrElse("campeón") <img src="@u.avatarURL.getOrElse(assets.path("images/silhouette.png"))" height="40px" /> </a> </li>
+                    <li class="nav-item dropdown">
+                        <a class="nav-link dropdown-toggle" href="#" id="navbarDropdownMenuLink" role="button" data-toggle="dropdown" aria-expanded="false">
+                            <span >Bienvenido @u.fullName.getOrElse("campeón")
+                            <img src="@u.avatarURL.getOrElse(assets.path("images/silhouette.png"))" height="40px" alt="avatar" />
+                            </span>
+                        </a>
+                        <ul class="dropdown-menu" aria-labelledby="navbarDropdownMenuLink">
+                            <li><a class="dropdown-item" href="@controllers.routes.Application.signOut()">Salir</a></li>
+                        </ul>
+                    </li>
                 }
             </ul>
 

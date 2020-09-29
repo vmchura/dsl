@@ -8,6 +8,8 @@ GET        /                                    controllers.Application.index
 GET        /signin                              controllers.SignInController.view
 GET        /authenticate/:provider              controllers.SocialAuthController.authenticate(provider: String)
 GET        /welcome                             controllers.Application.welcomeAuthenticated
+# SIGNOUT
+GET        /signout                             controllers.Application.signOut
 
 # ADMIN
 GET         /tournament/create                  controllers.TournamentController.view
