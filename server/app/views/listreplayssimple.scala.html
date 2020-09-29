@@ -25,8 +25,9 @@
                     @for(m <- matchReplay.replaysAttached){
                         <tr class=@if(!m.enabled){"table-danger"}>
                             <td>@m.nombreOriginal</td>
-                            <td>
+
                             @if(isAdmin) {
+                                <td>
                                 @if(m.enabled) {
 
                                         <button type="button" class="btn btn-danger btn-small" data-toggle="modal" data-target=@{"#"+modalID+m.replayID.toString}>
@@ -38,8 +39,9 @@
                                         <span><i class="material-icons left">delete</i></span>
 
                                 }
+                                </td>
                             }
-                            </td>
+
 
                             <td>
                                 @* //TODO find an correct way to hide *@
@@ -51,7 +53,8 @@
                                         <span><i class="material-icons left">cloud_download</i></span>
                                     }
                                 }else{
-                                    <span><i class="material-icons left">cloud_download</i></span>
+                                    <a class="waves-effect waves-light btn-small" href=@controllers.routes.ReplayMatchController.downloadReplay(m.replayID, m.nombreOriginal)>
+                                        <i class="material-icons left">cloud_download</i></a>
                                 }
                             </td>
                         </tr>
