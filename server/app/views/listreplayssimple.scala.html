@@ -2,7 +2,7 @@
 @import play.api.mvc.RequestHeader
 @import controllers.AssetsFinder
 @import models.Match
-@(matchReplay: Match, modalID: String, isAdmin: Boolean)(implicit request: RequestHeader, messages: Messages,assets: AssetsFinder)
+@(matchReplay: Match, modalID: String, isAdmin: Boolean, canDownload: Boolean)(implicit request: RequestHeader, messages: Messages,assets: AssetsFinder)
 
 <div class="modal fade" id=@modalID tabindex="-1" aria-labelledby="@{modalID+"label"}" aria-hidden="true">
     <div class="modal-dialog modal-lg">
@@ -44,17 +44,12 @@
 
 
                             <td>
-                                @* //TODO find an correct way to hide *@
-                                @if(m.matchName.length > 7) {
-                                    @if(isAdmin) {
-                                        <a class="waves-effect waves-light btn-small" href=@controllers.routes.ReplayMatchController.downloadReplay(m.replayID, m.nombreOriginal)>
-                                            <i class="material-icons left">cloud_download</i></a>
-                                    }else{
-                                        <span><i class="material-icons left">cloud_download</i></span>
-                                    }
-                                }else{
+                                @if(canDownload) {
                                     <a class="waves-effect waves-light btn-small" href=@controllers.routes.ReplayMatchController.downloadReplay(m.replayID, m.nombreOriginal)>
                                         <i class="material-icons left">cloud_download</i></a>
+
+                                }else{
+                                    <span><i class="material-icons left">cloud_download</i></span>
                                 }
                             </td>
                         </tr>
