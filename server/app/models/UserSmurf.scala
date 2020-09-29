@@ -17,4 +17,11 @@ object UserSmurf {
   implicit val jsonFormat: OFormat[UserSmurf] = Json.format[UserSmurf]
 }
 
+case class ValidUserSmurf(discordID: DiscordID, smurfs: Seq[Smurf])
+object ValidUserSmurf{
+  implicit val discordIDJson: OFormat[DiscordID] = Json.format[DiscordID]
+  implicit val smurfJson: OFormat[Smurf] = Json.format[Smurf]
+  implicit val jsonFormat: OFormat[ValidUserSmurf] = Json.format[ValidUserSmurf]
+}
+
 
