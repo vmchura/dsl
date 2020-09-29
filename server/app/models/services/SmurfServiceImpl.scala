@@ -5,12 +5,13 @@ import java.util.UUID
 import scala.concurrent.ExecutionContext.Implicits.global
 import javax.inject.Inject
 import jobs.ReplayService
-import models.UserSmurf
-import models.daos.UserSmurfDAO
+import models.{UserSmurf, ValidUserSmurf}
+import models.daos.{UserSmurfDAO, ValidUserSmurfDAO}
+import models.services.SmurfService.SmurfAdditionResult.{Added, AdditionResult, AlreadyRegistered, CantBeAdded}
 
 import scala.concurrent.Future
 
-class SmurfServiceImpl @Inject() (smurfDAO: UserSmurfDAO, replayService: ReplayService) extends SmurfService {
+class SmurfServiceImpl @Inject() (smurfDAO: UserSmurfDAO, replayService: ReplayService, validSmurfDAO: ValidUserSmurfDAO) extends SmurfService {
   import jobs._
   sealed trait SmurfError extends JobError
   case class MatchIDNotFound(matchID: UUID) extends SmurfError
@@ -46,4 +47,21 @@ class SmurfServiceImpl @Inject() (smurfDAO: UserSmurfDAO, replayService: ReplayS
   }
 
   override def showAcceptedSmurfs(): Future[Seq[UserSmurf]] = smurfDAO.findUsersWithSmurfs()
+
+  override def addSmurf(discordID: models.DiscordID, smurf: models.Smurf): Future[AdditionResult] = {
+    for{
+      exists <- validSmurfDAO.findOwner(smurf)
+      result <- exists match {
+        case Some(id) => Future.successful(if(id==discordID) AlreadyRegistered else CantBeAdded)
+        case None => validSmurfDAO.add(discordID, smurf).map(b => if(b) Added else CantBeAdded)
+      }
+    }yield{
+      result
+    }
+
+  }
+
+  override def loadValidSmurfs(): Future[Seq[ValidUserSmurf]] = validSmurfDAO.all()
+
+  override def loadSmurfs(discordID: models.DiscordID): Future[ValidUserSmurf] = validSmurfDAO.load(discordID)
 }
