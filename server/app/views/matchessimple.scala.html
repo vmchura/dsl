@@ -62,12 +62,12 @@
         </tbody>
     </table>
 
-
+    @* FixMe Use a better way to set variable CanDownload *@
     @for(m <- matches){
         @listreplayssimple(m.convertToMatch(),
             s"modal_list_${m.matchPK.challongeMatchID}",
             user.fold(false)(u => WithAdmin.isModeradorID(u.loginInfo.providerKey)),
-            user.fold(m.round.length < 7)(u => WithAdmin.isModeradorID(u.loginInfo.providerKey))
+            (m.round.length < 7) || user.exists(u => WithAdmin.isModeradorID(u.loginInfo.providerKey) )
         )
     }
 
