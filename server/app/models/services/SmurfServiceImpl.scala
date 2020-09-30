@@ -63,5 +63,5 @@ class SmurfServiceImpl @Inject() (smurfDAO: UserSmurfDAO, replayService: ReplayS
 
   override def loadValidSmurfs(): Future[Seq[ValidUserSmurf]] = validSmurfDAO.all()
 
-  override def loadSmurfs(discordID: models.DiscordID): Future[ValidUserSmurf] = validSmurfDAO.load(discordID)
+  override def loadSmurfs(discordID: models.DiscordID): Future[Option[ValidUserSmurf]] = validSmurfDAO.load(discordID)
 }

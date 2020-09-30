@@ -14,7 +14,7 @@ trait SmurfService {
   def showAcceptedSmurfs(): Future[Seq[UserSmurf]]
   def addSmurf(discordID: DiscordID, smurf: Smurf): Future[AdditionResult]
   def loadValidSmurfs(): Future[Seq[ValidUserSmurf]]
-  def loadSmurfs(discordID: DiscordID): Future[ValidUserSmurf]
+  def loadSmurfs(discordID: DiscordID): Future[Option[ValidUserSmurf]]
 }
 object SmurfService {
   object SmurfAdditionResult extends Enumeration {

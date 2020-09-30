@@ -37,12 +37,9 @@ class ValidUserSmurfDAOImpl @Inject() (val reactiveMongoApi: ReactiveMongoApi) e
 
   }
 
-  override def load(discordID: models.DiscordID): Future[ValidUserSmurf] = collection.
+  override def load(discordID: models.DiscordID): Future[Option[ValidUserSmurf]] = collection.
     flatMap(_.find(Json.obj("discordID" -> discordID),
-      Option.empty[ValidUserSmurf]).one[ValidUserSmurf]).map {
-    case Some(user) => user
-    case None => ValidUserSmurf(discordID, smurfs = Nil)
-  }
+      Option.empty[ValidUserSmurf]).one[ValidUserSmurf])
 
 
   override def findOwner(smurf: models.Smurf): Future[Option[models.DiscordID]] = collection.
