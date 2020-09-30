@@ -5,7 +5,7 @@ import java.util.UUID
 import scala.concurrent.ExecutionContext.Implicits.global
 import javax.inject.Inject
 import jobs.ReplayService
-import models.{UserSmurf, ValidUserSmurf}
+import models.{DiscordID, Smurf, UserSmurf, ValidUserSmurf}
 import models.daos.{UserSmurfDAO, ValidUserSmurfDAO}
 import models.services.SmurfService.SmurfAdditionResult.{Added, AdditionResult, AlreadyRegistered, CantBeAdded}
 
@@ -22,9 +22,20 @@ class SmurfServiceImpl @Inject() (smurfDAO: UserSmurfDAO, replayService: ReplayS
           userFound <- smurfDAO.findUser(discordUserID)
           user <- userFound.withFailure(MatchIDNotFound(matchID))
           matchSmurf <- user.notCheckedSmurf.find(_.resultID == matchID).withFailure(MatchIDNotFoundOnList(matchID))
-          matchsWithSameSmurf <- Future.sequence(user.notCheckedSmurf.filter(_.smurf.equals(matchSmurf.smurf)).map(ms => smurfDAO.acceptNotCheckedSmurf(user.discordUser.discordID,ms)))
+          matchsWithSameSmurf <- Future.sequence(user.notCheckedSmurf.filter(_.smurf.equals(matchSmurf.smurf)).map(ms =>
+            addSmurf(DiscordID(user.discordUser.discordID),Smurf(ms.smurf)).flatMap{
+              case a @ (Added | AlreadyRegistered) => smurfDAO.acceptNotCheckedSmurf(discordUserID,ms).map(i => {
+                if(i) a else CantBeAdded
+              })
+              case _ =>Future.successful(CantBeAdded)
+            }))
         }yield{
-          matchsWithSameSmurf.forall(p => p)
+
+          matchsWithSameSmurf.forall{
+            case Added => true
+            case AlreadyRegistered => true
+            case _ => false
+          }
         }
 
   }

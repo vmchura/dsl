@@ -63,12 +63,13 @@ class SmurfController @Inject()(scc: SilhouetteControllerComponents,
     }
   }
   def showListSmurfsDefined(): Action[AnyContent] = Action.async{ implicit request =>
-    smurfService.showAcceptedSmurfs().map{ usuarios =>
+    smurfService.loadValidSmurfs().map{ usuarios =>
       val json = Json.obj("users" ->
         Json.arr(usuarios.map(u =>
-          Json.obj("discordname" -> u.discordUser.userName,
-                          "smurfs" -> Json.arr(u.matchSmurf.map(_.smurf).distinct),
-                          "discordID" -> u.discordUser.discordID))))
+          //FixMe find and use correct discordname
+          Json.obj("discordname" -> "UNKNOWN",
+                          "smurfs" -> Json.arr(u.smurfs.map(_.name)),
+                          "discordID" -> u.discordID.id))))
       Ok(json)
     }
 
