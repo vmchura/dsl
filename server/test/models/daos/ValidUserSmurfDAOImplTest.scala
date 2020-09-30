@@ -3,6 +3,7 @@ import models.{DiscordID, Smurf}
 import models.services.SmurfService
 import models.services.SmurfService.SmurfAdditionResult
 import org.scalatest.Assertion
+import org.scalatest.concurrent.PatienceConfiguration.{Interval, Timeout}
 import org.scalatest.concurrent.ScalaFutures
 import org.scalatest.time.{Seconds, Span}
 import org.scalatestplus.play.PlaySpec
@@ -17,6 +18,7 @@ class ValidUserSmurfDAOImplTest extends PlaySpec with GuiceOneAppPerSuite with S
     PatienceConfig(timeout =  Span(10, Seconds), interval = Span(1, Seconds))
 
   val service: SmurfService = app.injector.instanceOf(classOf[SmurfService])
+
   "Smurf service" should {
     "no result of unknown user" in {
       val u = service.loadSmurfs(DiscordID(Random.nextString(12)))
@@ -58,4 +60,26 @@ class ValidUserSmurfDAOImplTest extends PlaySpec with GuiceOneAppPerSuite with S
       checkResult(alreadyHasOwner, SmurfAdditionResult.CantBeAdded)
     }
   }
+
+  "ByPass smurfs legacy" should{
+    "transfer all smurfs" in {
+      val legacySmurfs = service.showAcceptedSmurfs().flatMap{
+        userSmurfs => Future.sequence(userSmurfs.flatMap(u =>
+                        u.matchSmurf.map(sm =>
+                          service.addSmurf(DiscordID(u.discordUser.discordID),
+                                          Smurf(sm.smurf))
+                        ))
+                      )
+      }
+      whenReady(legacySmurfs,Timeout(Span(120,Seconds)),Interval(Span(10,Seconds))){ responses =>
+        println(responses.length)
+        assert(responses.forall{
+          case SmurfAdditionResult.Added => true
+          case SmurfAdditionResult.AlreadyRegistered => true
+          case _ => false
+        })
+      }
+    }
+  }
+
 }
