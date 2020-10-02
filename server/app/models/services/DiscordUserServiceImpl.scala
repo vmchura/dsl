@@ -1,5 +1,5 @@
 package models.services
-import models.{DiscordUser, GuildID}
+import models.{DiscordDiscriminator, DiscordUser, DiscordUserData, GuildID}
 
 import scala.concurrent.Future
 import sttp.client._
@@ -9,6 +9,7 @@ import utils.Logger
 import play.api.libs.json._
 import javax.inject.Inject
 import play.api.Configuration
+import eu.timepit.refined.api.RefType
 
 import scala.concurrent.ExecutionContext.Implicits.global
 class DiscordUserServiceImpl @Inject()(configuration: Configuration) extends DiscordUserService with Logger{
@@ -26,7 +27,6 @@ class DiscordUserServiceImpl @Inject()(configuration: Configuration) extends Dis
         case Right(body) =>
           try {
             val jsArray = Json.parse(body).as[JsArray]
-
             Some(jsArray.value.map(v => {
               DiscordUser((v \ "user" \ "id").as[String], (v \ "user" \ "username").as[String], (v \ "user" \ "discriminator").asOpt[String])
             }).toSeq)
@@ -39,7 +39,7 @@ class DiscordUserServiceImpl @Inject()(configuration: Configuration) extends Dis
     }
   }
 
-  override def loadSingleUser(guildID: GuildID,discordID: models.DiscordID): Future[Option[DiscordUser]] = {
+  override def loadSingleUser(guildID: GuildID,discordID: models.DiscordID): Future[Option[DiscordUserData]] = {
     val responseFut = basicRequest.header("Authorization",s"Bot $bot_token").get(uri"https://discord.com/api/guilds/${guildID.id}/members/${discordID.id}").send()
     responseFut.map { _.body match
     {
@@ -51,9 +51,15 @@ class DiscordUserServiceImpl @Inject()(configuration: Configuration) extends Dis
         try {
           val jsObject = Json.parse(body)
 
-          Some(
-            DiscordUser((jsObject \ "user" \ "id").as[String], (jsObject \ "user" \ "username").as[String], (jsObject \ "user" \ "discriminator").asOpt[String])
-          )
+          val userName = (jsObject \ "user" \ "username").as[String]
+          val discriminator: Either[String, DiscordDiscriminator] = RefType.applyRef[DiscordDiscriminator]((jsObject \ "user" \ "discriminator").as[String])
+          val avatarURL = (jsObject \ "user"\ "avatar").asOpt[String]
+
+          discriminator match {
+            case Right(discriminatorValue) => Some(DiscordUserData(discordID, userName, discriminatorValue,avatarURL))
+            case Left(_) => None
+          }
+
         } catch {
           case _ : Throwable =>
             logger.error(s"Error on findMember OnGuild: $body is not a json or user")

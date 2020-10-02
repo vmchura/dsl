@@ -1,7 +1,7 @@
 package models.daos
 
 import javax.inject.Inject
-import models.{DiscordDiscriminator, DiscordID, DiscordUserHistory, DiscordUserLog}
+import models.{DiscordID, DiscordUserData, DiscordUserHistory, DiscordUserLog, GuildID}
 import org.joda.time.DateTime
 import play.api.libs.json.Json
 import play.modules.reactivemongo.ReactiveMongoApi
@@ -19,37 +19,37 @@ class UserHistoryDAOImpl @Inject() (val reactiveMongoApi: ReactiveMongoApi) exte
     collection.flatMap(_.find(query,Option.empty[DiscordUserHistory]).one[DiscordUserHistory])
   }
 
-  override def updateWithLastInformation(discordID: models.DiscordID, discriminator: DiscordDiscriminator,userLog: String): Future[Boolean] = {
+  override def updateWithLastInformation(discordID: models.DiscordID, guildID: GuildID, data: DiscordUserData): Future[Boolean] = {
     for{
       alreadyRegistered <- load(discordID)
       result <- alreadyRegistered match {
         case Some(history) =>
-          if(history.lastUserName.equals(userLog))
+          if(history.lastUserName.equals(data.userName))
             Future.successful(true)
           else
-            updateLastUserName(discordID,userLog)
+            updateLastUserName(discordID,guildID,data)
         case None =>
-          register(discordID,discriminator,userLog)
+          register(discordID,guildID,data)
       }
     }yield{
       result
     }
   }
 
-  protected override def register(discordID: DiscordID, discriminator: DiscordDiscriminator, userLog: String): Future[Boolean] = {
+  protected override def register(discordID: DiscordID, guildID: GuildID, data: DiscordUserData): Future[Boolean] = {
     collection.
       flatMap(_.insert(ordered=true).
-        one(DiscordUserHistory(discordID,discriminator,userLog,Seq(DiscordUserLog(userLog,DateTime.now())))).
+        one(DiscordUserHistory(discordID,data.discriminator,data.userName,Seq(DiscordUserLog(data.userName,guildID,data.avatarURL,DateTime.now())))).
       map(_.ok))
 
   }
-  override protected def updateLastUserName(discordID: DiscordID, userLog: String): Future[Boolean] = {
+  override protected def updateLastUserName(discordID: DiscordID, guildID: GuildID, data: DiscordUserData): Future[Boolean] = {
     collection.
       flatMap(_.update(ordered=true).
         one(Json.obj("discordID" -> discordID),
           Json.obj(
-            "$push" ->  Json.obj("logs"         -> DiscordUserLog(userLog,DateTime.now())),
-                   "$set" ->  Json.obj("lastUserName" -> userLog)), upsert = true)).
+            "$push" ->  Json.obj("logs"         -> DiscordUserLog(data.userName,guildID,data.avatarURL,DateTime.now())),
+                   "$set" ->  Json.obj("lastUserName" -> data.userName)), upsert = true)).
       map(_.ok)
   }
 }

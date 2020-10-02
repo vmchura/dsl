@@ -9,3 +9,5 @@ case class DiscordUser(discordID: String, userName: String, discriminator: Optio
 object DiscordUser {
   implicit val jsonFormat: OFormat[DiscordUser] = Json.format[DiscordUser]
 }
+
+case class DiscordUserData(discordID: DiscordID, userName: String, discriminator: DiscordDiscriminator, avatarURL: Option[String])

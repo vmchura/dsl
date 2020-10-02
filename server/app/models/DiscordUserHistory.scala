@@ -3,7 +3,7 @@ package models
 import org.joda.time.DateTime
 import play.api.libs.json.{JsError, JsObject, JsPath, JsResult, JsSuccess, JsValue, Json, JsonValidationError, KeyPathNode, OFormat}
 import be.venneborg.refined.play.RefinedJsonFormats._
-case class DiscordUserLog(userName: String, date:DateTime)
+case class DiscordUserLog(userName: String, guildID: GuildID, avatarHash: Option[String], date:DateTime)
 object DiscordUserLog{
   implicit val dateFormat: OFormat[DateTime] = new OFormat[DateTime] {
     override def writes(o: DateTime): JsObject = Json.obj("iso" -> o.toString)

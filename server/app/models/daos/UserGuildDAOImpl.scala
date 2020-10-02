@@ -8,6 +8,7 @@ import scala.concurrent.Future
 import scala.concurrent.ExecutionContext.Implicits.global
 import play.api.libs.json.Json
 import play.modules.reactivemongo._
+import reactivemongo.api.Cursor
 import reactivemongo.play.json.collection.JSONCollection
 import reactivemongo.play.json.compat._
 class UserGuildDAOImpl @Inject() (val reactiveMongoApi: ReactiveMongoApi) extends UserGuildDAO {
@@ -37,5 +38,9 @@ class UserGuildDAOImpl @Inject() (val reactiveMongoApi: ReactiveMongoApi) extend
       case Some(result) => if(result.guilds.contains(guildID)) Future.successful(true) else push(discordID, guildID)
       case None => save(UserGuild(discordID,Set(guildID)))
     }
+  }
+
+  override def all(): Future[Seq[UserGuild]] = {
+    collection.flatMap(_.find(Json.obj(),Option.empty[UserGuild]).cursor[UserGuild]().collect[List](-1,Cursor.FailOnError[List[UserGuild]]()))
   }
 }

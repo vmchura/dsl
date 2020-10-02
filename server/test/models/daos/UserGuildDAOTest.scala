@@ -50,7 +50,19 @@ class UserGuildDAOTest extends PlaySpec with GuiceOneAppPerSuite with ScalaFutur
         assertResult(Set(guildID_0,guildID_1))(guilds)
       }
     }
+    "return all insertions" in {
+      val insertion = for{
+        _ <- userGuildDAO.addGuildToUser(DiscordID(Random.nextString(12)),GuildID(Random.nextString(5)))
+        _ <- userGuildDAO.addGuildToUser(DiscordID(Random.nextString(12)),GuildID(Random.nextString(5)))
+        _ <- userGuildDAO.addGuildToUser(DiscordID(Random.nextString(12)),GuildID(Random.nextString(5)))
+      }yield{
+        true
+      }
 
+      whenReady(insertion.flatMap(_ =>userGuildDAO.all())){ guilds =>
+        assert(guilds.length >= 3)
+      }
+    }
   }
   "Legacy Import" should {
     "end with no error" in {
