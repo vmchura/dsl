@@ -12,7 +12,7 @@ import scala.concurrent.ExecutionContext.Implicits.global
 /**
  * A job which cleanup invalid auth tokens.
  *
- * @param service The auth token service implementation.
+ * @param userHistoryService The userHistoryService implementation.
  * @param clock The clock implementation.
  */
 class DiscordNameUpdater @Inject()(
