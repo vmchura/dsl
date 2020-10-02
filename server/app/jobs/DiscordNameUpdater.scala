@@ -28,6 +28,7 @@ class DiscordNameUpdater @Inject()(
     case Update =>
       val start = clock.now.getMillis
       val msg = new StringBuffer("\n")
+      println("update")
       msg.append("=================================\n")
       msg.append("Start to update discord names\n")
       msg.append("=================================\n")
@@ -38,11 +39,13 @@ class DiscordNameUpdater @Inject()(
         msg.append("=================================\n")
 
         msg.append("=================================\n")
+        println(msg.toString)
         logger.info(msg.toString)
       }.recover {
         case e =>
           msg.append("Couldn't update discordUsers because of unexpected error\n")
           msg.append("=================================\n")
+          println(msg.toString)
           logger.error(msg.toString, e)
       }
   }

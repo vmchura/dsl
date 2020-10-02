@@ -1,5 +1,5 @@
 package models.services
-import models.{DiscordDiscriminator, DiscordUser, DiscordUserData, GuildID}
+import models.{DiscordDiscriminator, DiscordID, DiscordUser, DiscordUserData, GuildID}
 
 import scala.concurrent.Future
 import sttp.client._
@@ -15,32 +15,35 @@ import scala.concurrent.ExecutionContext.Implicits.global
 class DiscordUserServiceImpl @Inject()(configuration: Configuration) extends DiscordUserService with Logger{
   implicit val sttpBackend: SttpBackend[Future, Nothing, WebSocketHandler] = AsyncHttpClientFutureBackend()
   override protected val bot_token: String = configuration.get[String]("discord.bottoken")
-  override def findMembersOnGuild(guildID: String): Future[Option[Seq[DiscordUser]]] = {
-    val responseFut = basicRequest.header("Authorization",s"Bot $bot_token").get(uri"https://discord.com/api/guilds/$guildID/members?limit=1000").send()
 
-    responseFut.map { _.body match
-      {
-        case Left(errorMessage) =>
-          logger.error(s"Error on findMembersOnGuild: $errorMessage")
-          None
+  private def parseDiscordUser(jsValue: JsValue): Option[DiscordUser] = {
+    try{
+      Some(DiscordUser((jsValue \ "user" \ "id").as[String],
+        (jsValue \ "user" \ "username").as[String],
+        (jsValue \ "user" \ "discriminator").asOpt[String]))
+    }catch{
+      case _: Throwable => None
+    }
+  }
+  private def parseDiscordUserData(jsValue: JsValue): Option[DiscordUserData] = {
+    try{
+      val userName = (jsValue \ "user" \ "username").as[String]
+      val discordID = DiscordID((jsValue \ "user" \ "id").as[String])
+      val discriminator: Either[String, DiscordDiscriminator] = RefType.applyRef[DiscordDiscriminator]((jsValue \ "user" \ "discriminator").as[String])
+      val avatarURL = (jsValue \ "user"\ "avatar").asOpt[String]
 
-        case Right(body) =>
-          try {
-            val jsArray = Json.parse(body).as[JsArray]
-            Some(jsArray.value.map(v => {
-              DiscordUser((v \ "user" \ "id").as[String], (v \ "user" \ "username").as[String], (v \ "user" \ "discriminator").asOpt[String])
-            }).toSeq)
-          } catch {
-            case _ : Throwable =>
-              logger.error(s"Error on findMembersOnGuild: $body is not a json or an array of users")
-              None
-          }
+      discriminator match {
+        case Right(discriminatorValue) => Some(DiscordUserData(discordID, userName, discriminatorValue,avatarURL))
+        case Left(_) => None
       }
+    }catch{
+      case _: Throwable => None
     }
   }
 
-  override def loadSingleUser(guildID: GuildID,discordID: models.DiscordID): Future[Option[DiscordUserData]] = {
-    val responseFut = basicRequest.header("Authorization",s"Bot $bot_token").get(uri"https://discord.com/api/guilds/${guildID.id}/members/${discordID.id}").send()
+  private def findDiscordUsers[T](guildID: GuildID, parser: JsValue => Option[T]): Future[Option[Seq[T]]] = {
+    val responseFut = basicRequest.header("Authorization",s"Bot $bot_token").get(uri"https://discord.com/api/guilds/${guildID.id}/members?limit=1000").send()
+
     responseFut.map { _.body match
     {
       case Left(errorMessage) =>
@@ -49,23 +52,23 @@ class DiscordUserServiceImpl @Inject()(configuration: Configuration) extends Dis
 
       case Right(body) =>
         try {
-          val jsObject = Json.parse(body)
-
-          val userName = (jsObject \ "user" \ "username").as[String]
-          val discriminator: Either[String, DiscordDiscriminator] = RefType.applyRef[DiscordDiscriminator]((jsObject \ "user" \ "discriminator").as[String])
-          val avatarURL = (jsObject \ "user"\ "avatar").asOpt[String]
-
-          discriminator match {
-            case Right(discriminatorValue) => Some(DiscordUserData(discordID, userName, discriminatorValue,avatarURL))
-            case Left(_) => None
-          }
-
+          val jsArray = Json.parse(body).as[JsArray]
+          Some(jsArray.value.flatMap(v => {
+            parser(v)
+          }).toSeq)
         } catch {
           case _ : Throwable =>
-            logger.error(s"Error on findMember OnGuild: $body is not a json or user")
+            logger.error(s"Error on findMembersOnGuild: $body is not a json or an array of users")
             None
         }
     }
     }
+  }
+  override def findMembersOnGuild(guildID: String): Future[Option[Seq[DiscordUser]]] = {
+    findDiscordUsers(GuildID(guildID),parseDiscordUser)
+  }
+
+  override def findMembersOnGuildData(guildID: GuildID): Future[Option[Seq[DiscordUserData]]] = {
+    findDiscordUsers(guildID,parseDiscordUserData)
   }
 }
