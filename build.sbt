@@ -39,7 +39,8 @@ lazy val server = (project in file("server"))
       "com.github.seratch" %% "awscala" % "0.8.+",
       // https://mvnrepository.com/artifact/net.dv8tion/JDA  //DISCORD REST
       "net.dv8tion" % "JDA" % "4.2.0_181",
-
+      //refined,
+      "be.venneborg" %% "play28-refined" % "0.6.0",
         ehcache,
         guice,
       filters,
