@@ -1,14 +1,16 @@
 package jobs
 
 import javax.inject.Inject
-import models.{Participant, ParticipantPK}
-import models.services.ParticipantsService
+import models.daos.UserGuildDAO
+import models.{DiscordID, GuildID, Participant, ParticipantPK}
+import models.services.{ParticipantsService, TournamentService}
 import shared.utils.BasicComparableByLabel
 import upickle.default._
+
 import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.Future
 
-class ParticipantUpdater @Inject() (participantsService: ParticipantsService) {
+class ParticipantUpdater @Inject() (participantsService: ParticipantsService, tournamentService: TournamentService, userGuildDAO: UserGuildDAO) {
   def updateParticipant(first: BasicComparableByLabel, second: BasicComparableByLabel): Future[Either[ParticipantUpdaterError,Participant]] = {
     implicit class opt2Future[A](opt: Option[A]) {
       def withFailure(f: ParticipantUpdaterError): Future[A] = opt match {
@@ -27,9 +29,14 @@ class ParticipantUpdater @Inject() (participantsService: ParticipantsService) {
       oldParticipantOpt <- participantsService.loadParticipant(participantPK)
       oldParticipant <- oldParticipantOpt.withFailure(ParticipantNotFound(participantPK))
       newParticipant <- Future.successful(oldParticipant.copy(discordUserID = Some(discordUserID)))
+      tournamentOpt <- tournamentService.loadTournament(oldParticipant.participantPK.challongeID)
+      tournament <- tournamentOpt.withFailure(TournamentNotRelated(participantPK))
+      guildUpdated <- userGuildDAO.addGuildToUser(DiscordID(discordUserID),GuildID(tournament.discordServerID))
+      _ <- guildUpdated.withFailure(GuildNotUpdated(participantPK))
       update <- participantsService.updateParticipantRelation(newParticipant)
       _ <- update.withFailure(ParticipantCantUpdate(participantPK))
     }yield{
+
       newParticipant
     }
 

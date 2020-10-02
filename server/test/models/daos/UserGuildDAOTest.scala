@@ -1,16 +1,22 @@
 package models.daos
+import models.services.{ParticipantsService, TournamentService}
 import models.{DiscordID, GuildID}
+import org.scalatest.concurrent.PatienceConfiguration.{Interval, Timeout}
 import org.scalatest.concurrent.ScalaFutures
 import org.scalatest.time.{Seconds, Span}
 import org.scalatestplus.play.PlaySpec
 import org.scalatestplus.play.guice.GuiceOneAppPerSuite
+
 import scala.concurrent.ExecutionContext.Implicits.global
+import scala.concurrent.Future
 import scala.util.Random
 class UserGuildDAOTest extends PlaySpec with GuiceOneAppPerSuite with ScalaFutures {
   implicit override val patienceConfig: PatienceConfig =
     PatienceConfig(timeout =  Span(10, Seconds), interval = Span(1, Seconds))
 
   val userGuildDAO: UserGuildDAO = app.injector.instanceOf(classOf[UserGuildDAO])
+  val participantService: ParticipantsService = app.injector.instanceOf(classOf[ParticipantsService])
+  val tournamentService: TournamentService = app.injector.instanceOf(classOf[TournamentService])
 
   "UserGuildDAO" should {
     "return empty set" in {
@@ -43,6 +49,22 @@ class UserGuildDAOTest extends PlaySpec with GuiceOneAppPerSuite with ScalaFutur
       whenReady(insertion.flatMap(_ =>userGuildDAO.load(discordID))){ guilds =>
         assertResult(Set(guildID_0,guildID_1))(guilds)
       }
+    }
+
+  }
+  "Legacy Import" should {
+    "end with no error" in {
+      val migration = for {
+        allTournaments <- tournamentService.findAllTournaments()
+        allParticipants <- Future.sequence(allTournaments.map(_.challongeID).map(participantService.loadParticipantDefinedByTournamentID)).map(_.flatten)
+        insertions <- Future.sequence(allParticipants.distinctBy(_.discordUserID).map(p => userGuildDAO.addGuildToUser(DiscordID(p.discordUserID),GuildID(allTournaments.find(_.challongeID == p.participantPK.challongeID).map(_.discordServerID).getOrElse("??")))))
+      }yield{
+        insertions.forall(u => u)
+      }
+      whenReady(migration,Timeout(Span(600,Seconds)),Interval(Span(10,Seconds))){ u =>
+        assert(u)
+      }
+
     }
   }
 }

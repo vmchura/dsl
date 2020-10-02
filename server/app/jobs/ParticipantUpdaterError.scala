@@ -7,3 +7,5 @@ case class ParticipantPKBadFormed(source: String) extends ParticipantUpdaterErro
 case class ParticipantNotFound(participantID: ParticipantPK) extends ParticipantUpdaterError
 case class ParticipantCantUpdate(participantID: ParticipantPK) extends ParticipantUpdaterError
 case class UnknowParticipantUpdateError(error: String) extends ParticipantUpdaterError
+case class TournamentNotRelated(participantID: ParticipantPK) extends ParticipantUpdaterError
+case class GuildNotUpdated(participantID: ParticipantPK) extends ParticipantUpdaterError
