@@ -1,10 +1,13 @@
 import play.api.libs.json.{Json, OFormat}
 
 package object models {
-  case class DiscordID(id: String) extends AnyVal{
 
-
+  case class GuildID(id: String) extends AnyVal
+  object GuildID{
+    implicit val jsonFormat: OFormat[GuildID] = Json.format[GuildID]
   }
+
+  case class DiscordID(id: String) extends AnyVal
   object DiscordID{
     implicit val jsonFormat: OFormat[DiscordID] = Json.format[DiscordID]
   }

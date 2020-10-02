@@ -1,5 +1,5 @@
 package models.services
-import models.DiscordUser
+import models.{DiscordUser, GuildID}
 
 import scala.concurrent.Future
 import sttp.client._
@@ -9,6 +9,7 @@ import utils.Logger
 import play.api.libs.json._
 import javax.inject.Inject
 import play.api.Configuration
+
 import scala.concurrent.ExecutionContext.Implicits.global
 class DiscordUserServiceImpl @Inject()(configuration: Configuration) extends DiscordUserService with Logger{
   implicit val sttpBackend: SttpBackend[Future, Nothing, WebSocketHandler] = AsyncHttpClientFutureBackend()
@@ -35,6 +36,30 @@ class DiscordUserServiceImpl @Inject()(configuration: Configuration) extends Dis
               None
           }
       }
+    }
+  }
+
+  override def loadSingleUser(guildID: GuildID,discordID: models.DiscordID): Future[Option[DiscordUser]] = {
+    val responseFut = basicRequest.header("Authorization",s"Bot $bot_token").get(uri"https://discord.com/api/guilds/${guildID.id}/members/${discordID.id}").send()
+    responseFut.map { _.body match
+    {
+      case Left(errorMessage) =>
+        logger.error(s"Error on findMembersOnGuild: $errorMessage")
+        None
+
+      case Right(body) =>
+        try {
+          val jsObject = Json.parse(body)
+
+          Some(
+            DiscordUser((jsObject \ "user" \ "id").as[String], (jsObject \ "user" \ "username").as[String], (jsObject \ "user" \ "discriminator").asOpt[String])
+          )
+        } catch {
+          case _ : Throwable =>
+            logger.error(s"Error on findMember OnGuild: $body is not a json or user")
+            None
+        }
+    }
     }
   }
 }
