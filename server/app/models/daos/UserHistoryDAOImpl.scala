@@ -5,6 +5,7 @@ import models.{DiscordID, DiscordUserData, DiscordUserHistory, DiscordUserLog, G
 import org.joda.time.DateTime
 import play.api.libs.json.Json
 import play.modules.reactivemongo.ReactiveMongoApi
+import reactivemongo.api.Cursor
 
 import scala.concurrent.ExecutionContext.Implicits.global
 import reactivemongo.play.json.collection.JSONCollection
@@ -52,4 +53,7 @@ class UserHistoryDAOImpl @Inject() (val reactiveMongoApi: ReactiveMongoApi) exte
                    "$set" ->  Json.obj("lastUserName" -> data.userName)), upsert = true)).
       map(_.ok)
   }
+
+  override def all(): Future[Seq[DiscordUserHistory]] =
+    collection.flatMap(_.find(Json.obj(),Option.empty[DiscordUserHistory]).cursor[DiscordUserHistory]().collect[List](-1,Cursor.FailOnError[List[DiscordUserHistory]]()))
 }

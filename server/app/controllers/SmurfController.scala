@@ -3,8 +3,8 @@ package controllers
 import java.util.UUID
 
 import javax.inject.Inject
-import models.daos.UserSmurfDAO
-import models.services.{SideBarMenuService, SmurfService, TournamentService}
+import models.daos.{UserHistoryDAO, UserSmurfDAO}
+import models.services.{SideBarMenuService, SmurfService}
 import play.api.i18n.I18nSupport
 import play.api.libs.json.Json
 import play.api.mvc.{Action, AnyContent}
@@ -13,10 +13,10 @@ import scala.concurrent.ExecutionContext
 
 class SmurfController @Inject()(scc: SilhouetteControllerComponents,
                                smurfsToCheck: views.html.smurfstoverify,
-                               tournamentService: TournamentService,
                                userSmurfDAO: UserSmurfDAO,
                                smurfService: SmurfService,
-                               sideBarMenuService: SideBarMenuService
+                               sideBarMenuService: SideBarMenuService,
+                               userHistoryDAO: UserHistoryDAO
                                ) (
                                  implicit
                                  assets: AssetsFinder,
@@ -63,13 +63,18 @@ class SmurfController @Inject()(scc: SilhouetteControllerComponents,
     }
   }
   def showListSmurfsDefined(): Action[AnyContent] = Action.async{ implicit request =>
-    smurfService.loadValidSmurfs().map{ usuarios =>
+    for{
+      usuarios <- smurfService.loadValidSmurfs()
+      usersHistory <- userHistoryDAO.all()
+    }yield{
+
+      val usersWithHistory = usuarios.flatMap(u => usersHistory.find(_.discordID == u.discordID).map(h => (u,h)))
+
       val json = Json.obj("users" ->
-        Json.arr(usuarios.map(u =>
-          //FixMe find and use correct discordname
-          Json.obj("discordname" -> "UNKNOWN",
-                          "smurfs" -> Json.arr(u.smurfs.map(_.name)),
-                          "discordID" -> u.discordID.id))))
+        Json.arr(usersWithHistory.map{ case (u,h) =>
+          Json.obj("discordname" -> Json.toJson(h),
+            "smurfs" -> Json.arr(u.smurfs.map(_.name)),
+            "discordID" -> u.discordID.id)}))
       Ok(json)
     }
 
