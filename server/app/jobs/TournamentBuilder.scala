@@ -109,7 +109,7 @@ class TournamentBuilder @Inject() (tournamentService: TournamentService,
             m.round, m.firstChaNameID,
             m.secondChaNameID,
             u1.copy(matchSmurf = u1.matchSmurf.filter(_.matchPK == m.matchPK)),
-            u2.copy(matchSmurf = u2.matchSmurf.filter(_.matchPK == m.matchPK))).copy(userLogged = userOpt)
+            u2.copy(matchSmurf = u2.matchSmurf.filter(_.matchPK == m.matchPK)),complete=m.complete).copy(userLogged = userOpt)
         }
 
       }
