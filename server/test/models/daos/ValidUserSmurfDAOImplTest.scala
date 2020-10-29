@@ -172,15 +172,17 @@ class ValidUserSmurfDAOImplTest extends PlaySpec with GuiceOneAppPerSuite with S
       def smurfRegistered: ResultBySmurf => Option[SmurfAlreadyRegistered] = {case a: SmurfAlreadyRegistered => Some(a)  case _ => None}
       def smurfCantBeRegistered: ResultBySmurf => Option[SmurfRegisteredOtherUser] = {case a: SmurfRegisteredOtherUser => Some(a)  case _ => None}
 
-      val addNewSmurfToUserRegistered = resultsBySmurfs.map(filterByClass(addSmurfToRegisteredUser))
-      val alreadyRegistered = resultsBySmurfs.map(filterByClass(smurfRegistered))
-      val smurfsRegisteredOnOtherUser = resultsBySmurfs.map(filterByClass(smurfCantBeRegistered))
-      val newUsersToCreate = resultsBySmurfs.map(filterByClass(createUser))
+      val addNewSmurfToUserRegistered: Future[Seq[AddSmurf]] = resultsBySmurfs.map(filterByClass(addSmurfToRegisteredUser))
+      val alreadyRegistered: Future[Seq[SmurfAlreadyRegistered]] = resultsBySmurfs.map(filterByClass(smurfRegistered))
+      val smurfsRegisteredOnOtherUser: Future[Seq[SmurfRegisteredOtherUser]] = resultsBySmurfs.map(filterByClass(smurfCantBeRegistered))
+      val newUsersToCreate: Future[Seq[CreateUser]] = resultsBySmurfs.map(filterByClass(createUser))
 
-
-      whenReady(resultsByIncompleteSmurfs){ i =>
-        println(s"Results incmplete")
-        println(s"${i.mkString("\n")}")
+      Seq((addNewSmurfToUserRegistered,"AddSmurf"),(alreadyRegistered,"SmurfAlreadyRegistered"),
+        (smurfsRegisteredOnOtherUser,"SmurfRegisteredOtherUser"),(newUsersToCreate,"CreateUser")).foreach{ a =>
+        whenReady(a._1){ l =>
+          println(a._2)
+          println(l.mkString("\t"))
+        }
       }
       //newUserToCreate -> Register on guilds
 
