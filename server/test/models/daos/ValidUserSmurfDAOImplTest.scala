@@ -95,7 +95,7 @@ class ValidUserSmurfDAOImplTest extends PlaySpec with GuiceOneAppPerSuite with S
       case class CompleteRecord(discordID: DiscordID, smurfs: Seq[Smurf]) extends RecordPython
       case class IncompleteRecord(userName: Option[String], id: Option[String], smurfs: Seq[String]) extends RecordPython
       val json= Json.parse(i).asInstanceOf[JsArray]
-      val records: List[Either[IncompleteRecord,CompleteRecord]] = json.value.map{ v =>
+      val recordsWithDuplicate: List[Either[IncompleteRecord,CompleteRecord]] = json.value.map{ v =>
         val smurfs = (v \ "smurfs").asOpt[Seq[String]].getOrElse(Seq.empty[String]).map(_.trim)
         (v \ "id").asOpt[String] match {
           case Some(id) if id.length == 18 && id.forall(_.isDigit) =>
@@ -103,6 +103,26 @@ class ValidUserSmurfDAOImplTest extends PlaySpec with GuiceOneAppPerSuite with S
           case _ => Left(IncompleteRecord((v \ "username").asOpt[String], (v \ "id").asOpt[String],smurfs))
         }
       }.toList
+      val records = recordsWithDuplicate.map{
+        case Right(cr @ CompleteRecord(discordID,_)) =>
+          val saved = if(discordID == DiscordID("706106144782942219")){
+            cr.copy(discordID = DiscordID("703255446940549251"))
+          }else{
+            if(discordID == DiscordID("720811894918610945")){
+              cr.copy(discordID = DiscordID("712807917061144697"))
+            }else{
+              cr
+            }
+          }
+          Right(saved)
+          //Right(cr)
+        case Left(ir) => Left(ir)
+      }
+      //712807917061144697
+/*
+[DF]vlady1K: {706106144782942219,703255446940549251}
+N.Tank: {720811894918610945,712807917061144697}
+ */
       val incompletes = records.flatMap {
           case Left(x) => Some(x)
           case _ => None
@@ -111,6 +131,9 @@ class ValidUserSmurfDAOImplTest extends PlaySpec with GuiceOneAppPerSuite with S
         case Right(x) => Some(x)
         case _ => None
       }
+      println("INCOMPLETES")
+      println(incompletes)
+      println("END INCOMPLETES")
       val smurfID: Seq[(Smurf,DiscordID)] = completes.flatMap(c => c.smurfs.map(s => (s,c.discordID)))
       val sameSmurfMultipleID: Map[Smurf, Seq[DiscordID]] = smurfID.groupBy(_._1).transform((_,v) => v.map(_._2).distinct).filter(_._2.length>1)
       sameSmurfMultipleID.foreach{
