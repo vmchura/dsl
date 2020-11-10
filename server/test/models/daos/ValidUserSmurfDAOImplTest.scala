@@ -88,7 +88,45 @@ class ValidUserSmurfDAOImplTest extends PlaySpec with GuiceOneAppPerSuite with S
   }
 
   "python Load and store  smurfs" should{
+    /**
+     *
+     *  Process A, parse .json
+     *    SU <- SmurfUser: (smurf, discordID)
+     *    S <- Smurf: (smurf)
+     *
+     *  Process B
+     *    Eliminar los Smurf que ya estén en smurfUser
+     *    SFree <- S filtered not in SU
+     *
+     *  Process C, detectar los smurf que estén asociados a más de un codigo de usuario
+     *    SM <- SmurfMultiple: smurf, Seq[discordID]
+     *    SUnique <- SU filtered not in SM
+     *  Process D, Eliminar los Smurf que estén registrados
+     *    SU-!Registered <- SUnique filtered not in Registered smurfs
+     *
+     *  Process E, convertir todos los smurf a SmurfUser
+     *    SU-ToRegister <- SU-!Registered + SM + SUnique
+     *
+     *  Process F,registrar a los discordID que no estén inscritos
+     *    SU-ToRegister =>
+     *
+     *  Process G, filtrar los ya registrados y los que no corresponden al usuario mostrarlos
+     *
+     *    SU-ReadyToRegister <- SU-ToRegister filtered already registered
+     *                                        if doesnt correspond => show
+     *
+     *  Process H, Registrar los Smurf restantes
+     *
+     */
+
     "transfer all smurfs" in {
+      sealed trait SmurfTest
+      case class SmurfUser(smurf: String, discordID: Long) extends SmurfTest
+      case class SmurfFree(smurf: String) extends SmurfTest
+
+
+
+
       val f = new File("/home/vmchura/Downloads/accountSmurfs.json")
       val i = new FileInputStream(f)
       trait RecordPython
