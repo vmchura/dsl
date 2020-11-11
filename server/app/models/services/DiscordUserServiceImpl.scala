@@ -19,7 +19,7 @@ class DiscordUserServiceImpl @Inject()(configuration: Configuration) extends Dis
   private def parseDiscordUser(jsValue: JsValue): Option[DiscordUser] = {
     try{
       Some(DiscordUser((jsValue \ "user" \ "id").as[String],
-        (jsValue \ "user" \ "username").as[String],
+        (jsValue \ "nick").as[String],
         (jsValue \ "user" \ "discriminator").asOpt[String]))
     }catch{
       case _: Throwable => None
@@ -27,7 +27,7 @@ class DiscordUserServiceImpl @Inject()(configuration: Configuration) extends Dis
   }
   private def parseDiscordUserData(jsValue: JsValue): Option[DiscordUserData] = {
     try{
-      val userName = (jsValue \ "user" \ "username").as[String]
+      val userName = (jsValue \ "nick").as[String]
       val discordID = DiscordID((jsValue \ "user" \ "id").as[String])
       val discriminator: Either[String, DiscordDiscriminator] = RefType.applyRef[DiscordDiscriminator]((jsValue \ "user" \ "discriminator").as[String])
       val avatarURL = (jsValue \ "user"\ "avatar").asOpt[String]
