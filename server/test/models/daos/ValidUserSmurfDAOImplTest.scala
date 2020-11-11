@@ -23,7 +23,7 @@ import cats.instances.future._ // for Applicative
 import cats.instances.list._
 class ValidUserSmurfDAOImplTest extends PlaySpec with GuiceOneAppPerSuite with ScalaFutures{
   implicit override val patienceConfig: PatienceConfig =
-    PatienceConfig(timeout =  Span(20, Seconds), interval = Span(1, Seconds))
+    PatienceConfig(timeout =  Span(120, Seconds), interval = Span(10, Seconds))
 
   val service: SmurfService = app.injector.instanceOf(classOf[SmurfService])
   val userGuildDAO: UserGuildDAO = app.injector.instanceOf(classOf[UserGuildDAO])
