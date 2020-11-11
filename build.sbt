@@ -41,6 +41,8 @@ lazy val server = (project in file("server"))
       "net.dv8tion" % "JDA" % "4.2.0_181",
       //refined,
       "be.venneborg" %% "play28-refined" % "0.6.0",
+      //cats
+      "org.typelevel" %% "cats-core" % "2.1.1",
         ehcache,
         guice,
       filters,
