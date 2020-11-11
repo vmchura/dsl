@@ -7,7 +7,7 @@ import play.api.libs.json._
 
 case class Match(matchPK: MatchPK,tournamentName: String,
                  firstChaNameID: Long, secondChaNameID: Long,
-                 round: String, player1Name: Option[String], player2Name: Option[String], replaysAttached: Seq[ReplayRecord] = Nil) extends TWithReplays[Match]{
+                 round: String, player1Name: Option[String], player2Name: Option[String], complete: Boolean, replaysAttached: Seq[ReplayRecord] = Nil) extends TWithReplays[Match]{
   private val uniqueTime = DateTime.now.getMillisOfDay
   def asMatchName(resultID: UUID): MatchNameReplay = MatchNameReplay(resultID, round,tournamentName,
     player1Name.getOrElse("player1"),

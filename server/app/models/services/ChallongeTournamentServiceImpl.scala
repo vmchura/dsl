@@ -44,6 +44,7 @@ class ChallongeTournamentServiceImpl @Inject()(configuration: Configuration) ext
             val round = match1v1("round").as[Int]
             val group_id = match1v1("group_id").asOpt[Long]
             val identifier = match1v1("identifier").as[String]
+            val state = match1v1("state").as[String]
             for{
               playerID1 <- match1v1("player1_id").asOpt[Long]
               playerID2 <- match1v1("player2_id").asOpt[Long]
@@ -53,7 +54,8 @@ class ChallongeTournamentServiceImpl @Inject()(configuration: Configuration) ext
                 playerID1,
                 playerID2,"unknow",
                 findParticipantBySomeID(playerID1).map(_.chaname),
-                findParticipantBySomeID(playerID2).map(_.chaname)
+                findParticipantBySomeID(playerID2).map(_.chaname),
+                state.equals("complete")
               )
               ChallongeMatch(matchModel,round, group_id,identifier)
             }
