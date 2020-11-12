@@ -1,18 +1,52 @@
 package modules
 
 import com.google.inject.AbstractModule
-import models.daos.{MatchResultDAO, MatchResultDAOImpl, ParticipantDAO, ParticipantDAOImpl, ReplayMatchDAO, ReplayMatchDAOImpl, TickerReplayDAOImpl, TicketReplayDAO, TournamentDAO, TournamentDAOImpl, UserGuildDAO, UserGuildDAOImpl, UserHistoryDAO, UserHistoryDAOImpl, UserSmurfDAO, UserSmurfDAOImpl, ValidUserSmurfDAO, ValidUserSmurfDAOImpl}
-import models.services.{ChallongeTournamentService, ChallongeTournamentServiceImpl, DiscordUserService, DiscordUserServiceImpl, ParticipantsService, ParticipantsServiceImpl, SmurfService, SmurfServiceImpl, TournamentService, TournamentServiceImpl, UserHistoryService, UserHistoryServiceImpl}
+import models.daos.{
+  MatchResultDAO,
+  MatchResultDAOImpl,
+  ParticipantDAO,
+  ParticipantDAOImpl,
+  ReplayMatchDAO,
+  ReplayMatchDAOImpl,
+  TickerReplayDAOImpl,
+  TicketReplayDAO,
+  TournamentDAO,
+  TournamentDAOImpl,
+  UserGuildDAO,
+  UserGuildDAOImpl,
+  UserHistoryDAO,
+  UserHistoryDAOImpl,
+  UserSmurfDAO,
+  UserSmurfDAOImpl,
+  ValidUserSmurfDAO,
+  ValidUserSmurfDAOImpl
+}
+import models.services.{
+  ChallongeTournamentService,
+  ChallongeTournamentServiceImpl,
+  DiscordUserService,
+  DiscordUserServiceImpl,
+  ParticipantsService,
+  ParticipantsServiceImpl,
+  SmurfService,
+  SmurfServiceImpl,
+  TournamentSeriesService,
+  TournamentSeriesServiceImpl,
+  TournamentService,
+  TournamentServiceImpl,
+  UserHistoryService,
+  UserHistoryServiceImpl
+}
 import net.codingwell.scalaguice.ScalaModule
 
 /**
- * The base Guice module.
- */
+  * The base Guice module.
+  */
 class DSLModule extends AbstractModule with ScalaModule {
 
   /**
-   * Configures the module.
-   */
+    * Configures the module.
+    */
   override def configure(): Unit = {
     bind[ParticipantsService].to[ParticipantsServiceImpl]
     bind[ParticipantDAO].to[ParticipantDAOImpl]
@@ -34,5 +68,8 @@ class DSLModule extends AbstractModule with ScalaModule {
     bind[UserGuildDAO].to[UserGuildDAOImpl]
     bind[UserHistoryDAO].to[UserHistoryDAOImpl]
     bind[UserHistoryService].to[UserHistoryServiceImpl]
+
+    bind[TournamentSeriesService].to[TournamentSeriesServiceImpl]
+
   }
 }
