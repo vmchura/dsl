@@ -1,5 +1,7 @@
 package models
 
+import java.util.UUID
+
 import models.services.ChallongeTournamentService
 import play.api.libs.json._
 
@@ -23,7 +25,13 @@ object TournamentSeason {
   implicit val jsonFormat: OFormat[TournamentSeason] =
     Json.format[TournamentSeason]
 }
+case class TournamentSerieID(id: UUID) extends AnyVal
+object TournamentSerieID {
+  implicit val jsonFormat: OFormat[TournamentSerieID] =
+    Json.format[TournamentSerieID]
+}
 case class TournamentSeries(
+    id: TournamentSerieID,
     name: String,
     image: Option[String],
     color: String,
