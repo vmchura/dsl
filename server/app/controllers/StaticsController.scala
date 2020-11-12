@@ -2,7 +2,11 @@ package controllers
 
 import com.mohiva.play.silhouette.api.actions.UserAwareRequest
 import javax.inject._
-import models.services.SideBarMenuService
+import models.services.{
+  SideBarMenuService,
+  TournamentSeriesService,
+  TournamentService
+}
 import play.api.i18n.I18nSupport
 import play.api.mvc._
 
@@ -12,6 +16,8 @@ import scala.concurrent.ExecutionContext
 class StaticsController @Inject() (
     scc: SilhouetteControllerComponents,
     tournamentView: views.html.tournament,
+    tournamentSeriesService: TournamentSeriesService,
+    tournamentService: TournamentService,
     sideBarMenuService: SideBarMenuService
 )(implicit
     assets: AssetsFinder,
@@ -22,12 +28,17 @@ class StaticsController @Inject() (
   def view(): Action[AnyContent] =
     silhouette.UserAwareAction.async {
       implicit request: UserAwareRequest[EnvType, AnyContent] =>
-        sideBarMenuService.buildUserAwareSideBar().map { implicit menues =>
-          Ok(
-            tournamentView(
-              socialProviderRegistry
+        sideBarMenuService.buildUserAwareSideBar().flatMap { implicit menues =>
+          for {
+            tournamentSeries <- tournamentSeriesService.allSeries()
+          } yield {
+            Ok(
+              tournamentView(
+                tournamentSeries,
+                socialProviderRegistry
+              )
             )
-          )
+          }
         }
 
     }
