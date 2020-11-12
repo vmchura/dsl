@@ -23,11 +23,17 @@
                         <a class="nav-link dropdown-toggle" href="#" id="@menu.tag.filter(_.isLetterOrDigit).mkString("")" role="button" data-toggle="dropdown" aria-expanded="false">
                         @menu.tag
                         </a>
-                        <ul class="dropdown-menu" aria-labelledby="@menu.tag.filter(_.isLetterOrDigit).mkString("")">
-                            @for(action <- menu.submenus){
-                                <li><a class="dropdown-item" href="@action.url">@action.tag</a></li>
+                        <div class="dropdown-menu" aria-labelledby="@menu.tag.filter(_.isLetterOrDigit).mkString("")">
+                            @for(action <- menu.primaryActions()){
+                              <a class="dropdown-item" href="@action.url">@action.tag</a>
                             }
-                        </ul>
+                            @if(menu.hasSecondaryActions){
+                                <div class="dropdown-divider"></div>
+                                @for(action <- menu.secondaryActions()){
+                                    <a class="dropdown-item" href="@action.url">@action.tag</a>
+                                }
+                            }
+                        </div>
                     </li>
                 }
 
