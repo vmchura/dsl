@@ -158,7 +158,53 @@ a:link, a:visited, a:active {
     flex-direction: row;
 }
 
+/**
+TOURNAMENT DISTRIBUTION
+ */
 
+.tournaments-container{
+    display: grid;
+    grid-template-rows: repeat(5,20vh);
+    grid-template-columns: 10vw 20vw 30vw 30vw 10vw;
+    grid-template-areas:
+    "S S S O O"
+    "S S S P P"
+    "S S S B B"
+    ". D D D ."
+    ". C C C .";
+}
+.DSSL-SERIES{
+    grid-area: S;
+    border: 10px dot-dash DarkMagenta;
+    background-color: DarkMagenta;
+}
+.DSL-SERIES{
+    grid-area: D;
+    border: 2px MediumOrchid;
+    background-color: MediumOrchid;
+}
+.DCSL-SERIES{
+    grid-area: C;
+    border: 2px MediumPurple;
+    background-color: MediumPurple;
+}
+.DSL-ORO-SERIES{
+    grid-area: O;
+    border: 2px GOLD;
+    background-color: GOLD;
+}
+.DSL-PLATA-SERIES{
+    grid-area: P;
+    border: 2px SILVER;
+    background-color: SILVER;
+}
+.DSL-BRONCE-SERIES{
+    grid-area: B;
+    border: 2px DARKGOLDENROD;
+    background-color: DARKGOLDENROD;
+}
+.OTHER-SERIES{
+}
 
 
 

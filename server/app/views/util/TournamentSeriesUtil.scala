@@ -12,7 +12,7 @@ object TournamentSeriesUtil {
             !name.contains("bronce") &&
             !name.contains("oro") =>
         "DSL-SERIES"
-      case name @ _ if name.contains("challanger") => "DCSL-SERIES"
+      case name @ _ if name.contains("challenger") => "DCSL-SERIES"
       case name @ _ if name.contains("oro")        => "DSL-ORO-SERIES"
       case name @ _ if name.contains("plata")      => "DSL-PLATA-SERIES"
       case name @ _ if name.contains("bronce")     => "DSL-BRONCE-SERIES"

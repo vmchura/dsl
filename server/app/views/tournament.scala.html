@@ -5,10 +5,12 @@
 @import views.util.TournamentSeriesUtil
 @this()(implicit assets: AssetsFinder)
 @(tournamentSeries: Seq[TournamentSeries],socialProviders: SocialProviderRegistry)(implicit request: RequestHeader, messages: Messages, menues: Seq[MenuGroup])
-<div class="tournaments-container">
-    @for(ts <- tournamentSeries){
+@main("Torneos",None,socialProviders){
+    <div class="tournaments-container">
+    @for(ts <- tournamentSeries) {
         <div class="@TournamentSeriesUtil.getCSSClass(ts)">
-          @ts.name
+        @ts.name
         </div>
     }
-</div>
+    </div>
+}
