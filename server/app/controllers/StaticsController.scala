@@ -2,6 +2,7 @@ package controllers
 
 import com.mohiva.play.silhouette.api.actions.UserAwareRequest
 import javax.inject._
+import models.{DiscordUser, TournamentSeasonFilled, TournamentSeriesFilled}
 import models.services.{
   SideBarMenuService,
   TournamentSeriesService,
@@ -34,10 +35,27 @@ class StaticsController @Inject() (
           } yield {
             Ok(
               tournamentView(
-                tournamentSeries,
+                tournamentSeries.map(x =>
+                  TournamentSeriesFilled(
+                    x.id,
+                    x.name,
+                    x.seasons.map(y =>
+                      TournamentSeasonFilled(
+                        y.challongeID,
+                        y.season,
+                        List(
+                          (1, DiscordUser("-", "Queen", None)),
+                          (2, DiscordUser("-", "SSoma", None)),
+                          (3, DiscordUser("-", "Flash", None))
+                        )
+                      )
+                    )
+                  )
+                ),
                 socialProviderRegistry
               )
             )
+
           }
         }
 

@@ -39,7 +39,7 @@ class TournamentSeriesServiceImpl @Inject() (
           Json.obj("id" -> id),
           Json.obj(
             "$push" -> Json.obj(
-              "seasons" -> TournamentSeason(tournament.challongeID, season)
+              "seasons" -> TournamentSeason(tournament.challongeID, season, Nil)
             )
           ),
           upsert = true
