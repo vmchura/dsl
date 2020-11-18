@@ -11,73 +11,95 @@ import play.api.mvc.{Action, AnyContent}
 
 import scala.concurrent.ExecutionContext
 
-class SmurfController @Inject()(scc: SilhouetteControllerComponents,
-                               smurfsToCheck: views.html.smurfstoverify,
-                               userSmurfDAO: UserSmurfDAO,
-                               smurfService: SmurfService,
-                               sideBarMenuService: SideBarMenuService,
-                               userHistoryDAO: UserHistoryDAO
-                               ) (
-                                 implicit
-                                 assets: AssetsFinder,
-                                 ex: ExecutionContext
-                               )extends   AbstractAuthController(scc) with I18nSupport {
+class SmurfController @Inject() (
+    scc: SilhouetteControllerComponents,
+    smurfsToCheck: views.html.smurfstoverify,
+    userSmurfDAO: UserSmurfDAO,
+    smurfService: SmurfService,
+    sideBarMenuService: SideBarMenuService,
+    userHistoryDAO: UserHistoryDAO
+)(implicit
+    assets: AssetsFinder,
+    ex: ExecutionContext
+) extends AbstractAuthController(scc)
+    with I18nSupport {
 
-  def view(): Action[AnyContent] = silhouette.SecuredAction(WithAdmin()).async { implicit request =>
-    sideBarMenuService.buildLoggedSideBar().flatMap { implicit menues =>
+  def view(): Action[AnyContent] =
+    silhouette.SecuredAction(WithAdmin()).async { implicit request =>
+      sideBarMenuService.buildLoggedSideBar().flatMap { implicit menues =>
+        for {
+          usersNotDefined <- userSmurfDAO.findUsersNotCompletelyDefined()
+
+        } yield {
+
+          Ok(
+            smurfsToCheck(
+              Some(request.identity),
+              usersNotDefined,
+              socialProviderRegistry
+            )
+          )
+        }
+      }
+    }
+  def accept(discordUserID: String, matchID: UUID): Action[AnyContent] =
+    silhouette.SecuredAction(WithAdmin()).async { implicit request =>
       for {
-        usersNotDefined <- userSmurfDAO.findUsersNotCompletelyDefined()
+        accepted <- smurfService.acceptSmurf(discordUserID, matchID)
 
       } yield {
 
-        Ok(smurfsToCheck(Some(request.identity), usersNotDefined, socialProviderRegistry))
+        val result = Redirect(routes.SmurfController.view())
+
+        if (accepted)
+          result.flashing("success" -> "Relación aceptada y guardad")
+        else
+          result.flashing("error" -> "ERROR EN GUARDAR LA RELACION")
       }
     }
-  }
-  def accept(discordUserID: String,matchID: UUID): Action[AnyContent] = silhouette.SecuredAction(WithAdmin()).async { implicit request =>
-    for {
-      accepted <- smurfService.acceptSmurf(discordUserID, matchID)
+  def decline(discordUserID: String, matchID: UUID): Action[AnyContent] =
+    silhouette.SecuredAction(WithAdmin()).async { implicit request =>
+      for {
+        accepted <- smurfService.declineSmurf(discordUserID, matchID)
 
-    } yield {
+      } yield {
 
-      val result = Redirect(routes.SmurfController.view())
+        val result = Redirect(routes.SmurfController.view())
 
-      if(accepted)
-        result.flashing("success" -> "Relación aceptada y guardad")
-      else
-        result.flashing("error" -> "ERROR EN GUARDAR LA RELACION")
+        if (accepted)
+          result.flashing(
+            "success" -> "Relación denegada, todos los replays asociados a ese usuario-smurf se eliminaron"
+          )
+        else
+          result.flashing("error" -> "ERROR en eliminar la relacion y smurfs")
+      }
     }
-  }
-  def decline(discordUserID: String,matchID: UUID): Action[AnyContent] = silhouette.SecuredAction(WithAdmin()).async { implicit request =>
-    for {
-      accepted <- smurfService.declineSmurf(discordUserID, matchID)
+  def showListSmurfsDefined(): Action[AnyContent] =
+    Action.async { implicit request =>
+      for {
+        usuarios <- smurfService.loadValidSmurfs()
+        usersHistory <- userHistoryDAO.all()
+      } yield {
+        println(usersHistory.mkString("\n"))
+        println("--")
+        val usersWithHistory = usuarios.flatMap(u =>
+          usersHistory.find(_.discordID == u.discordID).map(h => (u, h))
+        )
 
-    } yield {
+        val json = Json.obj(
+          "users" ->
+            Json.arr(usersWithHistory.map {
+              case (u, h) =>
+                Json.obj(
+                  "discordname" -> Json.toJson(h),
+                  "smurfs" -> Json.arr(u.smurfs.map(_.name)),
+                  "discordID" -> u.discordID.id
+                )
+            })
+        )
+        Ok(json)
+      }
 
-      val result = Redirect(routes.SmurfController.view())
-
-      if(accepted)
-        result.flashing("success" -> "Relación denegada, todos los replays asociados a ese usuario-smurf se eliminaron")
-      else
-        result.flashing("error" -> "ERROR en eliminar la relacion y smurfs")
     }
-  }
-  def showListSmurfsDefined(): Action[AnyContent] = Action.async{ implicit request =>
-    for{
-      usuarios <- smurfService.loadValidSmurfs()
-      usersHistory <- userHistoryDAO.all()
-    }yield{
-
-      val usersWithHistory = usuarios.flatMap(u => usersHistory.find(_.discordID == u.discordID).map(h => (u,h)))
-
-      val json = Json.obj("users" ->
-        Json.arr(usersWithHistory.map{ case (u,h) =>
-          Json.obj("discordname" -> Json.toJson(h),
-            "smurfs" -> Json.arr(u.smurfs.map(_.name)),
-            "discordID" -> u.discordID.id)}))
-      Ok(json)
-    }
-
-  }
 
 }

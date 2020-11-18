@@ -10,20 +10,20 @@ import utils.Logger
 import scala.concurrent.ExecutionContext.Implicits.global
 
 /**
- * A job which cleanup invalid auth tokens.
- *
- * @param userHistoryService The userHistoryService implementation.
- * @param clock The clock implementation.
- */
-class DiscordNameUpdater @Inject()(
-  userHistoryService: UserHistoryService,
-  clock: Clock
-)
-  extends Actor with Logger {
+  * A job which cleanup invalid auth tokens.
+  *
+  * @param userHistoryService The userHistoryService implementation.
+  * @param clock The clock implementation.
+  */
+class DiscordNameUpdater @Inject() (
+    userHistoryService: UserHistoryService,
+    clock: Clock
+) extends Actor
+    with Logger {
 
   /**
-   * Process the received messages.
-   */
+    * Process the received messages.
+    */
   def receive: Receive = {
     case Update =>
       val start = clock.now.getMillis
@@ -32,22 +32,32 @@ class DiscordNameUpdater @Inject()(
       msg.append("Start to update discord names\n")
       msg.append("=================================\n")
 
-      userHistoryService.update().map { changed =>
-        val seconds = (clock.now.getMillis - start) / 1000
-        msg.append("Total of %s accounts(s) were updated in %s seconds".format(changed, seconds)).append("\n")
-        msg.append("=================================\n")
-
-        msg.append("=================================\n")
-        logger.info(msg.toString)
-      }.recover {
-        case e =>
-          msg.append("Couldn't update discordUsers because of unexpected error\n")
+      userHistoryService
+        .update()
+        .map { changed =>
+          val seconds = (clock.now.getMillis - start) / 1000
+          msg
+            .append(
+              "Total of %s accounts(s) were updated in %s seconds"
+                .format(changed, seconds)
+            )
+            .append("\n")
           msg.append("=================================\n")
-          logger.error(msg.toString, e)
-      }
+
+          msg.append("=================================\n")
+          logger.info(msg.toString)
+        }
+        .recover {
+          case e =>
+            msg.append(
+              "Couldn't update discordUsers because of unexpected error\n"
+            )
+            msg.append("=================================\n")
+            logger.error(msg.toString, e)
+        }
   }
 }
 
-object DiscordNameUpdater{
+object DiscordNameUpdater {
   case object Update
 }
