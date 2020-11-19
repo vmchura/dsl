@@ -2,23 +2,20 @@ package controllers
 
 import com.mohiva.play.silhouette.api.actions.UserAwareRequest
 import javax.inject._
-import models.{DiscordUser, TournamentSeasonFilled, TournamentSeriesFilled}
-import models.services.{
-  SideBarMenuService,
-  TournamentSeriesService,
-  TournamentService
-}
+import models.daos.UserHistoryDAO
+import models.{DiscordID, TournamentSeasonFilled, TournamentSeriesFilled}
+import models.services.{SideBarMenuService, TournamentSeriesService}
 import play.api.i18n.I18nSupport
 import play.api.mvc._
 
-import scala.concurrent.ExecutionContext
+import scala.concurrent.{ExecutionContext, Future}
 
 @Singleton
 class StaticsController @Inject() (
     scc: SilhouetteControllerComponents,
     tournamentView: views.html.tournament,
     tournamentSeriesService: TournamentSeriesService,
-    tournamentService: TournamentService,
+    userHistoryDAO: UserHistoryDAO,
     sideBarMenuService: SideBarMenuService
 )(implicit
     assets: AssetsFinder,
@@ -32,26 +29,42 @@ class StaticsController @Inject() (
         sideBarMenuService.buildUserAwareSideBar().flatMap { implicit menues =>
           for {
             tournamentSeries <- tournamentSeriesService.allSeries()
+            users <-
+              Future
+                .traverse(
+                  tournamentSeries.flatMap(
+                    _.seasons
+                      .flatMap(_.winners)
+                      .map(_._2)
+                      .map(DiscordID.apply)
+                  )
+                )(
+                  userHistoryDAO.load
+                )
+                .map(_.flatten)
           } yield {
             Ok(
               tournamentView(
-                tournamentSeries.map(x =>
+                tournamentSeries.map(x => {
                   TournamentSeriesFilled(
                     x.id,
                     x.name,
-                    x.seasons.map(y =>
+                    x.seasons.map(y => {
+                      val newWinners = y.winners.flatMap { z =>
+                        val (order, userID) = z
+                        users.find(_.discordID.id.equals(userID)).map { u =>
+                          (order, u)
+                        }
+
+                      }
                       TournamentSeasonFilled(
                         y.challongeID,
                         y.season,
-                        List(
-                          (1, DiscordUser("-", "Queen", None)),
-                          (2, DiscordUser("-", "SSoma", None)),
-                          (3, DiscordUser("-", "Flash", None))
-                        )
+                        newWinners
                       )
-                    )
+                    })
                   )
-                ),
+                }),
                 socialProviderRegistry
               )
             )

@@ -27,8 +27,8 @@
                             @for(season <- ts.seasons){
                                 <tr>
                                     <td>@season.season</td>
-                                    @for(i <- 0 to 2){
-                                        <td>@season.winners.find(_._1 == i).map(_._2).map(_.userName).getOrElse("-")</td>
+                                    @for(i <- 1 to 3){
+                                        <td>@season.winners.find(_._1 == i).map(_._2).map(_.lastUserName).getOrElse("-")</td>
                                     }
                                 </tr>
                             }

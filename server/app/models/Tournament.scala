@@ -32,7 +32,7 @@ object TournamentSeason {
 case class TournamentSeasonFilled(
     challongeID: Long,
     season: Int,
-    winners: List[(Int, DiscordUser)]
+    winners: List[(Int, DiscordUserHistory)]
 )
 
 case class TournamentSeriesFilled(
@@ -48,8 +48,6 @@ object TournamentSerieID {
 case class TournamentSeries(
     id: TournamentSerieID,
     name: String,
-    image: Option[String],
-    color: String,
     seasons: Seq[TournamentSeason]
 )
 object TournamentSeries {
