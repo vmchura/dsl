@@ -21,11 +21,11 @@ object TournamentSeriesUtil {
       case name @ _ if name.contains("challenger") =>
         TournamentResource("DCSL-SERIES", "images/silhouette.png")
       case name @ _ if name.contains("oro") =>
-        TournamentResource("DSL-ORO-SERIES", "images/silhouette.png")
+        TournamentResource("DSL-ORO-SERIES", "images/OroMedal.png")
       case name @ _ if name.contains("plata") =>
-        TournamentResource("DSL-PLATA-SERIES", "images/silhouette.png")
+        TournamentResource("DSL-PLATA-SERIES", "images/PlataMedal.png")
       case name @ _ if name.contains("bronce") =>
-        TournamentResource("DSL-BRONCE-SERIES", "images/silhouette.png")
+        TournamentResource("DSL-BRONCE-SERIES", "images/BronceMedal.png")
       case _ => TournamentResource("OTHER-SERIES", "images/silhouette.png")
 
     }
