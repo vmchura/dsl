@@ -31,7 +31,8 @@ class TournamentSeriesServiceImpl @Inject() (
   override def addSeason(
       id: TournamentSerieID,
       tournament: Tournament,
-      season: Int
+      season: Int,
+      winners: List[(Int, String)]
   ): Future[Boolean] = {
     collection
       .flatMap(
@@ -39,7 +40,11 @@ class TournamentSeriesServiceImpl @Inject() (
           Json.obj("id" -> id),
           Json.obj(
             "$push" -> Json.obj(
-              "seasons" -> TournamentSeason(tournament.challongeID, season)
+              "seasons" -> TournamentSeason(
+                tournament.challongeID,
+                season,
+                winners
+              )
             )
           ),
           upsert = true

@@ -9,7 +9,8 @@ trait TournamentSeriesService {
   def addSeason(
       id: TournamentSerieID,
       tournament: Tournament,
-      season: Int
+      season: Int,
+      winners: List[(Int, String)]
   ): Future[Boolean]
   def allSeries(): Future[Seq[TournamentSeries]]
   def findSeries(id: TournamentSerieID): Future[Option[TournamentSeries]]

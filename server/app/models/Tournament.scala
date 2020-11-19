@@ -20,11 +20,26 @@ object Tournament {
   implicit val jsonFormat: OFormat[Tournament] = Json.format[Tournament]
 }
 
-case class TournamentSeason(challongeID: Long, season: Int)
+case class TournamentSeason(
+    challongeID: Long,
+    season: Int,
+    winners: List[(Int, String)]
+)
 object TournamentSeason {
   implicit val jsonFormat: OFormat[TournamentSeason] =
     Json.format[TournamentSeason]
 }
+case class TournamentSeasonFilled(
+    challongeID: Long,
+    season: Int,
+    winners: List[(Int, DiscordUserHistory)]
+)
+
+case class TournamentSeriesFilled(
+    id: TournamentSerieID,
+    name: String,
+    seasons: Seq[TournamentSeasonFilled]
+)
 case class TournamentSerieID(id: UUID) extends AnyVal
 object TournamentSerieID {
   implicit val jsonFormat: OFormat[TournamentSerieID] =
@@ -33,8 +48,6 @@ object TournamentSerieID {
 case class TournamentSeries(
     id: TournamentSerieID,
     name: String,
-    image: Option[String],
-    color: String,
     seasons: Seq[TournamentSeason]
 )
 object TournamentSeries {
