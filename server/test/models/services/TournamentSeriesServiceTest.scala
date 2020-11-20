@@ -126,11 +126,74 @@ class TournamentSeriesServiceTest
       whenReady(
         initWinners(
           "DeathFate Challenger Star League",
+          8588305,
+          1,
+          "515016301102628867",
+          "361607214156480512",
+          "704783922856460288"
+        )
+      ) { r =>
+        assert(r)
+      }
+      whenReady(
+        initWinners(
+          "DeathFate Challenger Star League",
+          8757224,
+          2,
+          "739512036081533039",
+          "704783922856460288",
+          "706508203910758449"
+        )
+      ) { r =>
+        assert(r)
+      }
+      whenReady(
+        initWinners(
+          "DeathFate Challenger Star League",
           8883318,
           3,
           "735981050349617274",
           "707668129072807996",
           "342136594469355520"
+        )
+      ) { r =>
+        assert(r)
+      }
+
+      whenReady(
+        initWinners(
+          "DSL",
+          8415514,
+          1,
+          "703923862735290419",
+          "573145638221643777",
+          "704767012701733054"
+        )
+      ) { r =>
+        assert(r)
+      }
+
+      whenReady(
+        initWinners(
+          "DSL",
+          8606853,
+          2,
+          "638506536078934016",
+          "712393782531719168",
+          "417161473110835210"
+        )
+      ) { r =>
+        assert(r)
+      }
+
+      whenReady(
+        initWinners(
+          "DSL",
+          8805101,
+          3,
+          "700212754635686018",
+          "743519482236108860",
+          "713872163370958938"
         )
       ) { r =>
         assert(r)
@@ -143,6 +206,31 @@ class TournamentSeriesServiceTest
           "753057376579354754",
           "722863554960818286",
           "722708287476334613"
+        )
+      ) { r =>
+        assert(r)
+      }
+      whenReady(
+        initWinners(
+          "DeathFate Super Star League",
+          8606893,
+          1,
+          "422190200828198913",
+          "696491979483381820",
+          "603344544284803113"
+        )
+      ) { r =>
+        assert(r)
+      }
+
+      whenReady(
+        initWinners(
+          "DeathFate Super Star League",
+          8805276,
+          2,
+          "304663678299668482",
+          "422190200828198913",
+          "643521674762780713"
         )
       ) { r =>
         assert(r)

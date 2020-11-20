@@ -49,20 +49,22 @@ class StaticsController @Inject() (
                   TournamentSeriesFilled(
                     x.id,
                     x.name,
-                    x.seasons.map(y => {
-                      val newWinners = y.winners.flatMap { z =>
-                        val (order, userID) = z
-                        users.find(_.discordID.id.equals(userID)).map { u =>
-                          (order, u)
-                        }
+                    x.seasons
+                      .sortBy(_.season)
+                      .map(y => {
+                        val newWinners = y.winners.flatMap { z =>
+                          val (order, userID) = z
+                          users.find(_.discordID.id.equals(userID)).map { u =>
+                            (order, u)
+                          }
 
-                      }
-                      TournamentSeasonFilled(
-                        y.challongeID,
-                        y.season,
-                        newWinners
-                      )
-                    })
+                        }
+                        TournamentSeasonFilled(
+                          y.challongeID,
+                          y.season,
+                          newWinners
+                        )
+                      })
                   )
                 }),
                 socialProviderRegistry
