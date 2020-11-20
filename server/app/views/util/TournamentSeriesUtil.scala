@@ -9,7 +9,7 @@ object TournamentSeriesUtil {
   def getTournamentResource(
       tournamentSeries: TournamentSeriesFilled
   ): TournamentResource = {
-    tournamentSeries.name.toLowerCase() match {
+    val tr = tournamentSeries.name.toLowerCase() match {
       case name @ _ if name.contains("super") =>
         TournamentResource("DSSL-SERIES", "images/silhouette.png")
       case name @ _
@@ -29,5 +29,6 @@ object TournamentSeriesUtil {
       case _ => TournamentResource("OTHER-SERIES", "images/silhouette.png")
 
     }
+    tr.copy(cssClass = tr.cssClass + " tournament-series")
   }
 }
