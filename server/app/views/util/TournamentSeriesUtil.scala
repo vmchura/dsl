@@ -17,9 +17,9 @@ object TournamentSeriesUtil {
             !name.contains("plata") &&
             !name.contains("bronce") &&
             !name.contains("oro") =>
-        TournamentResource("DSL-SERIES", "images/silhouette.png")
+        TournamentResource("DSL-SERIES", "images/DSL.png")
       case name @ _ if name.contains("challenger") =>
-        TournamentResource("DCSL-SERIES", "images/silhouette.png")
+        TournamentResource("DCSL-SERIES", "images/DCSL.png")
       case name @ _ if name.contains("oro") =>
         TournamentResource("DSL-ORO-SERIES", "images/OroMedal.png")
       case name @ _ if name.contains("plata") =>
