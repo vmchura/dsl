@@ -14,13 +14,13 @@
                 <div class="tournament-display">
                     <img src="@assets.path(tr.logo)" class="tournament-logo" alt="tournament-logo">
                     <div class="tournament-winners">
-                    <table>
+                    <table class="table">
                         <thead>
                             <tr>
-                                <th>Temporada</th>
-                                <th>Campeón</th>
-                                <th>Segundo puesto</th>
-                                <th>Tercer puesto</th>
+                                <th>Season</th>
+                                <th>1st</th>
+                                <th class="column-priority-low">2nd</th>
+                                <th class="column-priority-low">3rd</th>
                             </tr>
                         </thead>
                         <tbody>
@@ -28,7 +28,7 @@
                                 <tr>
                                     <td>@season.season</td>
                                     @for(i <- 1 to 3){
-                                        <td>@season.winners.find(_._1 == i).map(_._2).map(_.lastUserName).getOrElse("-")</td>
+                                        <td class=@{if (i>1) "column-priority-low" else ""}>@season.winners.find(_._1 == i).map(_._2).map(_.lastUserName).getOrElse("-")</td>
                                     }
                                 </tr>
                             }

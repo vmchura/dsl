@@ -174,6 +174,9 @@ TOURNAMENT DISTRIBUTION
                 "D"
                 "C";
 }
+.column-priority-low{
+    display: none;
+}
 @media (min-width: 992px) {
     .tournaments-container {
         grid-template-rows: repeat(5,25vh);
@@ -184,6 +187,12 @@ TOURNAMENT DISTRIBUTION
                 "S S S S B B"
                 "D D D C C C"
                 ". . . . . .";
+    }
+
+}
+@media(min-width: 1200px){
+    .column-priority-low{
+        display: table-cell;
     }
 }
 
@@ -212,8 +221,10 @@ TOURNAMENT DISTRIBUTION
 
 .DSSL-SERIES{
     grid-area: S;
-    border: 10px dot-dash DarkMagenta;
-    background-color: DarkMagenta;
+    margin: 5px;
+    border: 4px solid #416088;
+    border-radius: 100px 35px;
+    padding: 35px;
 }
 .DSL-SERIES{
     grid-area: D;
