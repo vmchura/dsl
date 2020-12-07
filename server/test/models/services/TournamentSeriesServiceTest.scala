@@ -114,6 +114,27 @@ class TournamentSeriesServiceTest
       }
       res
     }
+    def addSeasonNoWinners(
+        seriesName: String,
+        tournament: Long,
+        season: Int
+    )(implicit
+        series: Seq[TournamentSeries],
+        tournaments: Seq[Tournament]
+    ): Future[Boolean] = {
+      val challanger = series.find(_.name.equals(seriesName)).get.id
+      val res = for {
+        a1 <- service.addSeason(
+          challanger,
+          tournaments.find(_.challongeID == tournament).get,
+          season,
+          Nil
+        )
+      } yield {
+        a1
+      }
+      res
+    }
 
     "initialization winners" in {
       implicit val series: Seq[TournamentSeries] =
@@ -244,6 +265,22 @@ class TournamentSeriesServiceTest
           "304663678299668482",
           "429814514343477253"
         )
+      ) { r =>
+        assert(r)
+      }
+
+      whenReady(
+        addSeasonNoWinners("DeathFate Super Star League", 9076933L, 4)
+      ) { r =>
+        assert(r)
+      }
+
+      whenReady(addSeasonNoWinners("DSL", 9076955L, 5)) { r =>
+        assert(r)
+      }
+
+      whenReady(
+        addSeasonNoWinners("DeathFate Challenger Star League", 9024519L, 4)
       ) { r =>
         assert(r)
       }
