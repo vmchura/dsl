@@ -35,3 +35,5 @@ bin/
 #secret keys
 server/conf/secretkeys.conf
 server/conf/localhost.conf
+
+server/public/styles/*.map
