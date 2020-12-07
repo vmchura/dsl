@@ -3,6 +3,7 @@
 @import controllers.AssetsFinder
 @import com.mohiva.play.silhouette.impl.providers.SocialProviderRegistry
 @import views.util.TournamentSeriesUtil
+@import play.twirl.api.TwirlFeatureImports.defining
 @this()(implicit assets: AssetsFinder)
 @(tournamentSeries: Seq[TournamentSeriesFilled],socialProviders: SocialProviderRegistry)(implicit request: RequestHeader, messages: Messages, menues: Seq[MenuGroup])
 @main("Torneos",None,socialProviders){
@@ -17,7 +18,7 @@
                     <table class="table table-sm">
                         <thead>
                             <tr>
-                                <th>Season</th>
+                                <th></th>
                                 <th>1st</th>
                                 <th class="column-priority-low">2nd</th>
                                 <th class="column-priority-low">3rd</th>
@@ -26,7 +27,7 @@
                         <tbody>
                             @for(season <- ts.seasons){
                                 <tr>
-                                    <td>@season.season</td>
+                                    <td><a href="@routes.TournamentController.showMatches(season.challongeID)">Season @season.season</a></td>
                                     @for(i <- 1 to 3){
                                         <td class=@{if (i>1) "column-priority-low" else ""}>@season.winners.find(_._1 == i).map(_._2).map(_.lastUserName).getOrElse("-")</td>
                                     }
@@ -44,4 +45,4 @@
 
     }
     </div>
-}@import play.twirl.api.TwirlFeatureImports.defining
+}
