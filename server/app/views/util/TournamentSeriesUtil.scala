@@ -11,7 +11,7 @@ object TournamentSeriesUtil {
   ): TournamentResource = {
     val tr = tournamentSeries.name.toLowerCase() match {
       case name @ _ if name.contains("super") =>
-        TournamentResource("DSSL-SERIES", "images/silhouette.png")
+        TournamentResource("DSSL-SERIES", "images/DSSLMedal.png")
       case name @ _
           if name.contains("dsl") &&
             !name.contains("plata") &&
