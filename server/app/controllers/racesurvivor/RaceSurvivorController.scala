@@ -4,35 +4,40 @@ import controllers.{
   AssetsFinder,
   SilhouetteControllerComponents
 }
-import akka.actor._
 
 import javax.inject._
-import modules.racesurvivor.HelloActor
 import play.api.i18n.I18nSupport
 
 import scala.concurrent.ExecutionContext
-import HelloActor._
+import akka.actor.typed._
 
 import scala.concurrent.duration._
-import akka.pattern.ask
-import akka.util.Timeout
+import akka.actor.typed.ActorRef
 import play.api.mvc.{Action, AnyContent}
+
+import akka.actor.typed.scaladsl.AskPattern._
+import akka.util.Timeout
+import modules.racesurvivor.CookieFabric._
+import modules.racesurvivor.CookieFabric
 @Singleton
 class RaceSurvivorController @Inject() (
-    system: ActorSystem,
-    scc: SilhouetteControllerComponents
+    scc: SilhouetteControllerComponents,
+    val cookieFabric: ActorRef[CookieFabric.GiveMeCookies]
 )(implicit
     assets: AssetsFinder,
-    ex: ExecutionContext
+    ex: ExecutionContext,
+    scheduler: Scheduler
 ) extends AbstractAuthController(scc)
     with I18nSupport {
   implicit val timeout: Timeout = 5.seconds
-
-  private val helloActor = system.actorOf(HelloActor.props, "hello-actor")
-  def sayHello(name: String): Action[AnyContent] =
-    Action.async {
-      (helloActor ? SayHello(name)).mapTo[String].map { message =>
-        Ok(message)
+  def sayHello(name: String): Action[AnyContent] = {
+    Action.async { _ =>
+      cookieFabric.ask(ref => CookieFabric.GiveMeCookies(6, ref)).map {
+        case Cookies(cookies) => Ok(s"Hello $name, you've got $cookies cookies")
+        case InvalidRequest(_) =>
+          Ok(s"Hello $name, you've got nothing, good day sr")
       }
+
     }
+  }
 }

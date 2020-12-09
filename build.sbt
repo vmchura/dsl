@@ -15,7 +15,7 @@ lazy val server = (project in file("server"))
       "com.vmunier" %% "scalajs-scripts" % "1.1.4",
       // https://mvnrepository.com/artifact/org.reactivemongo/play2-reactivemongo
       "org.reactivemongo" %% "play2-reactivemongo" % "0.20.11-play28",
-      "org.reactivemongo" %% "reactivemongo-play-json-compat" %  "0.20.11-play28",
+      "org.reactivemongo" %% "reactivemongo-play-json-compat" % "0.20.11-play28",
       "com.mohiva" %% "play-silhouette" % "6.1.0",
       "com.mohiva" %% "play-silhouette-password-bcrypt" % "6.1.0",
       "com.mohiva" %% "play-silhouette-persistence" % "6.1.0",
@@ -43,8 +43,8 @@ lazy val server = (project in file("server"))
       "be.venneborg" %% "play28-refined" % "0.6.0",
       //cats
       "org.typelevel" %% "cats-core" % "2.1.1",
-        ehcache,
-        guice,
+      ehcache,
+      guice,
       filters,
       specs2 % Test
     )
@@ -84,10 +84,8 @@ lazy val shared = crossProject(JSPlatform, JVMPlatform)
     libraryDependencies += "org.scalatest" %%% "scalatest" % "3.2.0" % "test",
     // https://mvnrepository.com/artifact/com.lihaoyi/upickle
     libraryDependencies += "com.lihaoyi" %%% "upickle" % "1.1.0"
-
   )
   .jsConfigure(_.enablePlugins(ScalaJSWeb))
-
 
 lazy val commonSettings = Seq(
   scalaVersion := "2.13.1",
