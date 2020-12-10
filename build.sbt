@@ -23,14 +23,14 @@ lazy val server = (project in file("server"))
       "com.mohiva" %% "play-silhouette-totp" % "6.1.0",
       "com.iheart" %% "ficus" % "1.4.7",
       // https://mvnrepository.com/artifact/com.enragedginger/akka-quartz-scheduler
-      "com.enragedginger" %% "akka-quartz-scheduler" % "1.8.4-akka-2.6.x",
+      "com.enragedginger" %% "akka-quartz-scheduler" % "1.8.5-akka-2.6.x",
       // https://mvnrepository.com/artifact/net.codingwell/scala-guice
       "net.codingwell" %% "scala-guice" % "4.2.10",
       // https://mvnrepository.com/artifact/org.http4s/http4s-dsl
       "com.softwaremill.sttp.client" %% "core" % "2.2.3",
       "com.softwaremill.sttp.client" %% "async-http-client-backend-future" % "2.2.3",
       //test
-      "org.scalatestplus.play" %% "scalatestplus-play" % "5.0.0" % "test",
+      "org.scalatestplus.play" %% "scalatestplus-play" % "5.1.0" % "test",
       //json play
       "com.softwaremill.sttp.client" %% "play-json" % "2.2.0",
       // https://mvnrepository.com/artifact/com.dropbox.core/dropbox-core-sdk
@@ -43,6 +43,10 @@ lazy val server = (project in file("server"))
       "be.venneborg" %% "play28-refined" % "0.6.0",
       //cats
       "org.typelevel" %% "cats-core" % "2.1.1",
+      //test akka
+      "org.scalactic" %% "scalactic" % "3.2.2",
+      "org.scalatest" %% "scalatest" % "3.2.2" % "test",
+      "com.typesafe.akka" %% "akka-actor-testkit-typed" % "2.6.8" % Test,
       ehcache,
       guice,
       filters,
@@ -81,9 +85,9 @@ lazy val shared = crossProject(JSPlatform, JVMPlatform)
   .in(file("shared"))
   .settings(commonSettings)
   .settings(
-    libraryDependencies += "org.scalatest" %%% "scalatest" % "3.2.0" % "test",
     // https://mvnrepository.com/artifact/com.lihaoyi/upickle
-    libraryDependencies += "com.lihaoyi" %%% "upickle" % "1.1.0"
+    libraryDependencies += "com.lihaoyi" %%% "upickle" % "1.1.0",
+    libraryDependencies += "org.scalatest" %%% "scalatest" % "3.2.2" % "test"
   )
   .jsConfigure(_.enablePlugins(ScalaJSWeb))
 
