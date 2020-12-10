@@ -6,12 +6,15 @@ import models.services.ParseReplayFileService
 import models._
 import play.api.libs.json.{JsArray, Json}
 
+import javax.inject._
 import java.io.File
-import javax.inject.Inject
 import scala.util.{Failure, Success}
-class GameParser @Inject() (parseReplayFileService: ParseReplayFileService) {
+@Singleton
+class GameParserFactory @Inject() (
+    parseReplayFileService: ParseReplayFileService
+) {
   import GameParser._
-  def apply(): Behaviors.Receive[GameParser.ReplayMetaData] =
+  def create(): Behaviors.Receive[ReplayMetaData] =
     Behaviors.receive { (context, command) =>
       command match {
         case ReplayToParse(replay, replayTo) =>
@@ -29,9 +32,10 @@ class GameParser @Inject() (parseReplayFileService: ParseReplayFileService) {
 
     }
 }
-object GameParser {
 
+object GameParser {
   sealed trait ReplayMetaData
+
   case class ReplayToParse(replay: File, replyTo: ActorRef[GameInfo])
       extends ReplayMetaData
   case class ReplayJsonParsed(
@@ -87,13 +91,14 @@ object GameParser {
             .toList
             .map { case (i, players) => Team(i, players) }
 
-          val gameMode: SCMatchMode =
-            (json \ "Type" \ "ShortName").asOpt[String] match {
+          val gameMode: SCMatchMode = {
+            (json \ "Header" \ "Type" \ "ShortName").asOpt[String] match {
               case Some("TvB")   => TopVsBottom
               case Some("Melee") => Melee
               case Some("1v1")   => OneVsOneMode
               case _             => UnknownMode
             }
+          }
           (json \ "Computed" \ "WinnerTeam").asOpt[Int] match {
             case Some(winnerTeam) =>
               ReplayParsed(
@@ -106,4 +111,5 @@ object GameParser {
 
       }
   }
+
 }
