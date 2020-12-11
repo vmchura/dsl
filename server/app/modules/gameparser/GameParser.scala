@@ -1,37 +1,13 @@
 package modules.gameparser
 
-import akka.actor.typed.ActorRef
+import akka.actor.typed.{ActorRef, Behavior}
 import akka.actor.typed.scaladsl.Behaviors
 import models.services.ParseReplayFileService
 import models.StarCraftModels._
 import play.api.libs.json.{JsArray, Json}
 
-import javax.inject._
 import java.io.File
 import scala.util.{Failure, Success}
-@Singleton
-class GameParserFactory @Inject() (
-    parseReplayFileService: ParseReplayFileService
-) {
-  import GameParser._
-  def create(): Behaviors.Receive[ReplayMetaData] =
-    Behaviors.receive { (context, command) =>
-      command match {
-        case ReplayToParse(replay, replayTo) =>
-          val futureParsed = parseReplayFileService.parseFile(replay)
-          context.pipeToSelf(futureParsed) {
-            case Success(value) => ReplayJsonParsed(value, replayTo)
-            case Failure(_)     => ReplayCannotBeParsed(replayTo)
-          }
-        case ReplayJsonParsed(data, replyTo) =>
-          replyTo ! GameInfo(data)
-        case ReplayCannotBeParsed(replyTo) =>
-          replyTo ! ImpossibleToParse
-      }
-      Behaviors.same
-
-    }
-}
 
 object GameParser {
   sealed trait ReplayMetaData
@@ -112,4 +88,39 @@ object GameParser {
       }
   }
 
+  def apply(
+      parseReplayFileService: ParseReplayFileService
+  ): Behavior[ReplayMetaData] = {
+    Behaviors.setup[ReplayMetaData] { context =>
+      val lastBehaviour = {
+        Behaviors.receiveMessage[ReplayMetaData] { message =>
+          message match {
+            case ReplayJsonParsed(data, replyTo) =>
+              replyTo ! GameInfo(data)
+            case ReplayCannotBeParsed(replyTo) =>
+              replyTo ! ImpossibleToParse
+            case _ =>
+              throw new IllegalStateException("bad message at GameParser")
+          }
+          Behaviors.stopped
+        }
+      }
+
+      val initBehaviour = Behaviors.receiveMessage[ReplayMetaData] { message =>
+        message match {
+          case ReplayToParse(replay, replyTo) =>
+            val futureParsed = parseReplayFileService.parseFile(replay)
+            context.pipeToSelf(futureParsed) {
+              case Success(value) => ReplayJsonParsed(value, replyTo)
+              case Failure(_)     => ReplayCannotBeParsed(replyTo)
+            }
+          case _ => throw new IllegalStateException("bad message at GameParser")
+        }
+        lastBehaviour
+      }
+
+      initBehaviour
+    }
+
+  }
 }
