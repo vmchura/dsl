@@ -1,6 +1,6 @@
 package modules.gameparser
 import akka.actor.testkit.typed.scaladsl.ScalaTestWithActorTestKit
-import models._
+import models.StarCraftModels._
 import modules.gameparser.GameParser.Team
 import org.scalatest.wordspec.AnyWordSpecLike
 import org.scalatestplus.play.guice.GuiceOneAppPerSuite

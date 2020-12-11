@@ -2,7 +2,7 @@ package modules.gameparser
 
 import akka.actor.testkit.typed.scaladsl.ScalaTestWithActorTestKit
 import akka.actor.typed.scaladsl.Behaviors
-import models.{InvalidSCGameMode, OneVsOne, Protoss, SCGameMode, SCPlayer, Zerg}
+import models.StarCraftModels._
 import modules.gameparser.GameJudge.JudgeGame
 import modules.gameparser.GameParser._
 import org.scalatest.wordspec.AnyWordSpecLike
