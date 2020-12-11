@@ -14,14 +14,14 @@ class GameParserTest
   private val gameParseFactory =
     app.injector.instanceOf(classOf[GameParserFactory])
 
-  "Something" must {
-    "behave correctly" in {
+  "GameParser" must {
+    "parse file correctly" in {
       val file = new File(
         "/home/vmchura/Games/screp/cmd/screp/R_G19P----_ChesterP_83402431.rep"
       )
-      val pinger = testKit.spawn(gameParseFactory.create(), "ping")
+      val parser = testKit.spawn(gameParseFactory.create(), "parser")
       val probe = testKit.createTestProbe[GameParser.GameInfo]()
-      pinger ! GameParser.ReplayToParse(file, probe.ref)
+      parser ! GameParser.ReplayToParse(file, probe.ref)
       probe.expectMessage(
         GameParser.ReplayParsed(
           TopVsBottom,
