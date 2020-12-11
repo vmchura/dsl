@@ -1,10 +1,10 @@
 package modules.gameparser
 
 import akka.actor.testkit.typed.scaladsl.ScalaTestWithActorTestKit
-import akka.actor.typed.scaladsl.Behaviors
+import akka.actor.typed.ActorRef
 import models.StarCraftModels._
-import modules.gameparser.GameJudge.JudgeGame
-import modules.gameparser.GameParser._
+import models.services.ParseReplayFileService
+import modules.gameparser.GameReplayManager.{ManageGameReplay, ManagerCommand}
 import org.scalatest.wordspec.AnyWordSpecLike
 import org.scalatestplus.play.guice.GuiceOneAppPerSuite
 
@@ -14,9 +14,10 @@ class GameJudgeTest
     extends ScalaTestWithActorTestKit
     with AnyWordSpecLike
     with GuiceOneAppPerSuite {
-
-  private val gameParseFactory =
-    app.injector.instanceOf(classOf[GameParserFactory])
+  private val replayParseService =
+    app.injector.instanceOf(classOf[ParseReplayFileService])
+  private val gameReplayJudger: ActorRef[ManagerCommand] =
+    testKit.spawn(GameReplayManager.create(replayParseService))
 
   "GameJudger" must {
     "judge games correctly" in {
@@ -45,24 +46,10 @@ class GameJudgeTest
       )
       def assertParse(pathFile: String, result: SCGameMode): Unit = {
         val file = new File(pathFile)
-        val parser =
-          testKit.spawn(gameParseFactory.create(), s"parser-${pathFile.length}")
-        val judger = testKit.spawn(GameJudge(), s"judger-${pathFile.length}")
         val probe =
           testKit.createTestProbe[SCGameMode](s"probe-${pathFile.length}")
-        val wrapper = testKit.spawn(
-          Behaviors.receive[GameInfo] { (_, message) =>
-            message match {
-              case rep: ReplayParsed => judger ! JudgeGame(rep, probe.ref)
-              case ImpossibleToParse => probe.ref ! InvalidSCGameMode(Nil)
-            }
 
-            Behaviors.same
-          },
-          s"wrapper-${pathFile.length}"
-        )
-
-        parser ! GameParser.ReplayToParse(file, wrapper)
+        gameReplayJudger ! ManageGameReplay(file, probe.ref)
         probe.expectMessage(result)
       }
 
