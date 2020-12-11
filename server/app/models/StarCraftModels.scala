@@ -12,7 +12,7 @@ trait SCGameMode
 case class OneVsOne(winner: SCPlayer, loser: SCPlayer) extends SCGameMode
 case class ManyVsMany(winners: Seq[SCPlayer], losers: Seq[SCPlayer])
     extends SCGameMode
-case class CustomGameMode(participants: Seq[SCPlayer]) extends SCGameMode
+case class InvalidSCGameMode(participants: Seq[SCPlayer]) extends SCGameMode
 
 trait SCMatchMode
 case object Melee extends SCMatchMode
