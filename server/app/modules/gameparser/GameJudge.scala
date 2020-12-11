@@ -58,7 +58,7 @@ object GameJudge extends ActorModule {
 
           }
           replyTo ! gameInfo
-          Behaviors.same
+          Behaviors.stopped
       }
     }
 
