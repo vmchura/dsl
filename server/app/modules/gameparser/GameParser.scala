@@ -3,7 +3,7 @@ package modules.gameparser
 import akka.actor.typed.ActorRef
 import akka.actor.typed.scaladsl.Behaviors
 import models.services.ParseReplayFileService
-import models._
+import models.StarCraftModels._
 import play.api.libs.json.{JsArray, Json}
 
 import javax.inject._
