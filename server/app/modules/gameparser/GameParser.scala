@@ -46,12 +46,12 @@ object GameParser {
   case class ReplayCannotBeParsed(replyTo: ActorRef[GameInfo])
       extends ReplayMetaData
 
-  case class Team(index: Int, participants: Seq[SCPlayer])
+  case class Team(index: Int, participants: List[SCPlayer])
 
   sealed trait GameInfo
   case class ReplayParsed(
       gameMode: SCMatchMode,
-      teams: Seq[Team],
+      teams: List[Team],
       winnerTeamIndex: Int
   ) extends GameInfo
   case object ImpossibleToParse extends GameInfo
