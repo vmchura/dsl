@@ -8,7 +8,6 @@ import models.services.{
   ChallongeTournamentService,
   DiscordFileService,
   DropBoxFilesService,
-  ParseReplayFileService,
   ReplayActionBuilderService,
   S3FilesService,
   TournamentService
@@ -24,7 +23,6 @@ class ReplayService @Inject() (
     replayMatchDAO: ReplayMatchDAO,
     s3FilesService: S3FilesService,
     discordFileService: DiscordFileService,
-    parseReplayFiseService: ParseReplayFileService,
     replayActionBuilderService: ReplayActionBuilderService
 ) {
 
@@ -106,21 +104,6 @@ class ReplayService @Inject() (
     formFuture(f)
   }
 
-  def disableReplay(replayID: UUID): Future[Either[JobError, Boolean]] = {
-    val executionFuture = for {
-      replayOpt <- replayMatchDAO.find(replayID)
-      deleteSpicific <- replayOpt.fold(Future.successful(true))(replay =>
-        dropBoxFilesService.delete(replay.matchName)
-      )
-      _ <- deleteSpicific.withFailure(TournamentNotFoundToReplay(0L))
-      insertionOnDB <- replayOpt.fold(Future.successful(true))(replay =>
-        replayMatchDAO.markAsDisabled(replay.replayID)
-      )
-    } yield {
-      insertionOnDB
-    }
-    formFuture(executionFuture)
-  }
   def wrapIntoFolder(
       replay: ReplayRecord,
       folderName: String

@@ -30,6 +30,8 @@ import models.services.{
   ParticipantsServiceImpl,
   ReplayActionBuilderService,
   ReplayActionBuilderServiceImpl,
+  ReplayDeleterService,
+  ReplayDeleterServiceImpl,
   SmurfService,
   SmurfServiceImpl,
   TournamentSeriesService,
@@ -63,6 +65,7 @@ class DSLModule extends AbstractModule with ScalaModule {
     bind[MatchResultDAO].to[MatchResultDAOImpl]
     bind[UserSmurfDAO].to[UserSmurfDAOImpl]
     bind[SmurfService].to[SmurfServiceImpl]
+    bind[ReplayDeleterService].to[ReplayDeleterServiceImpl]
 
     bind[TicketReplayDAO].to[TickerReplayDAOImpl]
 

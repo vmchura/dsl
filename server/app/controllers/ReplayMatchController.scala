@@ -9,14 +9,13 @@ import models.daos.{
   TicketReplayDAO,
   UserSmurfDAO
 }
-import models.services.{ParseReplayFileService, ReplayActionBuilderService}
+import models.services.{ReplayActionBuilderService, ReplayDeleterService}
 import org.joda.time.DateTime
 import play.api.mvc._
 import play.api.i18n.I18nSupport
 import play.api.libs.Files
 import play.api.libs.json.Json
 import shared.models.{
-  ActionByReplay,
   ChallongeOneVsOneDefined,
   ChallongeOneVsOneMatchGameResult,
   ChallongePlayer,
@@ -35,8 +34,8 @@ import scala.util.{Failure, Success}
 class ReplayMatchController @Inject() (
     scc: SilhouetteControllerComponents,
     replayService: ReplayService,
+    replayDeleterService: ReplayDeleterService,
     matchResultDAO: MatchResultDAO,
-    parseFile: ParseReplayFileService,
     smurfDAO: UserSmurfDAO,
     replayMatchDAO: ReplayMatchDAO,
     ticketReplayDAO: TicketReplayDAO,
@@ -317,7 +316,7 @@ class ReplayMatchController @Inject() (
         replayOpt <- replayMatchDAO.find(replayID)
         result <- replayOpt match {
           case Some(replay) =>
-            replayService.disableReplay(replayID).map {
+            replayDeleterService.disableReplay(replayID).map {
               case Left(error) =>
                 resultSuccess(replay.tournamentID)
                   .flashing("error" -> error.toString)

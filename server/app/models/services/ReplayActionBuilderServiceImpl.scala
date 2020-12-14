@@ -1,8 +1,8 @@
 package models.services
 
 import jobs.FileIsAlreadyRegistered
-import models.UserSmurf
-import models.daos.{ReplayMatchDAO, UserSmurfDAO}
+import models.{DiscordID, Smurf, UserSmurf}
+import models.daos.ReplayMatchDAO
 import modules.gameparser.GameReplayManager.ManageGameReplay
 
 import scala.concurrent.ExecutionContext.Implicits.global
@@ -24,7 +24,7 @@ import shared.models.{
 }
 class ReplayActionBuilderServiceImpl @Inject() (
     override val parseReplayService: ParseReplayFileService,
-    userSmurfDAO: UserSmurfDAO,
+    smurfService: SmurfService,
     replayMatchDAO: ReplayMatchDAO,
     replayGameManager: ActorRef[ManagerCommand]
 )(implicit scheduler: akka.actor.typed.Scheduler)
@@ -56,19 +56,19 @@ class ReplayActionBuilderServiceImpl @Inject() (
             Future.failed(new IllegalArgumentException("Replay is not 1v1"))
         }
         participantsWithWinnerSmurf <-
-          userSmurfDAO.findBySmurf(oneVsOneGame.winner.smurf)
+          smurfService.findOwner(Smurf(oneVsOneGame.winner.smurf))
         participantsWithLoserSmurf <-
-          userSmurfDAO.findBySmurf(oneVsOneGame.loser.smurf)
+          smurfService.findOwner(Smurf(oneVsOneGame.loser.smurf))
       } yield {
         val buildChallongePlayer
-            : List[UserSmurf] => SCPlayer => ChallongePlayer = { candidates =>
+            : Option[DiscordID] => SCPlayer => ChallongePlayer = { candidates =>
           val discordID = candidates match {
-            case Nil => Right(DiscordIDSource.buildByHistory())
-            case UserSmurf(discordUser, _, _) :: Nil
-                if discordUser.discordID.equals(
+            case None => Right(DiscordIDSource.buildByHistory())
+            case Some(discordID)
+                if discordID.id.equals(
                   discordUserID1
-                ) || discordUser.discordID.equals(discordUserID2) =>
-              Right(DiscordIDSource.buildByHistory(discordUser.discordID))
+                ) || discordID.id.equals(discordUserID2) =>
+              Right(DiscordIDSource.buildByHistory(discordID.id))
             case _ =>
               Left("Too many possibilities")
           }
