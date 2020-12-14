@@ -79,11 +79,7 @@ class ReplayActionBuilderServiceImpl @Inject() (
         val challongeLoser =
           buildChallongePlayer(participantsWithLoserSmurf)(oneVsOneGame.loser)
 
-        if (
-          oneVsOneGame.winner.smurf.equals(
-            oneVsOneGame.loser.smurf
-          ) || challongeWinner.discordID.equals(challongeLoser.discordID)
-        ) {
+        if (challongeWinner == challongeLoser) {
           ChallongeOneVsOneMatchGameResult(
             ChallongePlayer(
               Left("Impossible, same smurfs"),
