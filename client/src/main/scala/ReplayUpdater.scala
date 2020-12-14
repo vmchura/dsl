@@ -8,8 +8,6 @@ import org.scalajs.dom.raw.{FormData, HTMLInputElement}
 import scala.util.{Failure, Success}
 import org.scalajs.dom.{Event, Node, document}
 import shared.models.{
-  ActionByReplay,
-  ByHistoryDiscordID,
   ChallongeOneVsOneDefined,
   ChallongeOneVsOneMatchGameResult,
   ChallongePlayer,
@@ -19,7 +17,6 @@ import shared.models.{
   EmptyDiscordID
 }
 import upickle.default.read
-import shared.models.ActionBySmurf._
 
 import scala.scalajs.concurrent.JSExecutionContext.Implicits.queue
 
@@ -39,9 +36,13 @@ class ReplayUpdater(
       x: scala.xml.Node
   ): Binding[T] =
     throw new AssertionError("This should never execute.")
+  implicit def makeIntellijHappy2[T <: org.scalajs.dom.raw.Node](
+      x: scala.xml.Elem
+  ): NodeBinding[T] =
+    throw new AssertionError("This should never execute.")
 
   abstract class WithMessageResult(private val messageToShow: String) {
-    def getMessageToShow(): String = messageToShow
+    def getMessageToShow: String = messageToShow
   }
 
   sealed trait StateSettingResult extends WithMessageResult {
@@ -80,12 +81,12 @@ class ReplayUpdater(
         s"Error en la conexión con el servidor, vuelva a intentarlo luego o comuníquese con el admin"
       )
       with DangerState {
-    override def getMessageToShow(): String = {
+    override def getMessageToShow: String = {
       println(error)
       if (error.contains("IsAlreadyRegistered"))
-        s"${super.getMessageToShow()} / Replay ya está registrada"
+        s"${super.getMessageToShow} / Replay ya está registrada"
       else
-        super.getMessageToShow()
+        super.getMessageToShow
     }
   }
   object FileParsedIncorrectly
@@ -108,12 +109,12 @@ class ReplayUpdater(
         s"ERROR en el servidor, posiblemente replay corrupta, comuníquese con el admin"
       )
       with DangerState {
-    override def getMessageToShow(): String = {
+    override def getMessageToShow: String = {
       println(message)
       if (message.contains("IsAlreadyRegistered"))
-        s"${super.getMessageToShow()} / Replay ya está registrada"
+        s"${super.getMessageToShow} / Replay ya está registrada"
       else
-        super.getMessageToShow()
+        super.getMessageToShow
     }
   }
   case class ErrorImpossibleMessage(
@@ -178,7 +179,7 @@ class ReplayUpdater(
   }
 
   @html
-  def nameAndWinnerSmarter(
+  private def nameAndWinnerSmarter(
       oneVsOne: ChallongeOneVsOneMatchGameResult
   ) = {
     <div>
@@ -207,7 +208,7 @@ class ReplayUpdater(
   }
 
   @html
-  def buildInputSmarter(smurf: String, idForInput: String) = {
+  private def buildInputSmarter(smurf: String, idForInput: String) = {
     val input: NodeBinding[HTMLInputElement] =
       <input type="radio" class="form-check-input" name="mySmurf" id={
         idForInput
