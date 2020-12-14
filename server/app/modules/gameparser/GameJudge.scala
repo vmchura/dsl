@@ -5,8 +5,7 @@ import modules.gameparser.GameParser.{ReplayParsed, Team}
 import play.api.libs.concurrent.ActorModule
 import akka.actor.typed.ActorRef
 import com.google.inject.Provides
-import models.StarCraftModels._
-
+import shared.models.StarCraftModels._
 object GameJudge extends ActorModule {
   override type Message = JudgeGame
   case class JudgeGame(gameInfo: ReplayParsed, replyTo: ActorRef[SCGameMode])

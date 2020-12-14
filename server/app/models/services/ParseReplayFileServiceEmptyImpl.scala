@@ -10,13 +10,25 @@ import shared.models.{ActionByReplay, ReplayDescriptionShared}
 import scala.concurrent.Future
 
 class ParseReplayFileServiceEmptyImpl extends ParseReplayFileService {
-  def parseFile(file: File): Future[Either[String,String]] = Future.successful(Left("NOT IMPLEMENTED FUNCTION"))
-  def parseFileAndBuildAction(file: File, discordUserID1: String, discordUserID2: String): Future[Either[String,ActionByReplay]] = {
-    Future.successful(Right(ActionByReplay(defined = true,Some("Flash"),Some("Bisu"),Correlated1d2rDefined,1,"LostTemple")))
+  def parseFile(file: File): Future[Either[String, String]] =
+    Future.successful(Left("NOT IMPLEMENTED FUNCTION"))
+  def parseFileAndBuildAction(
+      file: File,
+      discordUserID1: String,
+      discordUserID2: String
+  ): Future[Either[String, ActionByReplay]] = {
+    Future.successful(
+      Right(
+        ActionByReplay(
+          defined = true,
+          Some("Flash"),
+          Some("Bisu"),
+          Correlated1d2rDefined,
+          1,
+          "LostTemple"
+        )
+      )
+    )
   }
 
-  override def parseFileAndBuildDescription(file: File): Future[Either[jobs.JobError, ReplayDescriptionShared]] = {
-    Future.successful(Right(ReplayDescriptionShared("Flash","Bisu",1,"Lost Temple",Some(DateTime.now().toString))))
-
-  }
 }

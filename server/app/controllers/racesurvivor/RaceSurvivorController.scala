@@ -18,8 +18,7 @@ import akka.util.Timeout
 import modules.gameparser.GameReplayManager.ManagerCommand
 @Singleton
 class RaceSurvivorController @Inject() (
-    scc: SilhouetteControllerComponents,
-    replayGameManager: ActorRef[ManagerCommand]
+    scc: SilhouetteControllerComponents
 )(implicit
     assets: AssetsFinder,
     ex: ExecutionContext,

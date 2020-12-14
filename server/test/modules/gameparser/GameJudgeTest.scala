@@ -2,7 +2,6 @@ package modules.gameparser
 
 import akka.actor.testkit.typed.scaladsl.ScalaTestWithActorTestKit
 import akka.actor.typed.ActorRef
-import models.StarCraftModels._
 import models.services.ParseReplayFileService
 import modules.gameparser.GameReplayManager.{ManageGameReplay, ManagerCommand}
 import org.scalatest.wordspec.AnyWordSpecLike

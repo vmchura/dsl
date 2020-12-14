@@ -3,9 +3,8 @@ package shared.models
 import shared.models.ActionBySmurf.ActionBySmurf
 import upickle.default.{macroRW, ReadWriter => RW}
 
-
 object ActionBySmurf extends Enumeration {
-  protected case class Val(str: String) extends super.Val{
+  protected case class Val(str: String) extends super.Val {
     override def toString(): String = str
   }
   import scala.language.implicitConversions
@@ -21,29 +20,32 @@ object ActionBySmurf extends Enumeration {
   val SmurfsEmpty: Val = Val("SmurfsEmpty")
   val ImpossibleToDefine: Val = Val("ImpossibleToDefine")
 
-  implicit val rw: RW[ActionBySmurf] = upickle.default.readwriter[String].bimap[ActionBySmurf](
-    x => x.str,
-    {
-      case "Correlated1d1rDefined" => Correlated1d1rDefined
-      case "Correlated2d2rDefined" => Correlated2d2rDefined
-      case "Correlated1d2rDefined" => Correlated1d2rDefined
-      case "Correlated2d1rDefined" => Correlated2d1rDefined
-      case "CorrelatedParallelDefined" => CorrelatedParallelDefined
-      case "CorrelatedCruzadoDefined" => CorrelatedCruzadoDefined
-      case "SmurfsEmpty" => SmurfsEmpty
-      case "ImpossibleToDefine" => ImpossibleToDefine
-      case x =>
-        println(x)
-        ImpossibleToDefine
-    }
-  )
+  implicit val rw: RW[ActionBySmurf] = upickle.default
+    .readwriter[String]
+    .bimap[ActionBySmurf](
+      x => x.str,
+      {
+        case "Correlated1d1rDefined"     => Correlated1d1rDefined
+        case "Correlated2d2rDefined"     => Correlated2d2rDefined
+        case "Correlated1d2rDefined"     => Correlated1d2rDefined
+        case "Correlated2d1rDefined"     => Correlated2d1rDefined
+        case "CorrelatedParallelDefined" => CorrelatedParallelDefined
+        case "CorrelatedCruzadoDefined"  => CorrelatedCruzadoDefined
+        case "SmurfsEmpty"               => SmurfsEmpty
+        case "ImpossibleToDefine"        => ImpossibleToDefine
+        case x =>
+          println(x)
+          ImpossibleToDefine
+      }
+    )
 }
-case class ActionByReplay(defined: Boolean,
-                          player1: Option[String],
-                          player2: Option[String],
-                          actionBySmurf: ActionBySmurf,
-                          winner: Int,
-                          mapName: String)
-object ActionByReplay{
+case class ActionByReplay(
+    defined: Boolean,
+    winner: String,
+    loser: String,
+    actionBySmurf: ActionBySmurf,
+    mapName: String
+)
+object ActionByReplay {
   implicit val rw: RW[ActionByReplay] = macroRW
 }

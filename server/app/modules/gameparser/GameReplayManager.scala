@@ -6,9 +6,8 @@ import com.google.inject.Provides
 import modules.gameparser.GameJudge.JudgeGame
 import modules.gameparser.GameParser._
 import play.api.libs.concurrent.ActorModule
-import models.StarCraftModels._
 import models.services.ParseReplayFileService
-
+import shared.models.StarCraftModels._
 import java.io.File
 
 object GameReplayManager extends ActorModule {

@@ -7,9 +7,7 @@ import scala.scalajs.js.annotation.{JSExport, JSExportTopLevel}
 @JSExportTopLevel("Main")
 object Main {
 
-  def main(args: Array[String]): Unit = {
-    println("dsl")
-  }
+  def main(args: Array[String]): Unit = {}
   @JSExport("init")
   def init(): Unit = {
 
@@ -17,9 +15,11 @@ object Main {
 
   }
   def findTokenValue(): String = {
-    val formElement = dom.document.getElementById("myForm").asInstanceOf[HTMLFormElement]
+    val formElement =
+      dom.document.getElementById("myForm").asInstanceOf[HTMLFormElement]
     val inputelementCollection = formElement.getElementsByTagName("input")
-    val inputelement = inputelementCollection.namedItem("csrfToken").asInstanceOf[Input]
+    val inputelement =
+      inputelementCollection.namedItem("csrfToken").asInstanceOf[Input]
     inputelement.value
   }
 }

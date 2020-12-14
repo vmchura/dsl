@@ -3,9 +3,8 @@ package modules.gameparser
 import akka.actor.typed.{ActorRef, Behavior}
 import akka.actor.typed.scaladsl.Behaviors
 import models.services.ParseReplayFileService
-import models.StarCraftModels._
 import play.api.libs.json.{JsArray, Json}
-
+import shared.models.StarCraftModels._
 import java.io.File
 import scala.util.{Failure, Success}
 

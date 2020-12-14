@@ -28,6 +28,8 @@ import models.services.{
   DiscordUserServiceImpl,
   ParticipantsService,
   ParticipantsServiceImpl,
+  ReplayActionBuilderService,
+  ReplayActionBuilderServiceImpl,
   SmurfService,
   SmurfServiceImpl,
   TournamentSeriesService,
@@ -70,6 +72,6 @@ class DSLModule extends AbstractModule with ScalaModule {
     bind[UserHistoryService].to[UserHistoryServiceImpl]
 
     bind[TournamentSeriesService].to[TournamentSeriesServiceImpl]
-
+    bind[ReplayActionBuilderService].to[ReplayActionBuilderServiceImpl]
   }
 }
