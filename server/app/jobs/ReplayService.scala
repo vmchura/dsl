@@ -51,9 +51,6 @@ class ReplayService @Inject() (
         challongeTournament.matches
           .find(_.matchPK.challongeMatchID == matchID)
           .withFailure(MatchNotFoundOnChallonge(matchID))
-      parsedEither <-
-        replayActionBuilderService.parseFileAndBuildDescription(replay)
-      parsed <- parsedEither.withFailure
       insertionOnDropBox <- dropBoxFilesService.push(
         replay,
         matchChallonge.asMatchName(newIDForThisReplay)
@@ -84,7 +81,8 @@ class ReplayService @Inject() (
           matchID,
           enabled = true,
           user.loginInfo.providerKey,
-          parsed.dateGame
+          //FixMe Provide correct date please
+          None
         )
       )
     } yield {

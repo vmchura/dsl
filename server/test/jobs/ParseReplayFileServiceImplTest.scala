@@ -15,10 +15,11 @@ import scala.language.postfixOps
 import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.duration.DurationInt
 
-class ParseReplayFileServiceImplTest extends PlaySpec with GuiceOneAppPerSuite{
-  val fileParser: ParseReplayFileService = app.injector.instanceOf(classOf[ParseReplayFileService])
+class ParseReplayFileServiceImplTest extends PlaySpec with GuiceOneAppPerSuite {
+  val fileParser: ParseReplayFileService =
+    app.injector.instanceOf(classOf[ParseReplayFileService])
   val userDAO: UserSmurfDAO = app.injector.instanceOf(classOf[UserSmurfDAO])
-
+  /*
   "ParseFile" should {
     "get something" in {
       //val file = new File("/home/vmchura/Games/screp/cmd/screp/queen_kevin1.rep")
@@ -164,7 +165,6 @@ class ParseReplayFileServiceImplTest extends PlaySpec with GuiceOneAppPerSuite{
       execution
 
     }
-  }
-
+  }*/
 
 }
