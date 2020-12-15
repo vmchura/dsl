@@ -4,7 +4,7 @@ import models.services.ParseReplayFileService
 import modules.gameparser.GameParser.Team
 import org.scalatest.wordspec.AnyWordSpecLike
 import org.scalatestplus.play.guice.GuiceOneAppPerSuite
-
+import shared.models.StarCraftModels._
 import java.io.File
 
 class GameParserTest
