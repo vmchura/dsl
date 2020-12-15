@@ -14,8 +14,8 @@ lazy val server = (project in file("server"))
     libraryDependencies ++= Seq(
       "com.vmunier" %% "scalajs-scripts" % "1.1.4",
       // https://mvnrepository.com/artifact/org.reactivemongo/play2-reactivemongo
-      "org.reactivemongo" %% "play2-reactivemongo" % "0.20.11-play28",
-      "org.reactivemongo" %% "reactivemongo-play-json-compat" % "0.20.11-play28",
+      "org.reactivemongo" % "play2-reactivemongo_2.13" % "1.0.1-play28",
+      "org.reactivemongo" % "reactivemongo-play-json-compat_2.13" % "1.0.1-play29",
       "com.mohiva" %% "play-silhouette" % "6.1.0",
       "com.mohiva" %% "play-silhouette-password-bcrypt" % "6.1.0",
       "com.mohiva" %% "play-silhouette-persistence" % "6.1.0",
