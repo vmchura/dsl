@@ -1,11 +1,5 @@
-import java.util.UUID
 import shared.PlayCall
-import shared.models.{
-  ActionByReplay,
-  ChallongeOneVsOneMatchGameResult,
-  ReplayDescriptionShared,
-  ReplayRecordShared
-}
+import shared.models.ChallongeOneVsOneMatchGameResult
 
 import scala.scalajs.js
 import scala.scalajs.js.annotation.JSGlobal
