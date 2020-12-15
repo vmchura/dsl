@@ -8,7 +8,7 @@ import org.scalatest.wordspec.AnyWordSpecLike
 import org.scalatestplus.play.guice.GuiceOneAppPerSuite
 
 import java.io.File
-
+import shared.models.StarCraftModels._
 class GameJudgeTest
     extends ScalaTestWithActorTestKit
     with AnyWordSpecLike
