@@ -1,63 +1,21 @@
 package controllers
-import play.api.libs.Files.{TemporaryFile, TemporaryFileCreator}
-
-import java.io.File
-import play.api.mvc.MultipartFormData
-import play.api.mvc.MultipartFormData.FilePart
 import database.TemporalDB
-
-import play.api.test.CSRFTokenHelper._
-import com.mohiva.play.silhouette.test._
-import play.api.test._
 import shared.models.{
   ChallongeOneVsOneMatchGameResult,
   ChallongePlayer,
   DiscordIDSource
 }
 import upickle.default._
-import database.DataBaseObjects._
-import org.specs2.execute.FailureException
-import org.specs2.matcher.JUnitMustMatchers.failure
 import play.api.test.Helpers._
 import shared.models.StarCraftModels.{Protoss, SCPlayer}
-import utils.auth.DefaultEnv
+import database.DataBaseObjects._
+import models.Smurf
 class ReplayMatchControllerTest extends TemporalDB {
-  "The `user` method" should {
-    "return status 401 if no authenticator was found" in {
-      val tmpFileCreator =
-        app.injector.instanceOf(classOf[TemporaryFileCreator])
-      val file =
-        tmpFileCreator.create(
-          new File(
-            getClass.getResource("/G19Vs.Chester.rep").getPath
-          ).toPath
-        )
-      val part = FilePart[TemporaryFile](
-        key = "replay_file",
-        filename = "replay.rep",
-        contentType = None,
-        ref = file
-      )
-      val multipartFormData =
-        MultipartFormData[TemporaryFile](
-          dataParts = Map.empty,
-          files = Seq(part),
-          badParts = Nil
-        )
+  "Parse replay" should {
+    "return (empty, empty) smurfs" in {
 
-      val result = route(
-        app,
-        addCSRFToken(
-          FakeRequest(
-            routes.ReplayMatchController.parseReplay(
-              first_user.loginInfo.providerKey,
-              second_user.loginInfo.providerKey
-            )
-          ).withAuthenticator[DefaultEnv](first_user.loginInfo)
-            .withMultipartFormDataBody(multipartFormData)
-        )
-      ).getOrElse(throw FailureException(failure("required Some")))
-
+      val result = ControllersUtil
+        .resultParseReplay(app)("/G19Vs.Chester.rep", first_user, second_user)
       status(result) mustEqual OK
       val value = read[Either[String, ChallongeOneVsOneMatchGameResult]](
         (contentAsJson(result) \ "response").as[String]
@@ -78,5 +36,93 @@ class ReplayMatchControllerTest extends TemporalDB {
       )(value)
 
     }
+    "return (some,empty) smurfs" in {
+
+      addSmurfToUser(first_user, Smurf("G19"))
+      val result = ControllersUtil
+        .resultParseReplay(app)("/G19Vs.Chester.rep", first_user, second_user)
+      status(result) mustEqual OK
+      val value = read[Either[String, ChallongeOneVsOneMatchGameResult]](
+        (contentAsJson(result) \ "response").as[String]
+      )
+      assertResult(
+        Right(
+          ChallongeOneVsOneMatchGameResult(
+            ChallongePlayer(
+              Right(
+                DiscordIDSource.buildByHistory(first_user.loginInfo.providerKey)
+              ),
+              SCPlayer("G19", Protoss)
+            ),
+            ChallongePlayer(
+              Right(
+                DiscordIDSource.buildByLogic(second_user.loginInfo.providerKey)
+              ),
+              SCPlayer(".Chester", Protoss)
+            )
+          )
+        )
+      )(value)
+
+    }
+    "return (some,some) smurfs" in {
+
+      addSmurfToUser(first_user, Smurf("G19"))
+      addSmurfToUser(second_user, Smurf(".Chester"))
+      val result = ControllersUtil
+        .resultParseReplay(app)("/G19Vs.Chester.rep", first_user, second_user)
+      status(result) mustEqual OK
+      val value = read[Either[String, ChallongeOneVsOneMatchGameResult]](
+        (contentAsJson(result) \ "response").as[String]
+      )
+      assertResult(
+        Right(
+          ChallongeOneVsOneMatchGameResult(
+            ChallongePlayer(
+              Right(
+                DiscordIDSource.buildByHistory(first_user.loginInfo.providerKey)
+              ),
+              SCPlayer("G19", Protoss)
+            ),
+            ChallongePlayer(
+              Right(
+                DiscordIDSource.buildByHistory(
+                  second_user.loginInfo.providerKey
+                )
+              ),
+              SCPlayer(".Chester", Protoss)
+            )
+          )
+        )
+      )(value)
+
+    }
+    "return (error,error) smurfs" in {
+
+      addSmurfToUser(first_user, Smurf("G19"))
+      addSmurfToUser(third_user, Smurf(".Chester"))
+      val result = ControllersUtil
+        .resultParseReplay(app)("/G19Vs.Chester.rep", first_user, second_user)
+      status(result) mustEqual OK
+      val value = read[Either[String, ChallongeOneVsOneMatchGameResult]](
+        (contentAsJson(result) \ "response").as[String]
+      )
+      assertResult(
+        Right(
+          ChallongeOneVsOneMatchGameResult(
+            ChallongePlayer(
+              Left("Impossible, can't locate proper user"),
+              SCPlayer("G19", Protoss)
+            ),
+            ChallongePlayer(
+              Left("Impossible, can't locate proper user"),
+              SCPlayer(".Chester", Protoss)
+            )
+          )
+        )
+      )(value)
+
+    }
+
   }
 }
