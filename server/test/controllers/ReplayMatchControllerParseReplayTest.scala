@@ -10,7 +10,7 @@ import play.api.test.Helpers._
 import shared.models.StarCraftModels.{Protoss, SCPlayer}
 import database.DataBaseObjects._
 import models.Smurf
-class ReplayMatchControllerTest extends TemporalDB {
+class ReplayMatchControllerParseReplayTest extends TemporalDB {
   "Parse replay" should {
     "return (empty, empty) smurfs" in {
 
