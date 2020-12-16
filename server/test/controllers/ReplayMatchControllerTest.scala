@@ -57,6 +57,8 @@ class ReplayMatchControllerTest extends TemporalDB {
             .withMultipartFormDataBody(multipartFormData)
         )
       ).getOrElse(throw FailureException(failure("required Some")))
+
+      status(result) mustEqual OK
       val value = read[Either[String, ChallongeOneVsOneMatchGameResult]](
         (contentAsJson(result) \ "response").as[String]
       )
@@ -74,7 +76,6 @@ class ReplayMatchControllerTest extends TemporalDB {
           )
         )
       )(value)
-      status(result) mustEqual OK
 
     }
   }
