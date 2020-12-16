@@ -29,6 +29,7 @@ class ReplayActionBuilderServiceImpl @Inject() (
     replayGameManager: ActorRef[ManagerCommand]
 )(implicit scheduler: akka.actor.typed.Scheduler)
     extends ReplayActionBuilderService {
+
   implicit val timeout: Timeout = 5.seconds
 
   override def parseFileAndBuildAction(
@@ -69,8 +70,8 @@ class ReplayActionBuilderServiceImpl @Inject() (
                   discordUserID1
                 ) || discordID.id.equals(discordUserID2) =>
               Right(DiscordIDSource.buildByHistory(discordID.id))
-            case _ =>
-              Left("Too many possibilities")
+            case Some(otherDiscordID) =>
+              Left(s"Otro usuario: ${otherDiscordID.id}")
           }
           pl => ChallongePlayer(discordID, pl)
         }
@@ -88,48 +89,70 @@ class ReplayActionBuilderServiceImpl @Inject() (
             ChallongePlayer(Left("Impossible, same smurfs"), oneVsOneGame.loser)
           )
         } else {
-
-          def theOtherID(discordID: String): String =
-            if (discordID.equals(discordUserID1)) discordUserID2
-            else discordUserID1
-
-          (challongeWinner, challongeLoser) match {
-
-            case (
-                  ChallongePlayer(Right(DiscordIDSource(Right(None))), _),
-                  ChallongePlayer(
-                    Right(DiscordIDSource(Right(Some(discordIDLoser)))),
-                    _
-                  )
-                ) =>
-              ChallongeOneVsOneMatchGameResult(
-                challongeWinner
-                  .copy(discordID =
-                    Right(
-                      DiscordIDSource.buildByLogic(theOtherID(discordIDLoser))
-                    )
-                  ),
-                challongeLoser
+          if (
+            List(challongeWinner, challongeLoser)
+              .map(_.discordID)
+              .exists(_.isLeft)
+          ) {
+            ChallongeOneVsOneMatchGameResult(
+              ChallongePlayer(
+                Left("Impossible, can't locate proper user"),
+                oneVsOneGame.winner
+              ),
+              ChallongePlayer(
+                Left("Impossible, can't locate proper user"),
+                oneVsOneGame.loser
               )
-            case (
-                  ChallongePlayer(
-                    Right(DiscordIDSource(Right(Some(discordIDWinner)))),
-                    _
-                  ),
-                  ChallongePlayer(Right(DiscordIDSource(Right(None))), _)
-                ) =>
-              ChallongeOneVsOneMatchGameResult(
-                challongeWinner,
-                challongeLoser
-                  .copy(discordID =
-                    Right(
-                      DiscordIDSource.buildByLogic(theOtherID(discordIDWinner))
-                    )
-                  )
-              )
-            case _ =>
-              ChallongeOneVsOneMatchGameResult(challongeWinner, challongeLoser)
+            )
+          } else {
 
+            def theOtherID(discordID: String): String =
+              if (discordID.equals(discordUserID1)) discordUserID2
+              else discordUserID1
+
+            (challongeWinner, challongeLoser) match {
+
+              case (
+                    ChallongePlayer(Right(DiscordIDSource(Right(None))), _),
+                    ChallongePlayer(
+                      Right(DiscordIDSource(Right(Some(discordIDLoser)))),
+                      _
+                    )
+                  ) =>
+                ChallongeOneVsOneMatchGameResult(
+                  challongeWinner
+                    .copy(discordID =
+                      Right(
+                        DiscordIDSource.buildByLogic(theOtherID(discordIDLoser))
+                      )
+                    ),
+                  challongeLoser
+                )
+              case (
+                    ChallongePlayer(
+                      Right(DiscordIDSource(Right(Some(discordIDWinner)))),
+                      _
+                    ),
+                    ChallongePlayer(Right(DiscordIDSource(Right(None))), _)
+                  ) =>
+                ChallongeOneVsOneMatchGameResult(
+                  challongeWinner,
+                  challongeLoser
+                    .copy(discordID =
+                      Right(
+                        DiscordIDSource.buildByLogic(
+                          theOtherID(discordIDWinner)
+                        )
+                      )
+                    )
+                )
+              case _ =>
+                ChallongeOneVsOneMatchGameResult(
+                  challongeWinner,
+                  challongeLoser
+                )
+
+            }
           }
 
         }
