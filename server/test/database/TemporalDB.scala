@@ -1,21 +1,29 @@
 package database
 
+import com.google.inject.AbstractModule
+import com.mohiva.play.silhouette.api.Environment
+import com.mohiva.play.silhouette.test.FakeEnvironment
 import models.Tournament
 import models.services.TournamentService
+import net.codingwell.scalaguice.ScalaModule
 import org.scalatest.TestData
 import org.scalatestplus.play.guice.GuiceOneAppPerTest
-import org.scalatest._
 import org.scalatest.concurrent.ScalaFutures
 import org.scalatest.time.{Seconds, Span}
 import org.scalatestplus.play._
-import play.api.http.MimeTypes
-import play.api.test._
 import play.api.Application
 import play.api.inject.guice.GuiceApplicationBuilder
-import play.modules.reactivemongo.ReactiveMongoApi
-
-class TemporalDB extends PlaySpec with GuiceOneAppPerTest with ScalaFutures {
-
+import utils.auth.DefaultEnv
+import DataBaseObjects._
+import scala.concurrent.ExecutionContext.Implicits.global
+trait TemporalDB extends PlaySpec with GuiceOneAppPerTest with ScalaFutures {
+  implicit val env: Environment[DefaultEnv] =
+    new FakeEnvironment[DefaultEnv](Seq(first_user.loginInfo -> first_user))
+  class FakeModule extends AbstractModule with ScalaModule {
+    override def configure(): Unit = {
+      bind[Environment[DefaultEnv]].toInstance(env)
+    }
+  }
   implicit override val patienceConfig: PatienceConfig =
     PatienceConfig(timeout = Span(5, Seconds))
 
@@ -28,20 +36,12 @@ class TemporalDB extends PlaySpec with GuiceOneAppPerTest with ScalaFutures {
 
     GuiceApplicationBuilder()
       .configure(Map("ehcacheplugin" -> "disabled"))
+      .overrides(new FakeModule)
       .build()
 
   }
 
-  "Each test" should {
-    "load config from config test ad-hoc" in {
-      assert(
-        app.configuration
-          .getOptional[String]("mongodb.uri")
-          .exists(_.endsWith("dsl-test"))
-      )
-    }
-  }
-  private def initTournament(): Boolean = {
+  protected def initTournament(): Boolean = {
     val tournamentService: TournamentService =
       app.injector.instanceOf(classOf[TournamentService])
     tournamentService
