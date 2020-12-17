@@ -16,11 +16,12 @@ import models.User
 import java.io.File
 import scala.concurrent.Future
 object ControllersUtil {
-  def resultParseReplay(
+  private def buildMultiFormData(
       app: play.api.Application
-  )(resourceReplay: String, userQuerying: User, rivalUser: User)(implicit
-      env: Environment[DefaultEnv]
-  ): Future[Result] = {
+  )(
+      resourceReplay: String,
+      dataParts: Map[String, Seq[String]] = Map.empty
+  ): MultipartFormData[TemporaryFile] = {
     val fileSource = new File(
       getClass.getResource(resourceReplay).getPath
     )
@@ -41,18 +42,63 @@ object ControllersUtil {
       contentType = None,
       ref = file
     )
-    val multipartFormData =
-      MultipartFormData[TemporaryFile](
-        dataParts = Map.empty,
-        files = Seq(part),
-        badParts = Nil
-      )
 
+    MultipartFormData[TemporaryFile](
+      dataParts = dataParts,
+      files = Seq(part),
+      badParts = Nil
+    )
+  }
+  def resultParseReplay(
+      app: play.api.Application
+  )(
+      resourceReplay: String,
+      userQuerying: User,
+      rivalUser: User
+  )(implicit
+      env: Environment[DefaultEnv]
+  ): Future[Result] = {
+
+    val multipartFormData = buildMultiFormData(app)(resourceReplay, Map.empty)
     route(
       app,
       addCSRFToken(
         FakeRequest(
           routes.ReplayMatchController.parseReplay(
+            userQuerying.loginInfo.providerKey,
+            rivalUser.loginInfo.providerKey
+          )
+        ).withAuthenticator[DefaultEnv](userQuerying.loginInfo)
+          .withMultipartFormDataBody(multipartFormData)
+      )
+    ).getOrElse(throw FailureException(failure("required Some")))
+  }
+
+  def addReplayToMatch(
+      app: play.api.Application
+  )(
+      resourceReplay: String,
+      userQuerying: User,
+      rivalUser: User,
+      matchID: Long,
+      smurfOfUserQuerying: Option[String] = None
+  )(implicit
+      env: Environment[DefaultEnv]
+  ): Future[Result] = {
+    import database.DataBaseObjects._
+    val multipartFormData = buildMultiFormData(app)(
+      resourceReplay,
+      smurfOfUserQuerying.fold(Map.empty[String, Seq[String]])(smurf =>
+        Map("mySmurf" -> Seq(smurf))
+      )
+    )
+    route(
+      app,
+      addCSRFToken(
+        FakeRequest(
+          routes.ReplayMatchController.addReplayToMatch(
+            tournamentID = tournamentTest.challongeID,
+            matchID,
             userQuerying.loginInfo.providerKey,
             rivalUser.loginInfo.providerKey
           )
