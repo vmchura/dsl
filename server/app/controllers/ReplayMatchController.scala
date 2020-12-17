@@ -249,6 +249,10 @@ class ReplayMatchController @Inject() (
                           )
                         )
                     }
+                  case Left(error) =>
+                    Future.failed(
+                      new IllegalArgumentException(error)
+                    )
                   case _ =>
                     Future.failed(
                       new IllegalArgumentException("Cant parse Correctly")
