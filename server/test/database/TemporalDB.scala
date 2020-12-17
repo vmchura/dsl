@@ -3,9 +3,17 @@ package database
 import com.google.inject.AbstractModule
 import com.mohiva.play.silhouette.api.Environment
 import com.mohiva.play.silhouette.test.FakeEnvironment
-import models.{ChallongeTournament, DiscordID, DiscordUser, Smurf, User}
+import models.{
+  ChallongeTournament,
+  DiscordID,
+  DiscordUser,
+  ReplayRecord,
+  Smurf,
+  User
+}
 import models.services.{
   ChallongeTournamentService,
+  ParseReplayFileService,
   SmurfService,
   TournamentService
 }
@@ -19,9 +27,11 @@ import play.api.Application
 import play.api.inject.guice.GuiceApplicationBuilder
 import utils.auth.DefaultEnv
 import DataBaseObjects._
-import models.daos.UserSmurfDAO
+import models.daos.{ReplayMatchDAO, UserSmurfDAO}
 import models.services.SmurfService.SmurfAdditionResult.AdditionResult
 
+import java.io.File
+import java.util.UUID
 import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.Future
 trait TemporalDB
@@ -61,9 +71,58 @@ trait TemporalDB
       }
     }
 
+    private val replayMatchDAO = new ReplayMatchDAO {
+      override def add(replayRecord: ReplayRecord): Future[Boolean] =
+        Future.successful(true)
+
+      override def markAsDisabled(replayID: UUID): Future[Boolean] =
+        Future.successful(true)
+
+      override def loadAllByTournament(
+          tournamentID: Long
+      ): Future[Seq[ReplayRecord]] = Future.successful(Nil)
+
+      override def loadAllByMatch(
+          tournamentID: Long,
+          matchID: Long
+      ): Future[Seq[ReplayRecord]] = Future.successful(Nil)
+
+      override def find(replayID: UUID): Future[Option[ReplayRecord]] =
+        Future.successful(None)
+
+      override def isNotRegistered(file: File): Future[Boolean] =
+        Future.successful(true)
+
+      override def updateLocation(
+          replayID: UUID,
+          cloudLocation: String
+      ): Future[Boolean] = Future.successful(true)
+    }
+
+    private val parseReplayFileService = new ParseReplayFileService {
+      override def parseFile(file: File): Future[Either[String, String]] = {
+        import sys.process._
+        val buffer = new StringBuilder()
+        val res =
+          s"/home/vmchura/Games/screp/cmd/screp/screp ${file.getAbsolutePath}"
+            .!(ProcessLogger(line => buffer.append(line)))
+        if (res == 0) {
+          Future.successful(Right(buffer.toString()))
+        } else {
+          println(buffer.toString())
+          Future.failed(
+            new IllegalArgumentException("screp not installed correctly")
+          )
+        }
+
+      }
+    }
+
     override def configure(): Unit = {
       bind[Environment[DefaultEnv]].toInstance(env)
       bind[ChallongeTournamentService].toInstance(challongeTournamentService)
+      bind[ReplayMatchDAO].toInstance(replayMatchDAO)
+      bind[ParseReplayFileService].toInstance(parseReplayFileService)
     }
   }
   System.setProperty("config.resource", "test-application.conf")
@@ -74,7 +133,7 @@ trait TemporalDB
     .build()
 
   implicit override val patienceConfig: PatienceConfig =
-    PatienceConfig(timeout = Span(5, Seconds))
+    PatienceConfig(timeout = Span(60, Seconds))
 
   override def beforeEach(): Unit = {
     import sys.process._
