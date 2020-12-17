@@ -50,9 +50,7 @@ trait TemporalDB
     val tournamentService: TournamentService =
       app.injector.instanceOf(classOf[TournamentService])
     tournamentService
-      .saveTournament(
-        Tournament(1L, "1Str", "DServer", "TorunamentName", active = true)
-      )
+      .saveTournament(database.DataBaseObjects.tournamentTest)
       .futureValue
   }
 
@@ -74,7 +72,9 @@ trait TemporalDB
       val tournamentService: TournamentService =
         app.injector.instanceOf(classOf[TournamentService])
       initTournament()
-      assert(tournamentService.findAllTournaments().futureValue.toList.nonEmpty)
+      val tournaments =
+        tournamentService.findAllTournaments().futureValue.toList
+      assert(tournaments.nonEmpty)
     }
   }
 
