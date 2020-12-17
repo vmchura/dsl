@@ -1,24 +1,33 @@
 package controllers
-import database.TemporalDB
 import play.api.test.Helpers._
 import database.DataBaseObjects._
-import models.{DiscordID, Smurf}
 import scala.collection.parallel.CollectionConverters._
-class ReplayMatchControllerPushReplayTest
+import database.TemporalDB
+import models.{DiscordID, Smurf}
+import play.api.test.Helpers.status
+
+class ReplayMatchControllerPushReplayAdminTest
     extends TemporalDB
     with UtilReplayMatchController {
 
-  "Push replay" should {
+  "Push replay by admin" should {
     "NOt be inserted if not proper user" in {
       addSmurfToUser(third_user, Smurf("G19"))
       initTournament()
       val result = ControllersUtil
-        .addReplayToMatch(app)(
+        .addReplayToMatchByAdmin(app)(
           "/G19Vs.Chester.rep",
           first_user,
           second_user,
           first_match.matchPK.challongeMatchID,
-          Some("G19")
+          Some(
+            Seq(
+              first_user.loginInfo.providerKey,
+              "G19",
+              second_user.loginInfo.providerKey,
+              ".Chester"
+            )
+          )
         )
 
       status(result) mustEqual SEE_OTHER
@@ -33,7 +42,7 @@ class ReplayMatchControllerPushReplayTest
       initUser(first_user)
       initUser(second_user)
       val result = ControllersUtil
-        .addReplayToMatch(app)(
+        .addReplayToMatchByAdmin(app)(
           "/G19Vs.Chester.rep",
           first_user,
           second_user,
@@ -62,12 +71,19 @@ class ReplayMatchControllerPushReplayTest
       initUser(first_user)
       initUser(second_user)
       val result = ControllersUtil
-        .addReplayToMatch(app)(
+        .addReplayToMatchByAdmin(app)(
           "/G19Vs.Chester.rep",
           first_user,
           second_user,
           first_match.matchPK.challongeMatchID,
-          Some("G19")
+          Some(
+            Seq(
+              first_user.loginInfo.providerKey,
+              "G19",
+              second_user.loginInfo.providerKey,
+              ".Chester"
+            )
+          )
         )
 
       status(result) mustEqual SEE_OTHER
@@ -87,13 +103,13 @@ class ReplayMatchControllerPushReplayTest
       )
     }
 
-    "Insert on querying smurf" in {
+    "Insert on first smurf" in {
       initTournament()
       initUser(first_user)
       initUser(second_user)
       addSmurfToUser(first_user, Smurf("G19"))
       val result = ControllersUtil
-        .addReplayToMatch(app)(
+        .addReplayToMatchByAdmin(app)(
           "/G19Vs.Chester.rep",
           first_user,
           second_user,
@@ -119,13 +135,13 @@ class ReplayMatchControllerPushReplayTest
       )
     }
 
-    "Insert on rival smurf" in {
+    "Insert on second smurf" in {
       initTournament()
       initUser(first_user)
       initUser(second_user)
       addSmurfToUser(second_user, Smurf(".Chester"))
       val result = ControllersUtil
-        .addReplayToMatch(app)(
+        .addReplayToMatchByAdmin(app)(
           "/G19Vs.Chester.rep",
           first_user,
           second_user,
@@ -158,7 +174,7 @@ class ReplayMatchControllerPushReplayTest
       addSmurfToUser(first_user, Smurf("G19"))
       addSmurfToUser(second_user, Smurf(".Chester"))
       val result = ControllersUtil
-        .addReplayToMatch(app)(
+        .addReplayToMatchByAdmin(app)(
           "/G19Vs.Chester.rep",
           first_user,
           second_user,
@@ -193,7 +209,7 @@ class ReplayMatchControllerPushReplayTest
 
       def uploadReplay(): Unit = {
         val result = ControllersUtil
-          .addReplayToMatch(app)(
+          .addReplayToMatchByAdmin(app)(
             "/G19Vs.Chester.rep",
             first_user,
             second_user,

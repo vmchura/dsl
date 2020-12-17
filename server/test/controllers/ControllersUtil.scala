@@ -107,4 +107,37 @@ object ControllersUtil {
       )
     ).getOrElse(throw FailureException(failure("required Some")))
   }
+  def addReplayToMatchByAdmin(
+      app: play.api.Application
+  )(
+      resourceReplay: String,
+      firstUser: User,
+      secondUser: User,
+      matchID: Long,
+      idsAndSmurfs: Option[Seq[String]] = None
+  )(implicit
+      env: Environment[DefaultEnv]
+  ): Future[Result] = {
+    import database.DataBaseObjects._
+    val multipartFormData = buildMultiFormData(app)(
+      resourceReplay,
+      idsAndSmurfs.fold(Map.empty[String, Seq[String]])(idsSmurfs =>
+        Map("bothIDsSmurfs" -> idsSmurfs)
+      )
+    )
+    route(
+      app,
+      addCSRFToken(
+        FakeRequest(
+          routes.ReplayMatchController.addReplayToMatchByAdmin(
+            tournamentID = tournamentTest.challongeID,
+            matchID,
+            firstUser.loginInfo.providerKey,
+            secondUser.loginInfo.providerKey
+          )
+        ).withAuthenticator[DefaultEnv](adminUser.loginInfo)
+          .withMultipartFormDataBody(multipartFormData)
+      )
+    ).getOrElse(throw FailureException(failure("required Some")))
+  }
 }

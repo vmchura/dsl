@@ -24,6 +24,7 @@ GET         /tournament/showmatchessimple/:challongeTournamentID              co
 GET         /statics/tournament                    controllers.StaticsController.view
 # REPLAY
 POST        /replay/add/:tournamentID/:matchID/:discordUser1/:discordUser2  controllers.ReplayMatchController.addReplayToMatch(tournamentID: Long, matchID: Long,discordUser1: String, discordUser2: String)
+POST        /replay/addByAdmin/:tournamentID/:matchID/:discordUser1/:discordUser2  controllers.ReplayMatchController.addReplayToMatchByAdmin(tournamentID: Long, matchID: Long,discordUser1: String, discordUser2: String)
 POST        /replay/parse/:discordUser1/:discordUser2                       controllers.ReplayMatchController.parseReplay(discordUser1: String, discordUser2: String)
 GET         /replay/download/:replayID/:replayName  controllers.ReplayMatchController.downloadReplay(replayID: java.util.UUID,replayName: String)
 GET         /replay/delete/:replayID/  controllers.ReplayMatchController.deleteReplay(replayID: java.util.UUID)

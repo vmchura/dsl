@@ -1,62 +1,16 @@
 package controllers
-import database.TemporalDB
-import play.api.test.Helpers._
+
 import database.DataBaseObjects._
+import database.TemporalDB
 import models.{DiscordID, Smurf}
-import scala.collection.parallel.CollectionConverters._
-class ReplayMatchControllerPushReplayTest
+import play.api.test.Helpers._
+
+class ReplayMatchControllerPushReplayReversedTest
     extends TemporalDB
     with UtilReplayMatchController {
 
-  "Push replay" should {
-    "NOt be inserted if not proper user" in {
-      addSmurfToUser(third_user, Smurf("G19"))
-      initTournament()
-      val result = ControllersUtil
-        .addReplayToMatch(app)(
-          "/G19Vs.Chester.rep",
-          first_user,
-          second_user,
-          first_match.matchPK.challongeMatchID,
-          Some("G19")
-        )
+  "Push replay, querying second" should {
 
-      status(result) mustEqual SEE_OTHER
-
-      result.futureValue.newFlash
-        .map(_.data)
-        .map(_.contains("error")) mustBe Some(true)
-
-    }
-    "Not Insert on empty smurfs with no additional data" in {
-      initTournament()
-      initUser(first_user)
-      initUser(second_user)
-      val result = ControllersUtil
-        .addReplayToMatch(app)(
-          "/G19Vs.Chester.rep",
-          first_user,
-          second_user,
-          first_match.matchPK.challongeMatchID,
-          None
-        )
-
-      status(result) mustEqual SEE_OTHER
-
-      result.futureValue.newFlash
-        .map(_.data)
-        .map(_.contains("error")) mustBe Some(true)
-      validateSmurfs(
-        DiscordID(first_user.loginInfo.providerKey),
-        Nil,
-        Nil
-      )
-      validateSmurfs(
-        DiscordID(second_user.loginInfo.providerKey),
-        Nil,
-        Nil
-      )
-    }
     "Inserte empty smurfs" in {
       initTournament()
       initUser(first_user)
@@ -67,7 +21,7 @@ class ReplayMatchControllerPushReplayTest
           first_user,
           second_user,
           first_match.matchPK.challongeMatchID,
-          Some("G19")
+          Some(".Chester")
         )
 
       status(result) mustEqual SEE_OTHER
@@ -78,12 +32,12 @@ class ReplayMatchControllerPushReplayTest
       validateSmurfs(
         DiscordID(first_user.loginInfo.providerKey),
         Nil,
-        List("G19")
+        List(".Chester")
       )
       validateSmurfs(
         DiscordID(second_user.loginInfo.providerKey),
         Nil,
-        List(".Chester")
+        List("G19")
       )
     }
 
@@ -91,7 +45,7 @@ class ReplayMatchControllerPushReplayTest
       initTournament()
       initUser(first_user)
       initUser(second_user)
-      addSmurfToUser(first_user, Smurf("G19"))
+      addSmurfToUser(first_user, Smurf(".Chester"))
       val result = ControllersUtil
         .addReplayToMatch(app)(
           "/G19Vs.Chester.rep",
@@ -109,13 +63,13 @@ class ReplayMatchControllerPushReplayTest
         .map(_.contains("success")) mustBe Some(true)
       validateSmurfs(
         DiscordID(first_user.loginInfo.providerKey),
-        List("G19"),
+        List(".Chester"),
         Nil
       )
       validateSmurfs(
         DiscordID(second_user.loginInfo.providerKey),
         Nil,
-        List(".Chester")
+        List("G19")
       )
     }
 
@@ -123,7 +77,7 @@ class ReplayMatchControllerPushReplayTest
       initTournament()
       initUser(first_user)
       initUser(second_user)
-      addSmurfToUser(second_user, Smurf(".Chester"))
+      addSmurfToUser(second_user, Smurf("G19"))
       val result = ControllersUtil
         .addReplayToMatch(app)(
           "/G19Vs.Chester.rep",
@@ -142,11 +96,11 @@ class ReplayMatchControllerPushReplayTest
       validateSmurfs(
         DiscordID(first_user.loginInfo.providerKey),
         Nil,
-        List("G19")
+        List(".Chester")
       )
       validateSmurfs(
         DiscordID(second_user.loginInfo.providerKey),
-        List(".Chester"),
+        List("G19"),
         Nil
       )
     }
@@ -155,8 +109,8 @@ class ReplayMatchControllerPushReplayTest
       initTournament()
       initUser(first_user)
       initUser(second_user)
-      addSmurfToUser(first_user, Smurf("G19"))
-      addSmurfToUser(second_user, Smurf(".Chester"))
+      addSmurfToUser(first_user, Smurf(".Chester"))
+      addSmurfToUser(second_user, Smurf("G19"))
       val result = ControllersUtil
         .addReplayToMatch(app)(
           "/G19Vs.Chester.rep",
@@ -174,53 +128,15 @@ class ReplayMatchControllerPushReplayTest
         .map(_.contains("success")) mustBe Some(true)
       validateSmurfs(
         DiscordID(first_user.loginInfo.providerKey),
-        List("G19"),
+        List(".Chester"),
         Nil
       )
       validateSmurfs(
         DiscordID(second_user.loginInfo.providerKey),
-        List(".Chester"),
-        Nil
-      )
-    }
-
-    "Support intensive upload" in {
-      initTournament()
-      initUser(first_user)
-      initUser(second_user)
-      addSmurfToUser(first_user, Smurf("G19"))
-      addSmurfToUser(second_user, Smurf(".Chester"))
-
-      def uploadReplay(): Unit = {
-        val result = ControllersUtil
-          .addReplayToMatch(app)(
-            "/G19Vs.Chester.rep",
-            first_user,
-            second_user,
-            first_match.matchPK.challongeMatchID,
-            None
-          )
-
-        whenReady(result) { res =>
-          res.newFlash
-            .map(_.data)
-            .map(_.contains("success")) mustBe Some(true)
-        }
-
-      }
-
-      (1 to 10).par.toList.foreach(_ => uploadReplay())
-
-      validateSmurfs(
-        DiscordID(first_user.loginInfo.providerKey),
         List("G19"),
         Nil
       )
-      validateSmurfs(
-        DiscordID(second_user.loginInfo.providerKey),
-        List(".Chester"),
-        Nil
-      )
     }
+
   }
 }

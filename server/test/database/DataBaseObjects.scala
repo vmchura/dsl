@@ -9,6 +9,12 @@ object DataBaseObjects {
   val challongeID: Long = 1234L
   val tournamentTest: Tournament =
     Tournament(challongeID, "-", "-", "TournamentTest", active = true, None)
+  val adminUser: User = User(
+    UUID.randomUUID(),
+    LoginInfo("discord", "698648718999814165"),
+    Some("VmChQ"),
+    None
+  )
   private def buildUser(
       discordID: String,
       name: String,
@@ -33,7 +39,7 @@ object DataBaseObjects {
     List("disFirst", "disSecond", "disThird", "disFourth")
   private val participantChallonge = List(1L, 2L, 3L, 4L)
   val List(first_user, second_user, third_user, fourth_user) =
-    (ids, discordIDs, discordNamesRegistered).zipped.map {
+    ids.lazyZip(discordIDs).lazyZip(discordNamesRegistered).map {
       case (silhouetteID, disID, disName) =>
         buildUser(disID, disName, silhouetteID)
     }
@@ -42,7 +48,7 @@ object DataBaseObjects {
     second_participant,
     third_participant,
     fourth_participant
-  ) = (ids, discordIDs, participantChallonge).zipped.map {
+  ) = ids.lazyZip(discordIDs).lazyZip(participantChallonge).map {
     case (id, pref, challongeParticipantID) =>
       Participant(
         ParticipantPK(challongeID, challongeParticipantID),

@@ -40,7 +40,9 @@ trait TemporalDB
     with ScalaFutures
     with BeforeAndAfterEach {
   implicit val env: Environment[DefaultEnv] =
-    new FakeEnvironment[DefaultEnv](Seq(first_user.loginInfo -> first_user))
+    new FakeEnvironment[DefaultEnv](
+      Seq(first_user.loginInfo -> first_user, adminUser.loginInfo -> adminUser)
+    )
   class FakeModule extends AbstractModule with ScalaModule {
     private val challongeTournamentService = new ChallongeTournamentService {
       override protected def challongeApiKey: String =
