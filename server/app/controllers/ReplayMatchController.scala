@@ -132,6 +132,62 @@ class ReplayMatchController @Inject() (
                       )
                     )
                   case Right(
+                        ChallongeOneVsOneMatchGameResult(
+                          ChallongePlayer(
+                            Right(
+                              DiscordIDSource(Right(Some(discordIDWinner)))
+                            ),
+                            playerWinner @ SCPlayer(_, _)
+                          ),
+                          ChallongePlayer(
+                            Right(DiscordIDSource(Left(Some(discordIDLoser)))),
+                            playerLoser @ SCPlayer(_, _)
+                          )
+                        )
+                      ) =>
+                    Future.successful(
+                      ChallongeOneVsOneDefined(
+                        ChallongePlayerDefined(
+                          DiscordIDSourceDefined.buildByHistory(
+                            discordIDWinner
+                          ),
+                          playerWinner
+                        ),
+                        ChallongePlayerDefined(
+                          DiscordIDSourceDefined.buildByLogic(discordIDLoser),
+                          playerLoser
+                        )
+                      )
+                    )
+                  case Right(
+                        ChallongeOneVsOneMatchGameResult(
+                          ChallongePlayer(
+                            Right(
+                              DiscordIDSource(Left(Some(discordIDWinner)))
+                            ),
+                            playerWinner @ SCPlayer(_, _)
+                          ),
+                          ChallongePlayer(
+                            Right(DiscordIDSource(Right(Some(discordIDLoser)))),
+                            playerLoser @ SCPlayer(_, _)
+                          )
+                        )
+                      ) =>
+                    Future.successful(
+                      ChallongeOneVsOneDefined(
+                        ChallongePlayerDefined(
+                          DiscordIDSourceDefined.buildByLogic(
+                            discordIDWinner
+                          ),
+                          playerWinner
+                        ),
+                        ChallongePlayerDefined(
+                          DiscordIDSourceDefined.buildByHistory(discordIDLoser),
+                          playerLoser
+                        )
+                      )
+                    )
+                  case Right(
                         challongeGameResult @ ChallongeOneVsOneMatchGameResult(
                           ChallongePlayer(
                             Right(DiscordIDSource(Right(None))),

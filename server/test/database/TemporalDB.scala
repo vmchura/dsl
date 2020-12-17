@@ -3,7 +3,7 @@ package database
 import com.google.inject.AbstractModule
 import com.mohiva.play.silhouette.api.Environment
 import com.mohiva.play.silhouette.test.FakeEnvironment
-import models.{ChallongeTournament, DiscordID, Smurf, User}
+import models.{ChallongeTournament, DiscordID, DiscordUser, Smurf, User}
 import models.services.{
   ChallongeTournamentService,
   SmurfService,
@@ -19,6 +19,7 @@ import play.api.Application
 import play.api.inject.guice.GuiceApplicationBuilder
 import utils.auth.DefaultEnv
 import DataBaseObjects._
+import models.daos.UserSmurfDAO
 import models.services.SmurfService.SmurfAdditionResult.AdditionResult
 
 import scala.concurrent.ExecutionContext.Implicits.global
@@ -88,8 +89,22 @@ trait TemporalDB
       .saveTournament(database.DataBaseObjects.tournamentTest)
       .futureValue
   }
+  protected def initUser(user: User): Boolean = {
+    val userSmurfDAO: UserSmurfDAO =
+      app.injector.instanceOf(classOf[UserSmurfDAO])
+    userSmurfDAO
+      .addUser(
+        DiscordUser(
+          user.loginInfo.providerKey,
+          user.fullName.getOrElse("Anonymous"),
+          None
+        )
+      )
+      .futureValue
+  }
 
   protected def addSmurfToUser(user: User, smurf: Smurf): AdditionResult = {
+
     val smurfService: SmurfService =
       app.injector.instanceOf(classOf[SmurfService])
     smurfService
