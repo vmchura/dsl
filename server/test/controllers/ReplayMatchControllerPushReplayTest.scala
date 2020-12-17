@@ -6,6 +6,7 @@ import models.daos.UserSmurfDAO
 import models.{DiscordID, Smurf}
 import org.scalatest._
 import org.scalatest.compatible.Assertion
+import scala.collection.parallel.CollectionConverters._
 class ReplayMatchControllerPushReplayTest extends TemporalDB {
   def validateSmurfs(
       discordID: DiscordID,
@@ -17,12 +18,16 @@ class ReplayMatchControllerPushReplayTest extends TemporalDB {
     val userSmurf = userSmurfDAO.findUser(discordID.id).futureValue
     userSmurf.fold(Assertions.fail("user not found")) { user =>
       {
-        user.matchSmurf.map(
-          _.smurf
-        ) must contain theSameElementsAs smurfsChecked
-        user.notCheckedSmurf.map(
-          _.smurf
-        ) must contain theSameElementsAs smurfsOnNotChecked
+        user.matchSmurf
+          .map(
+            _.smurf
+          )
+          .distinct must contain theSameElementsAs smurfsChecked
+        user.notCheckedSmurf
+          .map(
+            _.smurf
+          )
+          .distinct must contain theSameElementsAs smurfsOnNotChecked
       }
     }
 
@@ -174,5 +179,43 @@ class ReplayMatchControllerPushReplayTest extends TemporalDB {
       )
     }
 
+    "Support intensive upload" in {
+      initTournament()
+      initUser(first_user)
+      initUser(second_user)
+      addSmurfToUser(first_user, Smurf("G19"))
+      addSmurfToUser(second_user, Smurf(".Chester"))
+
+      def uploadReplay(): Unit = {
+        val result = ControllersUtil
+          .addReplayToMatch(app)(
+            "/G19Vs.Chester.rep",
+            first_user,
+            second_user,
+            first_match.matchPK.challongeMatchID,
+            None
+          )
+
+        whenReady(result) { res =>
+          res.newFlash
+            .map(_.data)
+            .map(_.contains("success")) mustBe Some(true)
+        }
+
+      }
+
+      (1 to 10).par.toList.foreach(_ => uploadReplay())
+
+      validateSmurfs(
+        DiscordID(first_user.loginInfo.providerKey),
+        List("G19"),
+        Nil
+      )
+      validateSmurfs(
+        DiscordID(second_user.loginInfo.providerKey),
+        List(".Chester"),
+        Nil
+      )
+    }
   }
 }
