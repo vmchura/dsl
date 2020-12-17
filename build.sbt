@@ -48,6 +48,7 @@ lazy val server = (project in file("server"))
       "org.scalactic" %% "scalactic" % "3.2.2",
       "org.scalatest" %% "scalatest" % "3.2.2" % "test",
       "com.typesafe.akka" %% "akka-actor-testkit-typed" % "2.6.8" % Test,
+      "org.scala-lang.modules" %% "scala-parallel-collections" % "1.0.0" % Test,
       ehcache,
       guice,
       filters,
