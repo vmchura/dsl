@@ -61,7 +61,7 @@
     </table>
 
     @for(m <- matches){
-        @uploadfile(m,s"modal_${m.matchPK.challongeMatchID}",user)
+        @uploadfile(m,s"modal_${m.matchPK.challongeMatchID}")
     }
 
     @for(m <- matches){

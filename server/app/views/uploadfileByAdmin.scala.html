@@ -15,16 +15,16 @@
                 </button>
             </div>
             <div class="modal-body">
-                @form(routes.ReplayMatchController.addReplayToMatch(m.matchPK.challongeID,m.matchPK.challongeMatchID,m.querying.discordUser.discordID,m.rival.discordUser.discordID),
+                @form(routes.ReplayMatchController.addReplayToMatchByAdmin(m.matchPK.challongeID,m.matchPK.challongeMatchID,m.userSmurf1.discordUser.discordID,m.userSmurf2.discordUser.discordID),
                     Symbol("enctype") -> "multipart/form-data") {
                     @CSRF.formField
 
                     <div class="file-field input-field"
-                    id=@{s"replay_file_field_${m.matchPK.challongeMatchID}"}
-                    data-player1=@{m.querying.discordUser.userName}
-                    data-player2=@{m.rival.discordUser.userName}
-                    data-discord1=@{m.querying.discordUser.discordID}
-                    data-discord2=@{m.rival.discordUser.discordID}
+                    id=@{s"replay_file_field_admin_${m.matchPK.challongeMatchID}"}
+                    data-player1=@{m.userSmurf1.discordUser.userName}
+                    data-player2=@{m.userSmurf2.discordUser.userName}
+                    data-discord1=@{m.userSmurf1.discordUser.discordID}
+                    data-discord2=@{m.userSmurf2.discordUser.discordID}
                     >
 
                     </div>

@@ -27,7 +27,7 @@ class ReplayUploaderByAdmin(
   }
 
   @html
-  override def hiddenInputValuesSelected: Binding[Node] =
+  override val hiddenInputValuesSelected: Binding[Node] =
     Binding {
       buildInput(discordIdsSmurf.bind).bind
     }

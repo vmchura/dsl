@@ -53,6 +53,14 @@
                         </button>
                     }
                 </td>
+                @if(user.exists(u => WithAdmin.isModeradorID(u.loginInfo.providerKey))){
+                    <td>
+
+                        <button type="button" class="btn btn-primary" data-toggle="modal" data-target="@{s"#modal_${m.matchPK.challongeMatchID}"}">
+                            <span class="material-icons">cloud_upload</span>
+                        </button>
+                    </td>
+                }
 
             </tr>
 
@@ -62,12 +70,16 @@
         </tbody>
     </table>
 
-        @for(m <- matches){
+    @for(m <- matches){
         @listreplayssimple(m.convertToMatch(),
             s"modal_list_${m.matchPK.challongeMatchID}",
             user.fold(false)(u => WithAdmin.isModeradorID(u.loginInfo.providerKey)),
             (m.complete) || user.exists(u => WithAdmin.isModeradorID(u.loginInfo.providerKey) )
         )
+        @if(user.exists(u => WithAdmin.isModeradorID(u.loginInfo.providerKey))){
+            @uploadfileByAdmin(m,s"modal_${m.matchPK.challongeMatchID}")
+        }
+
     }
 
     <script @{CSPNonce.attr}>   MatchFinder.init("container-matches-finder"); </script>

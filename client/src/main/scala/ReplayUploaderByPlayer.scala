@@ -13,7 +13,7 @@ class ReplayUploaderByPlayer(
   import ReplayUploader._
 
   @html
-  override def hiddenInputValuesSelected: Binding[Node] = <div></div>
+  override val hiddenInputValuesSelected: Binding[Node] = <div>Player here</div>
 
   override def nameForInput: String = "mySmurf"
 

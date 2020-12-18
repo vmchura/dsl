@@ -130,6 +130,7 @@ trait ReplayUploader {
     input.value.onclick = _ => {
       discordIdsSmurf.value = Some(idsSMurfs)
       stateUploadProcess.value = ReadyToSend
+      optionSelected.value = true
     }
 
     input

@@ -366,10 +366,25 @@ class ReplayMatchController @Inject() (
             dataParts: Map[String, Seq[String]],
             gameResult: ChallongeOneVsOneMatchGameResult
         ): Future[ChallongeOneVsOneDefined] = {
+          def constructIDS(): Option[List[String]] =
+            (0 to 3)
+              .map(i =>
+                dataParts.get(s"bothIDsSmurfs[$i]").flatMap(_.headOption)
+              )
+              .foldLeft(Option(List.empty[String])) {
+                case (prevSeq, itemOption) =>
+                  for {
+                    seq <- prevSeq
+                    item <- itemOption
+                  } yield {
+                    item :: seq
+                  }
+              }
+              .map(_.reverse)
 
-          val (smurfFirst, smurfSecond) = dataParts.get("bothIDsSmurfs") match {
+          val (smurfFirst, smurfSecond) = constructIDS() match {
             case Some(
-                  Seq(
+                  List(
                     `discordIDFirst`,
                     smurfFirst,
                     `discordIDSecond`,
@@ -378,7 +393,7 @@ class ReplayMatchController @Inject() (
                 ) =>
               (smurfFirst, smurfSecond)
             case Some(
-                  Seq(
+                  List(
                     `discordIDSecond`,
                     smurfSecond,
                     `discordIDFirst`,
