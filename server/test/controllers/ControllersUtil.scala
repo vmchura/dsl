@@ -121,9 +121,9 @@ object ControllersUtil {
     import database.DataBaseObjects._
     val multipartFormData = buildMultiFormData(app)(
       resourceReplay,
-      idsAndSmurfs.fold(Map.empty[String, Seq[String]])(idsSmurfs =>
-        Map("bothIDsSmurfs" -> idsSmurfs)
-      )
+      idsAndSmurfs.fold(Map.empty[String, Seq[String]])(_.zipWithIndex.map {
+        case (item, i) => s"bothIDsSmurfs[$i]" -> Seq(item)
+      }.toMap)
     )
     route(
       app,
