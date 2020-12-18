@@ -1,137 +1,47 @@
-import org.lrng.binding.html
-import org.scalajs.dom.html.{Button, Div}
-import com.thoughtworks.binding.Binding.Var
 import com.thoughtworks.binding.Binding
+import com.thoughtworks.binding.Binding.Var
+import org.lrng.binding.html
 import org.lrng.binding.html.NodeBinding
+import org.scalajs.dom.html.{Button, Div}
 import org.scalajs.dom.raw.{FormData, HTMLInputElement}
-
-import scala.util.{Failure, Success}
 import org.scalajs.dom.{Event, Node, document}
-import shared.models.{
-  ChallongeOneVsOneDefined,
-  ChallongeOneVsOneMatchGameResult,
-  ChallongePlayer,
-  ChallongePlayerDefined,
-  DiscordByHistory,
-  DiscordByLogic,
-  EmptyDiscordID
-}
+import shared.models._
 import upickle.default.read
 
 import scala.scalajs.concurrent.JSExecutionContext.Implicits.queue
+import scala.util.{Failure, Success}
 
-class ReplayUpdater(
-    fieldDiv: Div,
-    player1: String,
-    player2: String,
-    discord1: String,
-    discord2: String
-) {
-  case class DiscordID(discordID: String)
-  case class PlayerNameDiscordID(name: String, discordID: DiscordID)
+trait ReplayUploader {
+  import ReplayUploader._
+  def fieldDiv: Div
+  def player1: String
+  def player2: String
+  def discord1: String
+  def discord2: String
+
   private val playerQuerying = PlayerNameDiscordID(player1, DiscordID(discord1))
   private val theOtherPlayer = PlayerNameDiscordID(player2, DiscordID(discord2))
-
-  implicit def makeIntellijHappy[T <: org.scalajs.dom.raw.Node](
-      x: scala.xml.Node
-  ): Binding[T] =
-    throw new AssertionError("This should never execute.")
-  implicit def makeIntellijHappy2[T <: org.scalajs.dom.raw.Node](
-      x: scala.xml.Elem
-  ): NodeBinding[T] =
-    throw new AssertionError("This should never execute.")
-
-  abstract class WithMessageResult(private val messageToShow: String) {
-    def getMessageToShow: String = messageToShow
-  }
-
-  sealed trait StateSettingResult extends WithMessageResult {
-    def stateType: String
-  }
-  sealed trait DangerState extends StateSettingResult {
-    override def stateType: String = "danger"
-  }
-  sealed trait WarningState extends StateSettingResult {
-    override def stateType: String = "warning"
-  }
-  sealed trait SuccessState extends StateSettingResult {
-    override def stateType: String = "success"
-  }
-  sealed trait InfoState extends StateSettingResult {
-    override def stateType: String = "info"
-  }
-
-  object FileUnselected
-      extends WithMessageResult("Seleccione el replay de la partida")
-      with WarningState
-  object FileSelectedWrongType
-      extends WithMessageResult("El archivo seleccionado debe terminar en .rep")
-      with DangerState
-  object FileSelectedNotSmallSyze
-      extends WithMessageResult("El archivo debe ser menor a 1Mb")
-      with DangerState
-  object FileSelectedOk
-      extends WithMessageResult("Archivo seleccionado de manera correcta")
-      with SuccessState
-  object FileParsedCorrectly
-      extends WithMessageResult("Archivo leído correctamente")
-      with SuccessState
-  case class FileErrorReceivingParse(error: String)
-      extends WithMessageResult(
-        s"Error en la conexión con el servidor, vuelva a intentarlo luego o comuníquese con el admin"
-      )
-      with DangerState {
-    override def getMessageToShow: String = {
-      println(error)
-      if (error.contains("IsAlreadyRegistered"))
-        s"${super.getMessageToShow} / Replay ya está registrada"
-      else
-        super.getMessageToShow
-    }
-  }
-  object FileParsedIncorrectly
-      extends WithMessageResult("El archivo no se pudo interpretar como replay")
-      with DangerState
-  object FileOnProcessToParse
-      extends WithMessageResult("Esperando el PRE procesamiento del archivo")
-      with InfoState
-  object FileIsNotOne
-      extends WithMessageResult("Sólo se debe escoger UN archivo")
-      with DangerState
-  object MatchingUsers
-      extends WithMessageResult("Relacione al usuario con el nick en el juego")
-      with SuccessState
-  object ReadyToSend
-      extends WithMessageResult(":) Listo para subir el archivo al servidor")
-      with SuccessState
-  case class ErrorByServerParsing(message: String)
-      extends WithMessageResult(
-        s"ERROR en el servidor, posiblemente replay corrupta, comuníquese con el admin"
-      )
-      with DangerState {
-    override def getMessageToShow: String = {
-      println(message)
-      if (message.contains("IsAlreadyRegistered"))
-        s"${super.getMessageToShow} / Replay ya está registrada"
-      else
-        super.getMessageToShow
-    }
-  }
-  case class ErrorImpossibleMessage(
-      smurf1: Option[String],
-      smurf2: Option[String]
-  ) extends WithMessageResult((smurf1, smurf2) match {
-        case (Some(x), Some(y)) =>
-          s"El smurf $x o $y ya está asignado a otro usuario. Si crees que es un error, comuníquese con el admin."
-        case _ =>
-          s"El replay no se pudo interpretar correctamente.  Si crees que es un error, comuníquese con el admin."
-      })
-      with DangerState
 
   private val stateUploadProcess = Var[StateSettingResult](FileUnselected)
   private val replayParsed = Var[Option[ChallongeOneVsOneMatchGameResult]](None)
   private val fileNameSelected = Var[Option[String]](None)
 
+  val optionSelected: Var[Boolean] = Var(false)
+  val discordIdsSmurf: Var[Option[Array[String]]] = Var(None)
+  def hiddenInputValuesSelected: Binding[Node]
+
+  def nameForInput: String
+  def prefixToUserNameIfEmpty: String
+  def jugarConjugation: String
+
+  @html
+  val hiddenInputValues: Binding[Node] = Binding {
+    if (optionSelected.bind) {
+      hiddenInputValuesSelected.bind
+    } else {
+      <div></div>.bind
+    }
+  }
   @html
   private def createRelation(
       primarySecondaryColor: String
@@ -208,15 +118,20 @@ class ReplayUpdater(
   }
 
   @html
-  private def buildInputSmarter(smurf: String, idForInput: String) = {
+  private def buildInputDynamic(
+      smurf: String,
+      idForInput: String,
+      idsSMurfs: Array[String]
+  ) = {
     val input: NodeBinding[HTMLInputElement] =
-      <input type="radio" class="form-check-input" name="mySmurf" id={
+      <input type="radio" class="form-check-input" name={nameForInput} id={
         idForInput
       } autocomplete="off" value={smurf}/>
-    input.value.onclick = _ => stateUploadProcess.value = ReadyToSend
+    input.value.onclick = _ => {
+      discordIdsSmurf.value = Some(idsSMurfs)
+    }
 
     input
-
   }
 
   @html
@@ -228,16 +143,42 @@ class ReplayUpdater(
     val emptyDiv: Binding[Node] = <div></div>
     val componentIfSmurfsEmpty = {
       <div>
-        <span>Hola <span class="font-weight-bold">{playerQuerying.name}</span>,
-          ¿Con qué nombre jugaste esta partida?</span>
+        <span>
+          {prefixToUserNameIfEmpty} <span class="font-weight-bold">{
+        playerQuerying.name
+      }</span>,
+          ¿Con qué nombre
+          {jugarConjugation} esta partida?</span>
         <div class="form-check">
-          {buildInputSmarter(oneVsOne.winner.player.smurf, "firstOptionID1")}
+          {
+        buildInputDynamic(
+          oneVsOne.winner.player.smurf,
+          "firstOptionID1",
+          Array(
+            playerQuerying.discordID.discordID,
+            oneVsOne.winner.player.smurf,
+            theOtherPlayer.discordID.discordID,
+            oneVsOne.loser.player.smurf
+          )
+        )
+      }
           <label class="form-check-label" for="firstOptionID1">
             {oneVsOne.winner.player.smurf}
           </label>
         </div>
         <div class="form-check">
-          {buildInputSmarter(oneVsOne.loser.player.smurf, "firstOptionID2")}
+          {
+        buildInputDynamic(
+          oneVsOne.loser.player.smurf,
+          "firstOptionID2",
+          Array(
+            playerQuerying.discordID.discordID,
+            oneVsOne.loser.player.smurf,
+            theOtherPlayer.discordID.discordID,
+            oneVsOne.winner.player.smurf
+          )
+        )
+      }
           <label class="form-check-label" for="firstOptionID2">
             {oneVsOne.loser.player.smurf}
           </label>
@@ -396,6 +337,9 @@ class ReplayUpdater(
     }</span>
             <span class="form-file-button">Seleccionar replay</span>
           </label>
+        {correlateTags}
+        {hiddenInputValues}
+        {buttonSubmit.bind}
       </div>
       {
       stateUploadProcess.bind match {
@@ -411,12 +355,7 @@ class ReplayUpdater(
     }
 
 
-      {correlateTags}
-      {buttonSubmit.bind}
-
-
-       <input type="hidden" name="player1Discord" value={discord1}/>
-       <input type="hidden" name="player2Discord" value={discord2}/>
+      
 
     </div>
   }
@@ -426,25 +365,131 @@ class ReplayUpdater(
   }
 
 }
-object ReplayUpdater {
+object ReplayUploader {
+  case class DiscordID(discordID: String)
+  case class PlayerNameDiscordID(name: String, discordID: DiscordID)
+  implicit def makeIntellijHappy[T <: org.scalajs.dom.raw.Node](
+      x: scala.xml.Node
+  ): Binding[T] =
+    throw new AssertionError("This should never execute.")
+  implicit def makeIntellijHappy2[T <: org.scalajs.dom.raw.Node](
+      x: scala.xml.Elem
+  ): NodeBinding[T] =
+    throw new AssertionError("This should never execute.")
+
+  abstract class WithMessageResult(private val messageToShow: String) {
+    def getMessageToShow: String = messageToShow
+  }
+
+  sealed trait StateSettingResult extends WithMessageResult {
+    def stateType: String
+  }
+  sealed trait DangerState extends StateSettingResult {
+    override def stateType: String = "danger"
+  }
+  sealed trait WarningState extends StateSettingResult {
+    override def stateType: String = "warning"
+  }
+  sealed trait SuccessState extends StateSettingResult {
+    override def stateType: String = "success"
+  }
+  sealed trait InfoState extends StateSettingResult {
+    override def stateType: String = "info"
+  }
+
+  object FileUnselected
+      extends WithMessageResult("Seleccione el replay de la partida")
+      with WarningState
+  object FileSelectedWrongType
+      extends WithMessageResult("El archivo seleccionado debe terminar en .rep")
+      with DangerState
+  object FileSelectedNotSmallSyze
+      extends WithMessageResult("El archivo debe ser menor a 1Mb")
+      with DangerState
+  object FileSelectedOk
+      extends WithMessageResult("Archivo seleccionado de manera correcta")
+      with SuccessState
+  object FileParsedCorrectly
+      extends WithMessageResult("Archivo leído correctamente")
+      with SuccessState
+  case class FileErrorReceivingParse(error: String)
+      extends WithMessageResult(
+        s"Error en la conexión con el servidor, vuelva a intentarlo luego o comuníquese con el admin"
+      )
+      with DangerState {
+    override def getMessageToShow: String = {
+      println(error)
+      if (error.contains("IsAlreadyRegistered"))
+        s"${super.getMessageToShow} / Replay ya está registrada"
+      else
+        super.getMessageToShow
+    }
+  }
+  object FileParsedIncorrectly
+      extends WithMessageResult("El archivo no se pudo interpretar como replay")
+      with DangerState
+  object FileOnProcessToParse
+      extends WithMessageResult("Esperando el PRE procesamiento del archivo")
+      with InfoState
+  object FileIsNotOne
+      extends WithMessageResult("Sólo se debe escoger UN archivo")
+      with DangerState
+  object MatchingUsers
+      extends WithMessageResult("Relacione al usuario con el nick en el juego")
+      with SuccessState
+  object ReadyToSend
+      extends WithMessageResult(":) Listo para subir el archivo al servidor")
+      with SuccessState
+  case class ErrorByServerParsing(message: String)
+      extends WithMessageResult(
+        s"ERROR en el servidor, posiblemente replay corrupta, comuníquese con el admin"
+      )
+      with DangerState {
+    override def getMessageToShow: String = {
+      println(message)
+      if (message.contains("IsAlreadyRegistered"))
+        s"${super.getMessageToShow} / Replay ya está registrada"
+      else
+        super.getMessageToShow
+    }
+  }
+  case class ErrorImpossibleMessage(
+      smurf1: Option[String],
+      smurf2: Option[String]
+  ) extends WithMessageResult((smurf1, smurf2) match {
+        case (Some(x), Some(y)) =>
+          s"El smurf $x o $y ya está asignado a otro usuario. Si crees que es un error, comuníquese con el admin."
+        case _ =>
+          s"El replay no se pudo interpretar correctamente.  Si crees que es un error, comuníquese con el admin."
+      })
+      with DangerState
+
   def init(): Unit = {
     val divs = document.getElementsByTagName("div")
     val length = divs.length
-    val divsUpload = (0 until length)
-      .map(i => divs.item(i))
-      .filter(_.id.startsWith("replay_file_field_"))
-      .map(_.asInstanceOf[Div])
-    divsUpload.foreach { div =>
-      for {
-        p1 <- div.dataset.get("player1")
-        p2 <- div.dataset.get("player2")
-        d1 <- div.dataset.get("discord1")
-        d2 <- div.dataset.get("discord2")
-      } yield {
-        val ru = new ReplayUpdater(div, p1, p2, d1, d2)
-        ru.render()
-      }
+    def initByContext(
+        divIDPrefix: String,
+        builder: (Div, String, String, String, String) => ReplayUploader
+    ): Unit = {
+      val divsUpload = (0 until length)
+        .map(i => divs.item(i))
+        .filter(_.id.startsWith(divIDPrefix))
+        .map(_.asInstanceOf[Div])
+      divsUpload.foreach { div =>
+        for {
+          p1 <- div.dataset.get("player1")
+          p2 <- div.dataset.get("player2")
+          d1 <- div.dataset.get("discord1")
+          d2 <- div.dataset.get("discord2")
+        } yield {
+          val ru = builder(div, p1, p2, d1, d2)
+          ru.render()
+        }
 
+      }
     }
+    initByContext("replay_file_field_", ReplayUploaderByPlayer.apply)
+    initByContext("replay_file_field_admin_", ReplayUploaderByAdmin.apply)
+
   }
 }

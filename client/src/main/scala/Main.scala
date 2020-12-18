@@ -11,7 +11,7 @@ object Main {
   @JSExport("init")
   def init(): Unit = {
 
-    ReplayUpdater.init()
+    ReplayUploader.init()
 
   }
   def findTokenValue(): String = {
