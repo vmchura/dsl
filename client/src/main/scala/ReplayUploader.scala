@@ -129,6 +129,7 @@ trait ReplayUploader {
       } autocomplete="off" value={smurf}/>
     input.value.onclick = _ => {
       discordIdsSmurf.value = Some(idsSMurfs)
+      stateUploadProcess.value = ReadyToSend
     }
 
     input
