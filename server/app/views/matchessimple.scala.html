@@ -6,9 +6,15 @@
     <div id="container-tournament-info">
         <span id="title-tournament-name">@tournament.tournamentName</span>
         <div id="container-tournament-links">
-            <a id="title-normas-link" class="tournament-links" href="https://docs.google.com/document/d/1EAx-NbajNBR3Hu14oVUQopbC9-9VSy37qvEtSHnmCm0/edit?usp=sharing">
+            <a id="title-normas-link" class="tournament-links" href="https://docs.google.com/document/d/16SBZRFuiu0hOMfasjy7pgmBTxzK8RrFW-rjXAFA2PC0/edit?usp=sharing">
                 <span>Normas del torneo</span>
             </a>
+            @if(tournament.tournamentName.toLowerCase().contains("ss") || tournament.tournamentName.toLowerCase().contains("super")){
+                <br/>
+                <a id="title-normas-link" class="tournament-links" href="https://docs.google.com/document/d/1M78kqhFKwkNtlZPRIx3O_ERvPmOyoIUOh-2Yew7Iyuw/edit?usp=sharing">
+                    <span>Normas extra DSSL</span>
+                </a>
+            }
             <br/>
             <a id="title-challonge-link" class="tournament-links" href="@tournament.challongeURL">
                 <i class='fab fa-google-drive'></i>
