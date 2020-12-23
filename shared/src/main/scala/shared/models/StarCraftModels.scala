@@ -25,16 +25,18 @@ object StarCraftModels {
 
   case class SCPlayer(smurf: String, race: SCRace)
   object SCRace {
+    def apply(str: String): SCRace =
+      str match {
+        case "protoss" => Protoss
+        case "terran"  => Terran
+        case "zerg"    => Zerg
+        case _         => Random
+      }
     implicit val rw: RW[SCRace] = upickle.default
       .readwriter[String]
       .bimap[SCRace](
         x => x.str,
-        {
-          case "protoss" => Protoss
-          case "terran"  => Terran
-          case "zerg"    => Zerg
-          case _         => Random
-        }
+        SCRace.apply
       )
   }
   object SCPlayer {
