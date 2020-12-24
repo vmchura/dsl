@@ -1,0 +1,26 @@
+@import views.html.helper._
+@import com.mohiva.play.silhouette.impl.providers.SocialProviderRegistry
+@this()(implicit assets: AssetsFinder)
+@(user: Option[models.User],matches: Seq[ReplayRecordResumen],socialProviders: SocialProviderRegistry)(implicit request: RequestHeader, messages: Messages,menues: Seq[MenuGroup])
+@main("Partidas del jugador",user,socialProviders){
+    <table class="table table-striped">
+        <thead>
+            <tr>
+            <th>Player1</th>
+            <th>Player2</th>
+            <th>Download</th>
+            </tr>
+        </thead>
+        <tbody>
+            @for(resumen <- matches){
+              <tr>
+              <td>@{resumen.winner.gamePlayer.smurf} - @{resumen.winner.gamePlayer.race.toString}</td>
+              <td>@{resumen.loser.gamePlayer.smurf} - @{resumen.loser.gamePlayer.race.toString}</td>
+                  <td> <a class="waves-effect waves-light btn-small" href=@{routes.ReplayMatchController.downloadReplay(resumen.replayID,resumen.winner.gamePlayer.smurf+"vs"+resumen.loser.gamePlayer.smurf+".rep")}>
+                      <i class="material-icons left">cloud_download</i></a></td>
+
+              </tr>
+            }
+        </tbody>
+    </table>
+}

@@ -22,6 +22,7 @@ GET         /tournament/showmatches/:challongeTournamentID              controll
 GET         /tournament/showmatchessimple/:challongeTournamentID              controllers.TournamentController.showMatches(challongeTournamentID: Long)
 # STATICS
 GET         /statics/tournament                    controllers.StaticsController.view
+GET         /statics/player/:discordUserID          controllers.usertrajectory.UserReplaysController.loadReplaysByUser(discordUserID: String)
 # REPLAY
 POST        /replay/add/:tournamentID/:matchID/:discordUser1/:discordUser2  controllers.ReplayMatchController.addReplayToMatch(tournamentID: Long, matchID: Long,discordUser1: String, discordUser2: String)
 POST        /replay/addByAdmin/:tournamentID/:matchID/:discordUser1/:discordUser2  controllers.ReplayMatchController.addReplayToMatchByAdmin(tournamentID: Long, matchID: Long,discordUser1: String, discordUser2: String)

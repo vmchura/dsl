@@ -21,6 +21,7 @@ import shared.models.{ChallongeOneVsOneMatchGameResult, ChallongePlayer}
 import java.io.File
 import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.Future
+import scala.util.Try
 
 /**
   * load from replay match, only available ones
@@ -51,7 +52,7 @@ class UploadResumenDataHistory
   private val replayActionBuilderService =
     app.injector.instanceOf(classOf[ReplayActionBuilderService])
   implicit override val patienceConfig: PatienceConfig =
-    PatienceConfig(timeout = Span(5, Minutes), interval = Span(10, Seconds))
+    PatienceConfig(timeout = Span(15, Minutes), interval = Span(10, Seconds))
   "UploadResumenDataHistory" must {
     "Load many replays" in {
       val data = for {
@@ -90,7 +91,7 @@ class UploadResumenDataHistory
                           ChallongePlayer(Right(loserID), loserPlayer)
                         )
                       ) =>
-                    Some(
+                    Try(
                       ReplayRecordResumen(
                         replay.replayID,
                         DiscordPlayer(
@@ -107,7 +108,7 @@ class UploadResumenDataHistory
                         ),
                         enabled = true
                       )
-                    )
+                    ).toOption
                   case x => {
                     println(x)
                     println(file.getAbsolutePath)

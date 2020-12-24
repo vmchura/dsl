@@ -23,12 +23,14 @@
                     <a href="#">@m.tournamentName</a>
                 </td>
                 <td>@m.round</td>
-                <td>@m.userSmurf1.discordUser.userName
+                <td>
+                <a href="@controllers.usertrajectory.routes.UserReplaysController.loadReplaysByUser(m.userSmurf1.discordUser.discordID)">@m.userSmurf1.discordUser.userName</a>
                     @for(smurfDefined <- m.userSmurf1.matchSmurf.distinctBy(_.smurf)){
                         <span class="badge rounded-pill bg-primary">@smurfDefined.smurf </span>
                     }
                 </td>
-                <td>@m.userSmurf2.discordUser.userName
+                <td>
+                <a href="@controllers.usertrajectory.routes.UserReplaysController.loadReplaysByUser(m.userSmurf2.discordUser.discordID)">@m.userSmurf2.discordUser.userName</a>
                     @for(smurfDefined <- m.userSmurf2.matchSmurf.distinctBy(_.smurf)){
                         <span class="badge rounded-pill bg-primary">@smurfDefined.smurf </span>
                     }
