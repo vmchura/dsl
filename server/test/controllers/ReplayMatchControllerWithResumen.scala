@@ -1,21 +1,15 @@
 package controllers
 
 import database.DataBaseObjects.{first_match, first_user, second_user}
-import database.TemporalDB
-import models.DiscordID
-import org.scalatestplus.play.PlaySpec
 import play.api.test.Helpers.status
 import database.TemporalDB
 import play.api.test.Helpers._
-import database.DataBaseObjects._
 import models.daos.usertrajectory.ReplayRecordResumenDAO
 import models.daos.usertrajectory.ReplayRecordResumenDAO.ByPlayer
-import models.{DiscordID, Smurf}
 import org.scalatest.concurrent.PatienceConfiguration.Interval
 import org.scalatest.time.{Seconds, Span}
 import org.scalatestplus.play.PlaySpec
 
-import scala.collection.parallel.CollectionConverters._
 class ReplayMatchControllerWithResumen
     extends PlaySpec
     with TemporalDB
