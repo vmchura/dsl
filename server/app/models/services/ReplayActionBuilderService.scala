@@ -12,7 +12,8 @@ trait ReplayActionBuilderService {
   def parseFileAndBuildAction(
       file: File,
       discordUserID1: String,
-      discordUserID2: String
+      discordUserID2: String,
+      checkFileDuplicity: Boolean = true
   ): Future[Either[String, ChallongeOneVsOneMatchGameResult]]
 
 }

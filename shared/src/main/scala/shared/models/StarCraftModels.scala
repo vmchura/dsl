@@ -55,11 +55,9 @@ object StarCraftModels {
   trait SCMatchMode
 
   case object Melee extends SCMatchMode
-
   case object TopVsBottom extends SCMatchMode
-
   case object OneVsOneMode extends SCMatchMode
-
+  case object DangerMode extends SCMatchMode
   case object UnknownMode extends SCMatchMode
 
 }

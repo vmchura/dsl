@@ -41,8 +41,9 @@ object GameJudge extends ActorModule {
                   case _                             => InvalidSCGameMode(winners ::: losers)
                 }
                 replayParsed.gameMode match {
-                  case OneVsOneMode | TopVsBottom | Melee => resultOneVsOne
-                  case _                                  => defaultOnError
+                  case OneVsOneMode | TopVsBottom | Melee | DangerMode =>
+                    resultOneVsOne
+                  case _ => defaultOnError
                 }
               } else {
                 replayParsed match {

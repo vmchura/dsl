@@ -35,7 +35,8 @@ class ReplayActionBuilderServiceImpl @Inject() (
   override def parseFileAndBuildAction(
       file: File,
       discordUserID1: String,
-      discordUserID2: String
+      discordUserID2: String,
+      checkFileDuplicity: Boolean = true
   ): Future[Either[String, ChallongeOneVsOneMatchGameResult]] = {
 
     case class DiscordUserRegistered(
@@ -47,7 +48,9 @@ class ReplayActionBuilderServiceImpl @Inject() (
 
     val result = {
       val message = for {
-        fileIsUnique <- replayMatchDAO.isNotRegistered(file)
+        fileIsUnique <-
+          if (checkFileDuplicity) replayMatchDAO.isNotRegistered(file)
+          else Future.successful(true)
         _ <- fileIsUnique.withFailure(FileIsAlreadyRegistered)
         parsedFromActor <-
           replayGameManager.ask(ref => ManageGameReplay(file, ref))

@@ -71,7 +71,10 @@ object GameParser {
               case Some("TvB")   => TopVsBottom
               case Some("Melee") => Melee
               case Some("1v1")   => OneVsOneMode
-              case _             => UnknownMode
+
+              case Some("FFA") | Some("UMS") => DangerMode
+              case _                         => UnknownMode
+
             }
           }
           (json \ "Computed" \ "WinnerTeam").asOpt[Int] match {

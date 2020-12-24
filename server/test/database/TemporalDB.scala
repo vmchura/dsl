@@ -15,6 +15,7 @@ import models.services.{
   ChallongeTournamentService,
   ParseReplayFileService,
   SmurfService,
+  TestServices,
   TournamentService
 }
 import net.codingwell.scalaguice.ScalaModule
@@ -99,30 +100,13 @@ trait TemporalDB
       ): Future[Boolean] = Future.successful(true)
     }
 
-    private val parseReplayFileService = new ParseReplayFileService {
-      override def parseFile(file: File): Future[Either[String, String]] = {
-        import sys.process._
-        val buffer = new StringBuilder()
-        val res =
-          s"/home/vmchura/Games/screp/cmd/screp/screp ${file.getAbsolutePath}"
-            .!(ProcessLogger(line => buffer.append(line)))
-        if (res == 0) {
-          Future.successful(Right(buffer.toString()))
-        } else {
-          println(buffer.toString())
-          Future.failed(
-            new IllegalArgumentException("screp not installed correctly")
-          )
-        }
-
-      }
-    }
-
     override def configure(): Unit = {
       bind[Environment[DefaultEnv]].toInstance(env)
       bind[ChallongeTournamentService].toInstance(challongeTournamentService)
       bind[ReplayMatchDAO].toInstance(replayMatchDAO)
-      bind[ParseReplayFileService].toInstance(parseReplayFileService)
+      bind[ParseReplayFileService].toInstance(
+        TestServices.parseReplayFileService
+      )
     }
   }
   System.setProperty("config.resource", "test-application.conf")
