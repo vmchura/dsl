@@ -3,10 +3,12 @@ package controllers
 import database.DataBaseObjects._
 import database.TemporalDB
 import models.{DiscordID, Smurf}
+import org.scalatestplus.play.PlaySpec
 import play.api.test.Helpers.{status, _}
 
 class ReplayMatchControllerPushReplayAdminReversedTest
-    extends TemporalDB
+    extends PlaySpec
+    with TemporalDB
     with UtilReplayMatchController {
 
   "Push replay by admin reversed" should {

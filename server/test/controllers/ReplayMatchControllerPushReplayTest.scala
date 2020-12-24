@@ -3,9 +3,12 @@ import database.TemporalDB
 import play.api.test.Helpers._
 import database.DataBaseObjects._
 import models.{DiscordID, Smurf}
+import org.scalatestplus.play.PlaySpec
+
 import scala.collection.parallel.CollectionConverters._
 class ReplayMatchControllerPushReplayTest
-    extends TemporalDB
+    extends PlaySpec
+    with TemporalDB
     with UtilReplayMatchController {
 
   "Push replay" should {

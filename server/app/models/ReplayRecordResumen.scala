@@ -1,6 +1,7 @@
 package models
 
 import play.api.libs.json.{JsObject, JsResult, JsString, JsValue, Json, OFormat}
+import shared.models.ChallongeOneVsOneDefined
 import shared.models.StarCraftModels.{SCPlayer, SCRace}
 
 import java.util.UUID
@@ -29,4 +30,19 @@ object ReplayRecordResumen {
 
   implicit val jsonFormat: OFormat[ReplayRecordResumen] =
     Json.format[ReplayRecordResumen]
+  implicit class OneVsOneDefined2ReplayRecordResumen(
+      oneVsOne: ChallongeOneVsOneDefined
+  ) {
+    def toRecordResumen(id: UUID): ReplayRecordResumen = {
+      val discordWinner = DiscordPlayer(
+        Some(oneVsOne.winner.discordID.discordIDValue),
+        oneVsOne.winner.player
+      )
+      val discordLoser = DiscordPlayer(
+        Some(oneVsOne.loser.discordID.discordIDValue),
+        oneVsOne.loser.player
+      )
+      ReplayRecordResumen(id, discordWinner, discordLoser, enabled = true)
+    }
+  }
 }

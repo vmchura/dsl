@@ -18,11 +18,10 @@ import models.services.{
   TournamentService
 }
 import net.codingwell.scalaguice.ScalaModule
-import org.scalatest.BeforeAndAfterEach
+import org.scalatest.{BeforeAndAfterEach, TestSuite}
 import org.scalatestplus.play.guice.GuiceOneAppPerSuite
 import org.scalatest.concurrent.ScalaFutures
 import org.scalatest.time.{Seconds, Span}
-import org.scalatestplus.play._
 import play.api.Application
 import play.api.inject.guice.GuiceApplicationBuilder
 import utils.auth.DefaultEnv
@@ -35,10 +34,9 @@ import java.util.UUID
 import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.Future
 trait TemporalDB
-    extends PlaySpec
-    with GuiceOneAppPerSuite
+    extends GuiceOneAppPerSuite
     with ScalaFutures
-    with BeforeAndAfterEach {
+    with BeforeAndAfterEach { this: TestSuite =>
   implicit val env: Environment[DefaultEnv] =
     new FakeEnvironment[DefaultEnv](
       Seq(first_user.loginInfo -> first_user, adminUser.loginInfo -> adminUser)
@@ -171,22 +169,6 @@ trait TemporalDB
     smurfService
       .addSmurf(DiscordID(user.loginInfo.providerKey), smurf)
       .futureValue
-  }
-
-  "Tournament" should {
-    "Not be inserted" in {
-      val tournamentService: TournamentService =
-        app.injector.instanceOf(classOf[TournamentService])
-      assert(tournamentService.findAllTournaments().futureValue.toList.isEmpty)
-    }
-    "Be inserted" in {
-      val tournamentService: TournamentService =
-        app.injector.instanceOf(classOf[TournamentService])
-      initTournament()
-      val tournaments =
-        tournamentService.findAllTournaments().futureValue.toList
-      assert(tournaments.nonEmpty)
-    }
   }
 
 }

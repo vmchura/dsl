@@ -1,4 +1,5 @@
 package controllers
+import akka.actor.typed.ActorRef
 import com.mohiva.play.silhouette.api.actions.SecuredRequest
 
 import java.util.UUID
@@ -12,6 +13,10 @@ import models.daos.{
   UserSmurfDAO
 }
 import models.services.{ReplayActionBuilderService, ReplayDeleterService}
+import modules.usertrajectory.GameReplayResumenManager.{
+  MessageReplayResumen,
+  ReplayAdded
+}
 import org.joda.time.DateTime
 import play.api.mvc._
 import play.api.i18n.I18nSupport
@@ -41,7 +46,8 @@ class ReplayMatchController @Inject() (
     smurfDAO: UserSmurfDAO,
     replayMatchDAO: ReplayMatchDAO,
     ticketReplayDAO: TicketReplayDAO,
-    replayActionBuilderService: ReplayActionBuilderService
+    replayActionBuilderService: ReplayActionBuilderService,
+    gameReplayResumenManager: ActorRef[MessageReplayResumen]
 )(implicit
     assets: AssetsFinder,
     ex: ExecutionContext
@@ -63,6 +69,7 @@ class ReplayMatchController @Inject() (
   ): Future[Result] = {
     import jobs.eitherError
     import jobs.flag2Future
+    import models.ReplayRecordResumen.OneVsOneDefined2ReplayRecordResumen
     def secureName(fileName: String): String =
       fileName
         .filter(ch => ch.isLetterOrDigit || ch == '.' || ch == '-' || ch == '-')
@@ -244,6 +251,12 @@ class ReplayMatchController @Inject() (
           )(newReplayMatchID, MatchPK(tournamentID, matchID))
           _ <- insertionSmurf1.withFailure(CannotSmurf)
           _ <- insertionSmurf2.withFailure(CannotSmurf)
+          _ <- Future.successful(
+            gameReplayResumenManager ! ReplayAdded(
+              challongeOnveVsOneMatchGameResult
+                .toRecordResumen(newReplayMatchID)
+            )
+          )
         } yield {
           result.flashing(
             "success" -> s"${secureName(replay_file.filename)} guardado!"

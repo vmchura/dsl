@@ -1,13 +1,16 @@
 package controllers
 import play.api.test.Helpers._
 import database.DataBaseObjects._
+
 import scala.collection.parallel.CollectionConverters._
 import database.TemporalDB
 import models.{DiscordID, Smurf}
+import org.scalatestplus.play.PlaySpec
 import play.api.test.Helpers.status
 
 class ReplayMatchControllerPushReplayAdminTest
-    extends TemporalDB
+    extends PlaySpec
+    with TemporalDB
     with UtilReplayMatchController {
 
   "Push replay by admin" should {

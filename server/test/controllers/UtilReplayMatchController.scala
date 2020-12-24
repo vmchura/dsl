@@ -5,8 +5,9 @@ import models.DiscordID
 import models.daos.UserSmurfDAO
 import org.scalatest.Assertions
 import org.scalatest.compatible.Assertion
+import org.scalatestplus.play.PlaySpec
 
-trait UtilReplayMatchController { this: TemporalDB =>
+trait UtilReplayMatchController { this: PlaySpec with TemporalDB =>
   def validateSmurfs(
       discordID: DiscordID,
       smurfsChecked: Seq[String],

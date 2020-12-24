@@ -1,6 +1,8 @@
 package database
 
-class DSLTest extends TemporalDB {
+import org.scalatestplus.play.PlaySpec
+
+class DSLTest extends PlaySpec with TemporalDB {
 
   "Each test" should {
     "load config from config test ad-hoc" in {
