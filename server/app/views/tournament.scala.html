@@ -5,9 +5,10 @@
 @import views.util.TournamentSeriesUtil
 @import play.twirl.api.TwirlFeatureImports.defining
 @this()(implicit assets: AssetsFinder)
-@(tournamentSeries: Seq[TournamentSeriesFilled],socialProviders: SocialProviderRegistry)(implicit request: RequestHeader, messages: Messages, menues: Seq[MenuGroup])
-@main("Torneos",None,socialProviders){
+@(user: Option[User], tournamentSeries: Seq[TournamentSeriesFilled],socialProviders: SocialProviderRegistry)(implicit request: RequestHeader, messages: Messages, menues: Seq[MenuGroup])
+@main("Torneos",user,socialProviders){
     <div class="tournaments-container">
+    <img src="@controllers.routes.Assets.versioned("images/DeathFate_Title.png")" id="deathfatelogo" alt="DeathFateLogo"/>
     @for(ts <- tournamentSeries) {
         @defining(TournamentSeriesUtil.getTournamentResource(ts)) { tr =>
 

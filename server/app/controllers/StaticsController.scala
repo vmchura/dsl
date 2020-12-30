@@ -45,6 +45,7 @@ class StaticsController @Inject() (
           } yield {
             Ok(
               tournamentView(
+                request.identity,
                 tournamentSeries.map(x => {
                   TournamentSeriesFilled(
                     x.id,
