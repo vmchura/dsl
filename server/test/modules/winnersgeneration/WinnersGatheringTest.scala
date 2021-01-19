@@ -77,6 +77,13 @@ class WinnersGatheringTest
       override def findSeries(
           id: TournamentSerieID
       ): Future[Option[TournamentSeries]] = ???
+
+      override def addSeason(
+          id: TournamentSerieID,
+          tournamentID: Long,
+          season: Int,
+          winners: List[(Int, String)]
+      ): Future[Boolean] = ???
     }
     val userGuildDAO = new UserGuildDAO {
       override def load(

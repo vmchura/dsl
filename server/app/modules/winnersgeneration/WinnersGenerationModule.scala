@@ -5,9 +5,7 @@ import play.api.libs.concurrent.AkkaGuiceSupport
 
 class WinnersGenerationModule extends AbstractModule with AkkaGuiceSupport {
   override def configure(): Unit = {
-    bindTypedActor(
-      WinnersGathering,
-      "Winners-generation-actor"
-    )
+    bindTypedActor(WinnersGathering, "Winners-generation-actor")
+    bindTypedActor(WinnersSaving, "Winners-saving-actor")
   }
 }

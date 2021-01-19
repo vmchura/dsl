@@ -1,10 +1,5 @@
 package models.services
-import models.{
-  Tournament,
-  TournamentSeason,
-  TournamentSerieID,
-  TournamentSeries
-}
+import models.{TournamentSeason, TournamentSerieID, TournamentSeries}
 
 import javax.inject._
 import play.api.libs.json._
@@ -30,7 +25,7 @@ class TournamentSeriesServiceImpl @Inject() (
 
   override def addSeason(
       id: TournamentSerieID,
-      tournament: Tournament,
+      tournamentID: Long,
       season: Int,
       winners: List[(Int, String)]
   ): Future[Boolean] = {
@@ -41,7 +36,7 @@ class TournamentSeriesServiceImpl @Inject() (
           Json.obj(
             "$push" -> Json.obj(
               "seasons" -> TournamentSeason(
-                tournament.challongeID,
+                tournamentID,
                 season,
                 winners
               )
