@@ -3,12 +3,19 @@
 @import controllers.AssetsFinder
 @import com.mohiva.play.silhouette.impl.providers.SocialProviderRegistry
 @import modules.winnersgeneration.WinnersInformation
-@import views.html.helper._
 @import modules.winnersgeneration.GatheredInformation
 @(user: models.User, winnerForm: Form[WinnersInformation], gatheredInfo: GatheredInformation,socialProviders: SocialProviderRegistry)(implicit request: RequestHeader, messages: Messages, menues: Seq[MenuGroup],assets: AssetsFinder)
 
 @main("Ganadores",Some(user),socialProviders) {
-  @helper.form(action = controllers.winnersgeneration.routes.WinnersGenerationController.view){
+  @helper.form(action = controllers.winnersgeneration.routes.WinnersGenerationController.post){
+    @helper.CSRF.formField
     @helper.select(winnerForm("tournamentID"),options = gatheredInfo.tournaments.map(t => (t.challongeID.toString, t.tournamentName)))
+    @helper.select(winnerForm("tournamentSeriesID"), options = gatheredInfo.tournamentSeries.map(ts => (ts.id.id.toString, ts.name)))
+    @helper.select(winnerForm("player1"), options = gatheredInfo.users.map(u => (u.discordID.id,u.discordID.id)))
+    @helper.select(winnerForm("player2"), options = gatheredInfo.users.map(u => (u.discordID.id,u.discordID.id)))
+    @helper.select(winnerForm("player3"), options = gatheredInfo.users.map(u => (u.discordID.id,u.discordID.id)))
+    @helper.inputText(winnerForm("season"))
+
+    <button type="submit">Send info</button>
   }
 }

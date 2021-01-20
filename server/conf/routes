@@ -43,4 +43,5 @@ GET         /smurfs/list                                                  contro
 GET         /racetournament/home                                            controllers.racesurvivor.RaceSurvivorController.sayHello(name: String="VmchQ")
 #WinnersGeneration
 GET     /winnersgeneration/update       controllers.winnersgeneration.WinnersGenerationController.view
+POST     /winnersgeneration/update       controllers.winnersgeneration.WinnersGenerationController.post
 GET     /javascriptRoutes                       controllers.JavaScriptRouter.javascriptRoutes

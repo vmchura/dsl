@@ -19,13 +19,18 @@ import jobs.{
 }
 import models.Tournament
 import models.services.{SideBarMenuService, TournamentService}
-import modules.winnersgeneration.WinnersForm
+import modules.winnersgeneration.{WinnersForm, WinnersSaving}
 import modules.winnersgeneration.WinnersGathering.{
   Gather,
   GatheringFail,
   GatheringSucess,
   WinnersGatheringCommand,
   WinnersGatheringResponse
+}
+import modules.winnersgeneration.WinnersSaving.{
+  WinnersSavedSuccessfully,
+  WinnersSavingCommand,
+  WinnersSavingFailed
 }
 import play.api.mvc._
 import play.api.i18n.I18nSupport
@@ -40,6 +45,7 @@ import scala.language.postfixOps
 class WinnersGenerationController @Inject() (
     scc: SilhouetteControllerComponents,
     informationGathe: ActorRef[WinnersGatheringCommand],
+    informationSaver: ActorRef[WinnersSavingCommand],
     sideBarMenuService: SideBarMenuService
 )(implicit
     assets: AssetsFinder,
@@ -67,6 +73,43 @@ class WinnersGenerationController @Inject() (
           }
 
         }
+
+    }
+
+  def post() =
+    silhouette.SecuredAction(WithAdmin()).async { implicit request =>
+      sideBarMenuService.buildLoggedSideBar.flatMap { implicit menues =>
+        WinnersForm.winnerForm.bindFromRequest.fold(
+          formWithErrors => {
+            (informationGathe ? Gather).mapTo[WinnersGatheringResponse].map {
+              case GatheringSucess(gatheredInformation) =>
+                Ok(
+                  views.html.winnersgeneration.selectwinners(
+                    request.identity,
+                    formWithErrors,
+                    gatheredInformation,
+                    socialProviderRegistry
+                  )
+                )
+              case GatheringFail() => Ok("Failed")
+            }
+          },
+          dataFilled => {
+            informationSaver
+              .ask(ref => WinnersSaving.SaveWinners(dataFilled, ref))
+              .mapTo[WinnersSaving.WinnersSavingResponse]
+              .map {
+                case WinnersSavingFailed() =>
+                  Redirect(controllers.routes.Application.index())
+                    .flashing("success" -> "Winners saved")
+                case WinnersSavedSuccessfully() =>
+                  Redirect(controllers.routes.Application.index())
+                    .flashing("error" -> "Winners not saved")
+              }
+
+          }
+        )
+      }
 
     }
 }
