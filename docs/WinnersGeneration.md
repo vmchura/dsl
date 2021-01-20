@@ -18,23 +18,14 @@ Externally
 Receives: Gather
 Response: WinnersGatheredInfo
 
-Internally
-
-Receives: Tournaments(listTournaments)
-Receives: TournamentsSeries(listSeries)
-Receives: Users(listUsers)
-
 
 WinnersSaverActor [Actor]
 Is responsable of save all at one all information
 Externally
 
 Receives: Save(WinnersGatheredInfoFilled)
-Response: Success, Failed
+Response: Success
 
-Internally
-Receives: TournamentAdded
-Receives: WinnersAdded
 
 
 
