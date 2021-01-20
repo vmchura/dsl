@@ -41,5 +41,6 @@ GET         /smurfs/decline/:discordUserID/:matchID                       contro
 GET         /smurfs/list                                                  controllers.SmurfController.showListSmurfsDefined()
 # RACESURVIVOR
 GET         /racetournament/home                                            controllers.racesurvivor.RaceSurvivorController.sayHello(name: String="VmchQ")
-
+#WinnersGeneration
+GET     /winnersgeneration/update       controllers.winnersgeneration.WinnersGenerationController.view
 GET     /javascriptRoutes                       controllers.JavaScriptRouter.javascriptRoutes
