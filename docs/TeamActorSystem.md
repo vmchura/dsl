@@ -25,3 +25,4 @@ InvitationManager
 - Receives an invitation request for a user in a specific position in team
 - Receives an invitation response, accepting it or denying it.
     - Handles if an invitation is still coherent if accepted.
+- Removes an invitation
