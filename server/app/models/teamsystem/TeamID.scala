@@ -14,13 +14,13 @@ object TeamID {
 sealed trait MemberStatus {
   def name: String
 }
-case object Official extends MemberStatus {
-  override def name: String = "Official"
-}
-case object Suplente extends MemberStatus {
-  override def name: String = "Suplente"
-}
 object MemberStatus {
+  case object Official extends MemberStatus {
+    override def name: String = "Official"
+  }
+  case object Suplente extends MemberStatus {
+    override def name: String = "Suplente"
+  }
   def apply(statusString: String): MemberStatus = {
     if (statusString.equals(Official.name)) {
       Official
@@ -54,7 +54,7 @@ case class Team(
     principal: DiscordID,
     members: Seq[Member]
 ) {
-
+  import MemberStatus._
   def canBeAdded(userID: DiscordID): Boolean = !isMember(userID)
   def canBeAddedAsSuplente(userID: DiscordID): Boolean =
     canBeAdded(userID) && !members.exists(_.memberStatus == Suplente)

@@ -5,6 +5,7 @@ import akka.actor.typed.scaladsl.Behaviors
 import com.google.inject.Inject
 import models.DiscordID
 import models.daos.teamsystem.TeamDAO
+import models.teamsystem.TeamID
 import play.api.libs.concurrent.ActorModule
 
 import scala.util.{Failure, Success}
@@ -16,8 +17,8 @@ class TeamCreatorWorker @Inject() (teamDAO: TeamDAO) {
     Behaviors.setup { ctx =>
       val expectingDAOResponse =
         Behaviors.receiveMessage[CreationWorkerCommand] {
-          case CreationDAOComplete() =>
-            replyTo ! CreationSuccess()
+          case CreationDAOComplete(teamID) =>
+            replyTo ! CreationSuccess(teamID)
             Behaviors.stopped
           case CreationDAOFailed() =>
             replyTo ! CreationFailed()
@@ -28,8 +29,8 @@ class TeamCreatorWorker @Inject() (teamDAO: TeamDAO) {
         Behaviors.receiveMessage[CreationWorkerCommand] {
           case Create(user, teamName) =>
             ctx.pipeToSelf(teamDAO.save(user, teamName)) {
-              case Success(_) => CreationDAOComplete()
-              case Failure(_) => CreationDAOFailed()
+              case Success(value) => CreationDAOComplete(value)
+              case Failure(_)     => CreationDAOFailed()
             }
             expectingDAOResponse
         }
@@ -42,10 +43,10 @@ object TeamCreatorWorker extends ActorModule {
   sealed trait CreationWorkerCommand
   case class Create(user: DiscordID, teamName: String)
       extends CreationWorkerCommand
-  case class CreationDAOComplete() extends CreationWorkerCommand
+  case class CreationDAOComplete(teamID: TeamID) extends CreationWorkerCommand
   case class CreationDAOFailed() extends CreationWorkerCommand
   sealed trait CreationResponse
-  case class CreationSuccess() extends CreationResponse
+  case class CreationSuccess(teamID: TeamID) extends CreationResponse
   case class CreationFailed() extends CreationResponse
 
   override type Message = CreationWorkerCommand

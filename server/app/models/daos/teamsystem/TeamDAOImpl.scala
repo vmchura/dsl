@@ -1,7 +1,7 @@
 package models.daos.teamsystem
 
 import com.google.inject.Inject
-import models.teamsystem.{Team, TeamID}
+import models.teamsystem.{Member, Team, TeamID}
 import play.modules.reactivemongo.ReactiveMongoApi
 import reactivemongo.play.json.collection.JSONCollection
 
@@ -10,8 +10,8 @@ import scala.concurrent.Future
 import scala.concurrent.ExecutionContext.Implicits.global
 import play.api.libs.json._
 import reactivemongo.api._
-
-import reactivemongo.play.json._, collection._
+import reactivemongo.play.json._
+import collection._
 class TeamDAOImpl @Inject() (val reactiveMongoApi: ReactiveMongoApi)
     extends TeamDAO {
 
@@ -36,5 +36,16 @@ class TeamDAOImpl @Inject() (val reactiveMongoApi: ReactiveMongoApi)
       _.find(Json.obj(), Option.empty[Team])
         .cursor[Team](readPreference = ReadPreference.primary)
         .collect[Seq](-1, Cursor.FailOnError[Seq[Team]]())
+    )
+
+  override def addMemberTo(member: Member, teamID: TeamID): Future[Boolean] =
+    collection.flatMap(
+      _.update(ordered = true)
+        .one(
+          Json.obj("teamID" -> teamID),
+          Json.obj("$push" -> Json.obj("members" -> member)),
+          upsert = true
+        )
+        .map(_.ok)
     )
 }

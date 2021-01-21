@@ -14,7 +14,8 @@ TeamDestroyer
 TeamManager
 - Principal can send an invitation to user if applicable
 - User can accept or deny an invitation
-- Remove user
+- Remove user from a team
+- Add user to a team
 
 MemberSupervisor
 - Check if a member is official of any team

@@ -4,12 +4,14 @@ import akka.actor.typed.scaladsl.Behaviors
 import akka.actor.typed.{ActorRef, Behavior}
 import com.google.inject.Inject
 import models.DiscordID
+import models.teamsystem.{Member, MemberStatus, TeamID}
 
 import scala.concurrent.duration.DurationInt
 import scala.language.postfixOps
 class TeamCreator @Inject() (
     teamCreatorWorker: TeamCreatorWorker,
-    memberSupervisor: MemberSupervisor
+    memberSupervisor: MemberSupervisor,
+    teamMemberAddWorker: TeamMemberAddWorker
 ) {
   import TeamCreator._
   def initialBehavior(
@@ -28,14 +30,38 @@ class TeamCreator @Inject() (
       val backendResponseCreationWorker
           : ActorRef[TeamCreatorWorker.CreationResponse] =
         ctx.messageAdapter {
-          case TeamCreatorWorker.CreationSuccess() => TeamCreationEmpty()
-          case TeamCreatorWorker.CreationFailed()  => ErrorCreatingTeam()
+          case TeamCreatorWorker.CreationSuccess(teamID) =>
+            TeamCreationEmpty(teamID)
+          case TeamCreatorWorker.CreationFailed() => ErrorCreatingTeam()
+        }
+      val backendResponseMemberAdderWorker
+          : ActorRef[TeamMemberAddWorker.TeamMemberAddWorkerResponse] =
+        ctx.messageAdapter {
+          case TeamMemberAddWorker.WorkDone()   => PrincipalAddedAsMember()
+          case TeamMemberAddWorker.WorkFailed() => ErrorCreatingTeam()
         }
 
-      val awaitingDaoCreation = Behaviors.receiveMessage[CreationCommand] {
-        case TeamCreationEmpty() =>
+      val awaitingMemberWorker = Behaviors.receiveMessage[CreationCommand] {
+        case PrincipalAddedAsMember() =>
           replyTo ! CreationDone()
           Behaviors.stopped
+        case ErrorCreatingTeam() =>
+          replyTo ! CreationFailed()
+          Behaviors.stopped
+      }
+
+      val awaitingDaoCreation = Behaviors.receiveMessage[CreationCommand] {
+        case TeamCreationEmpty(teamID) =>
+          val addPrincipalAsOfficialWorker = ctx.spawnAnonymous(
+            teamMemberAddWorker.initialBehavior(
+              backendResponseMemberAdderWorker
+            )
+          )
+          addPrincipalAsOfficialWorker ! TeamMemberAddWorker.Add(
+            Member(userID, MemberStatus.Official),
+            teamID
+          )
+          awaitingMemberWorker
         case ErrorCreatingTeam() =>
           replyTo ! CreationFailed()
           Behaviors.stopped
@@ -80,7 +106,8 @@ object TeamCreator {
   case class Create() extends CreationCommand
   private case class CanCreate() extends CreationCommand
   private case class CanNotCreate() extends CreationCommand
-  private case class TeamCreationEmpty() extends CreationCommand
+  private case class TeamCreationEmpty(teamID: TeamID) extends CreationCommand
+  private case class PrincipalAddedAsMember() extends CreationCommand
   private case class ErrorCreatingTeam() extends CreationCommand
 
   sealed trait CreationResponse
