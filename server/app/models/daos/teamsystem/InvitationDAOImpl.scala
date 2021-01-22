@@ -53,4 +53,16 @@ class InvitationDAOImpl @Inject() (val reactiveMongoApi: ReactiveMongoApi)
         _.delete(ordered = true).one(Json.obj("invitationID" -> invitationID))
       )
       .map(_.ok)
+
+  override def loadInvitation(
+      invitationID: InvitationID
+  ): Future[Option[Invitation]] =
+    collection
+      .flatMap(
+        _.find(
+          Json.obj("invitationID" -> invitationID),
+          Option.empty[Invitation]
+        ).one[Invitation]
+      )
+
 }

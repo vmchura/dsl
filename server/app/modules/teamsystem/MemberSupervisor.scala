@@ -9,18 +9,20 @@ import models.teamsystem.TeamID
 import play.api.libs.concurrent.ActorModule
 
 import scala.concurrent.Future
-import scala.concurrent.duration.DurationInt
 import scala.language.postfixOps
 import scala.util.{Failure, Success}
 class MemberSupervisor @Inject() (teamDAO: TeamDAO) {
   import MemberSupervisor._
   private val behaviourExpectingDAOResponse =
     Behaviors.receiveMessage[MemberQuery] {
-      case DAOResponseSuccess(replyTo: ActorRef[MemberResponse]) =>
+      case DAOResponseSuccess(true, replyTo: ActorRef[MemberResponse]) =>
         replyTo ! Yes()
         Behaviors.stopped
-      case DAOResponseFailed(replyTo: ActorRef[MemberResponse]) =>
+      case DAOResponseSuccess(false, replyTo: ActorRef[MemberResponse]) =>
         replyTo ! No()
+        Behaviors.stopped
+      case DAOResponseFailed(reason, replyTo: ActorRef[MemberResponse]) =>
+        replyTo ! ErrorOnQuery(reason)
         Behaviors.stopped
     }
 
@@ -28,15 +30,14 @@ class MemberSupervisor @Inject() (teamDAO: TeamDAO) {
   ): Behavior[MemberQuery] = {
 
     val behaviourExpectingOfficial = Behaviors.setup[MemberQuery] { ctx =>
-      def pipeToSelfTimeOut[T](
-          f: Future[T],
+      def pipeToSelfTimeOut(
+          f: Future[Boolean],
           replyTo: ActorRef[MemberResponse]
       ): Unit = {
         ctx.pipeToSelf(f) {
-          case Success(_) => DAOResponseSuccess(replyTo)
-          case Failure(_) => DAOResponseFailed(replyTo)
+          case Success(response) => DAOResponseSuccess(response, replyTo)
+          case Failure(error)    => DAOResponseFailed(error.getMessage, replyTo)
         }
-        ctx.scheduleOnce(10 seconds, ctx.self, DAOResponseFailed(replyTo))
       }
 
       Behaviors.receiveMessage {
@@ -80,13 +81,18 @@ object MemberSupervisor extends ActorModule {
       replyTo: ActorRef[MemberResponse]
   ) extends MemberQuery
   sealed trait DAOResponse extends MemberQuery
-  case class DAOResponseSuccess(replyTo: ActorRef[MemberResponse])
-      extends DAOResponse
-  case class DAOResponseFailed(replyTo: ActorRef[MemberResponse])
-      extends DAOResponse
+  case class DAOResponseSuccess(
+      queryResponse: Boolean,
+      replyTo: ActorRef[MemberResponse]
+  ) extends DAOResponse
+  case class DAOResponseFailed(
+      reason: String,
+      replyTo: ActorRef[MemberResponse]
+  ) extends DAOResponse
 
   sealed trait MemberResponse
   case class Yes() extends MemberResponse
   case class No() extends MemberResponse
+  case class ErrorOnQuery(reason: String) extends MemberResponse
 
 }

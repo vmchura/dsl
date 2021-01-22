@@ -26,3 +26,5 @@ InvitationManager
 - Receives an invitation response, accepting it or denying it.
     - Handles if an invitation is still coherent if accepted.
 - Removes an invitation
+
+
