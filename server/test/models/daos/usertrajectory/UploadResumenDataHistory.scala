@@ -1,6 +1,7 @@
 package models.daos.usertrajectory
 
 import com.google.inject.AbstractModule
+import database.EmptyDBBeforeEach
 import models.{DiscordPlayer, ReplayRecordResumen}
 import models.daos.{MatchResultDAO, ReplayMatchDAO}
 import models.services.{
@@ -30,7 +31,8 @@ import scala.util.Try
 class UploadResumenDataHistory
     extends PlaySpec
     with GuiceOneAppPerSuite
-    with ScalaFutures {
+    with ScalaFutures
+    with EmptyDBBeforeEach {
   class FakeModule extends AbstractModule with ScalaModule {
     override def configure(): Unit = {
       bind[ParseReplayFileService].toInstance(

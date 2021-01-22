@@ -48,4 +48,27 @@ class TeamDAOImpl @Inject() (val reactiveMongoApi: ReactiveMongoApi)
         )
         .map(_.ok)
     )
+
+  override def removeTeam(teamID: TeamID): Future[Boolean] =
+    collection
+      .flatMap(
+        _.delete(ordered = true).one(Json.obj("teamID" -> teamID))
+      )
+      .map(_.ok)
+
+  override def removeMember(
+      userID: models.DiscordID,
+      teamID: TeamID
+  ): Future[Boolean] =
+    collection.flatMap(
+      _.update(ordered = true)
+        .one(
+          Json.obj("teamID" -> teamID),
+          Json.obj(
+            "$pull" -> Json.obj("members" -> Json.obj("userID" -> userID))
+          ),
+          upsert = true
+        )
+        .map(_.ok)
+    )
 }

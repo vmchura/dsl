@@ -20,12 +20,10 @@ class TeamCreator @Inject() (
       replyTo: ActorRef[CreationResponse]
   ): Behavior[CreationCommand] = {
     Behaviors.setup { ctx =>
-      ctx.scheduleOnce(12 seconds, ctx.self, ErrorCreatingTeam())
-
       val backendResponseCanCreate: ActorRef[MemberSupervisor.MemberResponse] =
         ctx.messageAdapter {
-          case MemberSupervisor.Yes() => CanCreate()
-          case MemberSupervisor.No()  => CanNotCreate()
+          case MemberSupervisor.Yes() => CanNotCreate()
+          case MemberSupervisor.No()  => CanCreate()
         }
       val backendResponseCreationWorker
           : ActorRef[TeamCreatorWorker.CreationResponse] =

@@ -6,6 +6,10 @@ import models.teamsystem.{Member, Team, TeamID}
 import scala.concurrent.Future
 import scala.concurrent.ExecutionContext.Implicits.global
 trait TeamDAO {
+  def removeMember(userID: DiscordID, teamID: TeamID): Future[Boolean]
+
+  def removeTeam(teamID: TeamID): Future[Boolean]
+
   def save(userID: DiscordID, teamName: String): Future[TeamID]
   def loadTeams(): Future[Seq[Team]]
   def addMemberTo(member: Member, teamID: TeamID): Future[Boolean]

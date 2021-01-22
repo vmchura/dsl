@@ -4,10 +4,18 @@ import akka.actor.typed.scaladsl.Behaviors
 import akka.actor.typed.{ActorRef, Behavior}
 import com.google.inject.Inject
 import models.DiscordID
+import models.daos.teamsystem.TeamDAO
 import models.teamsystem.{Member, MemberStatus, TeamID}
 import modules.teamsystem
 
-class TeamManager @Inject() (teamMemberAddWorker: TeamMemberAddWorker) {
+import scala.util.{Failure, Success}
+
+class TeamManager @Inject() (
+    teamMemberAddWorker: TeamMemberAddWorker,
+    teamDestroyer: TeamDestroyer,
+    teamDAO: TeamDAO,
+    memberSupervisor: MemberSupervisor
+) {
   import TeamManager._
   def initialBehavior(
       replyTo: ActorRef[TeamManagerResponse]
@@ -31,6 +39,43 @@ class TeamManager @Inject() (teamMemberAddWorker: TeamMemberAddWorker) {
             Behaviors.stopped
         }
 
+      val awaitingMemberRemoval: Behavior[TeamManagerCommand] =
+        Behaviors.receiveMessage {
+          case MemberRemoved() =>
+            replyTo ! Done()
+            Behaviors.stopped
+          case ErrorOnManaging() =>
+            replyTo ! Failed()
+            Behaviors.stopped
+        }
+
+      def awaitingMemberPositionResponse(
+          userID: DiscordID,
+          teamID: TeamID
+      ): Behavior[TeamManagerCommand] =
+        Behaviors.receiveMessage {
+          case MemberRemovingIsOfficial() =>
+            val worker = ctx.spawnAnonymous(
+              teamDestroyer.initialBehavior(ctx.messageAdapter {
+                case TeamDestroyer.TeamDestroyed()       => MemberRemoved()
+                case TeamDestroyer.TeamDestroyerError(_) => ErrorOnManaging()
+              })
+            )
+
+            worker ! TeamDestroyer.DestroyTeam(teamID)
+            awaitingMemberRemoval
+          case MemberRemovingIsNotOfficial() =>
+            ctx.pipeToSelf(teamDAO.removeMember(userID, teamID)) {
+              case Success(true)  => MemberRemoved()
+              case Success(false) => ErrorOnManaging()
+              case Failure(_)     => ErrorOnManaging()
+            }
+            awaitingMemberRemoval
+          case UserRemovingIsNotMember() =>
+            ctx.self ! MemberRemoved()
+            awaitingMemberRemoval
+        }
+
       val awaitingCommand = Behaviors.receiveMessage[TeamManagerCommand] {
         case AddUserToAsOfficial(userID, teamID) =>
           val worker = ctx.spawnAnonymous(
@@ -51,7 +96,18 @@ class TeamManager @Inject() (teamMemberAddWorker: TeamMemberAddWorker) {
           )
           awaitingDAOCompletition
         case RemoveUserFrom(userID, teamID) =>
-          awaitingDAOCompletition
+          val worker = ctx.spawnAnonymous(memberSupervisor.initialBehavior())
+          worker ! MemberSupervisor.IsPrincipal(
+            userID,
+            teamID,
+            ctx.messageAdapter {
+              case MemberSupervisor.Yes() =>
+                MemberRemovingIsOfficial()
+              case MemberSupervisor.No() =>
+                MemberRemovingIsNotOfficial()
+            }
+          )
+          awaitingMemberPositionResponse(userID, teamID)
         case ErrorOnManaging() =>
           replyTo ! Failed()
           Behaviors.stopped
@@ -77,7 +133,11 @@ object TeamManager {
   ) extends TeamManagerCommand
 
   case class DAOCompleted() extends TeamManagerCommand
+  case class MemberRemovingIsOfficial() extends TeamManagerCommand
+  case class MemberRemovingIsNotOfficial() extends TeamManagerCommand
+  case class UserRemovingIsNotMember() extends TeamManagerCommand
   case class ErrorOnManaging() extends TeamManagerCommand
+  case class MemberRemoved() extends TeamManagerCommand
 
   sealed trait TeamManagerResponse
   case class Done() extends TeamManagerResponse

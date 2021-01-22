@@ -27,7 +27,6 @@ class TeamCreatorTest
       probe.expectMessage(TeamCreator.CreationDone())
 
       whenReady(teamDAO.loadTeams()) { teams =>
-        println(teams)
         assertResult(1)(teams.length)
         val team = teams.head
         assert(team.principal == userRequesting)
