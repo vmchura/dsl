@@ -27,7 +27,7 @@ class DiscordPlayerSupervisorTest
         )
       actor ! DiscordPlayerSupervisor.Register(
         DiscordID("698648718999814165"),
-        probe.ref
+        Some(probe.ref)
       )
       probe.expectMessage(10 seconds, DiscordPlayerWorker.Registered())
       val discordPlayerDAO =
@@ -50,7 +50,7 @@ class DiscordPlayerSupervisorTest
         )
       actor ! DiscordPlayerSupervisor.Register(
         DiscordID("713047985193353218"),
-        probe.ref
+        Some(probe.ref)
       )
       probe.expectMessageType[DiscordPlayerWorker.DiscordPlayerWorkerError](
         10 seconds

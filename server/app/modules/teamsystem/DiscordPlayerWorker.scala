@@ -15,16 +15,16 @@ class DiscordPlayerWorker @Inject() (
 ) {
   import DiscordPlayerWorker._
   def initialBehavior(
-      replyTo: ActorRef[DiscordPlayerWorkerResponse]
+      replyTo: Option[ActorRef[DiscordPlayerWorkerResponse]]
   ): Behavior[DiscordPlayerWorkerCommand] =
     Behaviors.setup { ctx =>
       val awaitingInfoSaving =
         Behaviors.receiveMessage[DiscordPlayerWorkerCommand] {
           case DiscordInfoSaved() =>
-            replyTo ! Registered()
+            replyTo.foreach(_ ! Registered())
             Behaviors.stopped
           case DiscordPlayerWorkerDAOError(error) =>
-            replyTo ! DiscordPlayerWorkerError(error)
+            replyTo.foreach(_ ! DiscordPlayerWorkerError(error))
             Behaviors.stopped
         }
 
@@ -38,14 +38,14 @@ class DiscordPlayerWorker @Inject() (
             }
             awaitingInfoSaving
           case DiscordPlayerWorkerDAOError(error) =>
-            replyTo ! DiscordPlayerWorkerError(error)
+            replyTo.foreach(_ ! DiscordPlayerWorkerError(error))
             Behaviors.stopped
         }
 
       val awaitingIfAlreadyRegistered =
         Behaviors.receiveMessage[DiscordPlayerWorkerCommand] {
           case IsRegistered(_) =>
-            replyTo ! Registered()
+            replyTo.foreach(_ ! Registered())
             Behaviors.stopped
           case IsNotRegistered(discordID) =>
             ctx.pipeToSelf(discordUserService.findMember(discordID)) {
@@ -55,7 +55,7 @@ class DiscordPlayerWorker @Inject() (
             }
             awaitingInfoLoading
           case DiscordPlayerWorkerDAOError(error) =>
-            replyTo ! DiscordPlayerWorkerError(error)
+            replyTo.foreach(_ ! DiscordPlayerWorkerError(error))
             Behaviors.stopped
         }
 

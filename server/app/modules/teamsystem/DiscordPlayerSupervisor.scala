@@ -13,7 +13,7 @@ object DiscordPlayerSupervisor extends ActorModule {
   sealed trait DiscordPlayerSupervisorCommand
   case class Register(
       discordID: DiscordID,
-      replyTo: ActorRef[DiscordPlayerWorker.DiscordPlayerWorkerResponse]
+      replyTo: Option[ActorRef[DiscordPlayerWorker.DiscordPlayerWorkerResponse]]
   ) extends DiscordPlayerSupervisorCommand
   case class StopWorker(
       worker: ActorRef[DiscordPlayerWorker.DiscordPlayerWorkerCommand]
