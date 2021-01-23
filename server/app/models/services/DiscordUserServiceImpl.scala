@@ -2,6 +2,7 @@ package models.services
 import models.{
   DiscordDiscriminator,
   DiscordID,
+  DiscordPlayerLogged,
   DiscordUser,
   DiscordUserData,
   GuildID
@@ -13,6 +14,7 @@ import sttp.client.asynchttpclient.WebSocketHandler
 import sttp.client.asynchttpclient.future.AsyncHttpClientFutureBackend
 import utils.Logger
 import play.api.libs.json._
+
 import javax.inject.Inject
 import play.api.Configuration
 import eu.timepit.refined.api.RefType
@@ -112,5 +114,58 @@ class DiscordUserServiceImpl @Inject() (configuration: Configuration)
       guildID: GuildID
   ): Future[Option[Seq[DiscordUserData]]] = {
     findDiscordUsers(guildID, parseDiscordUserData)
+  }
+
+  override def findMember(
+      discordID: DiscordID
+  ): Future[Option[DiscordPlayerLogged]] = {
+    val responseFut = basicRequest
+      .header("Authorization", s"Bot $bot_token")
+      .get(uri"https://discord.com/api/users/${discordID.id}")
+      .send()
+
+    responseFut.map {
+      _.body match {
+        case Left(errorMessage) =>
+          logger.error(s"Error on extracting member: $errorMessage")
+          None
+        case Right(body) =>
+          try {
+            val userJson = Json.parse(body)
+            val discriminatorEither: Either[String, DiscordDiscriminator] =
+              RefType.applyRef[DiscordDiscriminator](
+                (userJson \ "discriminator").as[String]
+              )
+
+            (
+              (userJson \ "bot").asOpt[Boolean],
+              (userJson \ "system").asOpt[Boolean],
+              discriminatorEither
+            ) match {
+              case (
+                    None | Some(false),
+                    None | Some(false),
+                    Right(discriminator)
+                  ) =>
+                Some(
+                  DiscordPlayerLogged(
+                    discordID,
+                    (userJson \ "username").as[String],
+                    discriminator,
+                    (userJson \ "avatar").asOpt[String]
+                  )
+                )
+              case _ => None
+            }
+
+          } catch {
+            case _: Throwable =>
+              logger.error(
+                s"Error on finding user: $body is not a json or an array of users"
+              )
+              None
+          }
+      }
+    }
   }
 }
