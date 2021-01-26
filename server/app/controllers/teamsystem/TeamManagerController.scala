@@ -14,6 +14,7 @@ import models.services.SideBarMenuService
 import models.teamsystem.{InvitationID, TeamID, TeamWithUsers}
 import modules.teamsystem.{
   InvitationManager,
+  MemberQueryForm,
   TeamCreationForm,
   TeamCreator,
   TeamInvitationForm,
@@ -155,6 +156,7 @@ class TeamManagerController @Inject() (
                   teams.flatten,
                   TeamInvitationForm.teamInvitation,
                   TeamCreationForm.teamCreation,
+                  MemberQueryForm.memberQuery,
                   socialProviderRegistry
                 )
             )

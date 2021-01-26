@@ -8,13 +8,18 @@
 @import models.teamsystem.InvitationMeta
 @import models.teamsystem.MemberStatus
 @import shared.models.DiscordID
-@(userID: DiscordID, team: TeamWithUsers, invitations: Seq[Invitation], inviteForm: Form[InvitationMeta])(implicit request: RequestHeader, messages: Messages,  assetsFinder: AssetsFinder)
+@import views.html.helper.CSPNonce
+@(userID: DiscordID, team: TeamWithUsers, invitations: Seq[Invitation], inviteForm: Form[InvitationMeta], queryForm: Form[String])(implicit request: RequestHeader, messages: Messages,  assetsFinder: AssetsFinder)
 <div class="my-team-box">
     @showteam(team)
 
     @if(userID == team.principal.discordID){
 
-        <div id="panel-search-members" data-terminal:controllers.teamsystem.routes.MemberSupervisorController.findMembers></div>
+        <div id="find-members">
+            @helper.inputText(queryForm("query"),Symbol("id") -> "input-query-id")
+            <button id="search-member-button">Buscar</button>
+        </div>
+
 
         @helper.form(action = controllers.teamsystem.routes.TeamManagerController.doInvitation(team.teamID.id)) {
             @helper.CSRF.formField
@@ -22,6 +27,10 @@
             @helper.select(inviteForm("status"), options = List(MemberStatus.Official,MemberStatus.Suplente).map(e => (e.name, e. name)))
             <button type="submit" id="invite-button">Invitar</button>
         }
+        <script @{CSPNonce.attr}>
+                Main.initMemberFinder();
+        </script>
+
         <div class="invitations-pending">
             Existen @invitations.size invitaciones pendientes para este equipo.
         </div>

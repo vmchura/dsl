@@ -8,7 +8,7 @@
 @import views.html.teamsystem.showmyteam
 @import models.teamsystem.InvitationMeta
 @import shared.models.DiscordID
-@(user: models.User,discordID: DiscordID, teams: Seq[TeamWithUsers],inviteForm: Form[InvitationMeta],createForm: Form[String], socialProviders: SocialProviderRegistry)(implicit request: RequestHeader, messages: Messages, menues: Seq[MenuGroup], assetsFinder: AssetsFinder)
+@(user: models.User,discordID: DiscordID, teams: Seq[TeamWithUsers],inviteForm: Form[InvitationMeta],createForm: Form[String],queryForm: Form[String], socialProviders: SocialProviderRegistry)(implicit request: RequestHeader, messages: Messages, menues: Seq[MenuGroup], assetsFinder: AssetsFinder)
 @main("My teams",Some(user),socialProviders){
     @if(!(teams.exists(_.officials.map(_.discordID).contains(discordID)) || teams.exists(_.principal.discordID == discordID))){
         @helper.form(controllers.teamsystem.routes.TeamManagerController.createTeam()){
@@ -20,6 +20,6 @@
     }
 
     @for(team <- teams){
-      @showmyteam(discordID, team, Nil, inviteForm)
+      @showmyteam(discordID, team, Nil, inviteForm,queryForm)
     }
 }
