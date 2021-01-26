@@ -1,7 +1,7 @@
 package models.services
 
-import models.{DiscordPlayerLogged, DiscordUser, DiscordUserData, GuildID}
-import shared.models.DiscordID
+import models.{DiscordUser, DiscordUserData, GuildID}
+import shared.models.{DiscordID, DiscordPlayerLogged}
 
 import scala.concurrent.Future
 

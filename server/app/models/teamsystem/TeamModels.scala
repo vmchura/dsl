@@ -1,9 +1,8 @@
 package models.teamsystem
 
 import models.daos.DiscordPlayerLoggedDAO
-import models.DiscordPlayerLogged
 import play.api.libs.json.{JsObject, JsResult, JsString, JsValue, Json, OFormat}
-import shared.models.DiscordID
+import shared.models.{DiscordID, DiscordPlayerLogged}
 
 import java.util.UUID
 import scala.util.Try

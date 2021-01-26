@@ -6,7 +6,6 @@ import controllers.{
   AssetsFinder,
   SilhouetteControllerComponents
 }
-import models.DiscordPlayerLogged
 
 import javax.inject._
 import models.services.SideBarMenuService
@@ -14,6 +13,7 @@ import modules.teamsystem.MemberQueryForm
 import play.api.mvc._
 import play.api.i18n.I18nSupport
 import play.api.libs.json.Json
+import shared.models.DiscordPlayerLogged
 import utils.route.Calls
 
 import java.util.UUID

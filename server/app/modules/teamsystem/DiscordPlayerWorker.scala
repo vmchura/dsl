@@ -3,12 +3,11 @@ package modules.teamsystem
 import akka.actor.typed.{ActorRef, Behavior}
 import akka.actor.typed.scaladsl.Behaviors
 import com.google.inject.Inject
-import models.DiscordPlayerLogged
 import models.daos.DiscordPlayerLoggedDAO
 import models.services.DiscordUserService
 
 import scala.util.{Failure, Success}
-import shared.models.DiscordID
+import shared.models.{DiscordID, DiscordPlayerLogged}
 class DiscordPlayerWorker @Inject() (
     discordPlayerLoggedDAO: DiscordPlayerLoggedDAO,
     discordUserService: DiscordUserService

@@ -14,7 +14,7 @@ import play.api.libs.json.{
   OFormat
 }
 import be.venneborg.refined.play.RefinedJsonFormats._
-import shared.models.DiscordID
+import shared.models.{DiscordDiscriminator, DiscordID}
 case class DiscordUserLog(
     userName: String,
     guildID: GuildID,

@@ -1,6 +1,6 @@
 package models
 import play.api.libs.json._
-import shared.models.DiscordID
+import shared.models.{DiscordDiscriminator, DiscordID}
 import shared.utils.ComparableByLabel
 
 case class DiscordUser(

@@ -1,13 +1,8 @@
 import java.util.UUID
-import eu.timepit.refined.api.Refined
-import eu.timepit.refined.W
-import eu.timepit.refined.string._
 import play.api.libs.json.{Json, OFormat}
-import shared.models.DiscordID
+import shared.models.{DiscordID, DiscordPlayerLogged}
 
 package object models {
-
-  type DiscordDiscriminator = String Refined MatchesRegex[W.`"""[0-9]{4}"""`.T]
 
   case class GuildID(id: String) extends AnyVal
   object GuildID {
@@ -25,7 +20,11 @@ package object models {
     implicit val jsonFormat: OFormat[Smurf] = Json.format[Smurf]
   }
   object ModelsJsonImplicits {
+    import be.venneborg.refined.play.RefinedJsonFormats._
     implicit val discordIDjsonFormat: OFormat[DiscordID] =
       Json.format[DiscordID]
+    implicit val discordPlayerLoggedFormat: OFormat[DiscordPlayerLogged] =
+      Json.format[DiscordPlayerLogged]
+
   }
 }

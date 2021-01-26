@@ -1,11 +1,10 @@
 package models.daos
 
-import models.{DiscordPlayerLogged, ValidUserSmurf}
 import play.api.libs.json.{JsString, Json}
 import play.modules.reactivemongo.ReactiveMongoApi
 import reactivemongo.api.Cursor
 import reactivemongo.play.json.collection.JSONCollection
-import shared.models.DiscordID
+import shared.models.{DiscordID, DiscordPlayerLogged}
 
 import javax.inject.Inject
 import scala.concurrent.ExecutionContext.Implicits.global
@@ -14,6 +13,7 @@ import scala.concurrent.Future
 class DiscordPlayerLoggedDAOImpl @Inject() (
     val reactiveMongoApi: ReactiveMongoApi
 ) extends DiscordPlayerLoggedDAO {
+  import models.ModelsJsonImplicits._
   def collection: Future[JSONCollection] =
     reactiveMongoApi.database.map(_.collection("teamsystem.discordlogged"))
 
