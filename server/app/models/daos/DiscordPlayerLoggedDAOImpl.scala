@@ -42,7 +42,7 @@ class DiscordPlayerLoggedDAOImpl @Inject() (
     )(field: String): Future[List[DiscordPlayerLogged]] =
       js.find(
           Json.obj(
-            //field -> Json.obj("$regex" -> JsString(s"/.$query./i"))
+            field -> Json.obj("$regex" -> query, "$options" -> "i")
           ),
           Option.empty[DiscordPlayerLogged]
         )
