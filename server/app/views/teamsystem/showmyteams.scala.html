@@ -1,0 +1,25 @@
+@import play.api.i18n.Messages
+@import play.api.mvc.RequestHeader
+@import controllers.AssetsFinder
+
+@import com.mohiva.play.silhouette.impl.providers.SocialProviderRegistry
+
+@import models.teamsystem.TeamWithUsers
+@import views.html.teamsystem.showmyteam
+@import models.teamsystem.InvitationMeta
+@import shared.models.DiscordID
+@(user: models.User,discordID: DiscordID, teams: Seq[TeamWithUsers],inviteForm: Form[InvitationMeta],createForm: Form[String], socialProviders: SocialProviderRegistry)(implicit request: RequestHeader, messages: Messages, menues: Seq[MenuGroup], assetsFinder: AssetsFinder)
+@main("My teams",Some(user),socialProviders){
+    @if(!(teams.exists(_.officials.map(_.discordID).contains(discordID)) || teams.exists(_.principal.discordID == discordID))){
+        @helper.form(controllers.teamsystem.routes.TeamManagerController.createTeam()){
+            @helper.CSRF.formField
+            @helper.inputText(createForm("teamName"))
+
+            <button class="btn btn-primary" type="submit">Crear equipo</button>
+        }
+    }
+
+    @for(team <- teams){
+      @showmyteam(discordID, team, Nil, inviteForm)
+    }
+}

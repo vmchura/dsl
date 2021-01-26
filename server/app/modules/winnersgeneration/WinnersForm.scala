@@ -1,8 +1,9 @@
 package modules.winnersgeneration
 
-import models.{DiscordID, TournamentSerieID}
+import models.TournamentSerieID
 import play.api.data.Form
 import play.api.data.Forms._
+import shared.models.DiscordID
 
 object WinnersForm {
   val winnerForm: Form[WinnersInformation] = Form(
@@ -26,6 +27,7 @@ object WinnersForm {
       )
     } { wi =>
       {
+
         if (wi.players.map(_._1).sorted == List(1, 2, 3)) {
           val pid = wi.players.map { case (x, y) => x -> y.id }.toMap
           Some(

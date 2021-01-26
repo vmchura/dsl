@@ -12,8 +12,8 @@ import play.api.mvc.{Action, AnyContent, Request}
 import utils.route.Calls
 
 import scala.concurrent.{ExecutionContext, Future}
-import models.DiscordID
 import modules.teamsystem.DiscordPlayerSupervisor
+import shared.models.DiscordID
 
 /**
   * The social auth controller.

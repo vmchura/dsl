@@ -1,0 +1,57 @@
+@import play.api.i18n.Messages
+@import play.api.mvc.RequestHeader
+@import controllers.AssetsFinder
+
+@import models.teamsystem.TeamWithUsers
+@import models.teamsystem.Invitation
+@import views.html.teamsystem.showteam
+@import models.teamsystem.InvitationMeta
+@import models.teamsystem.MemberStatus
+@import shared.models.DiscordID
+@(userID: DiscordID, team: TeamWithUsers, invitations: Seq[Invitation], inviteForm: Form[InvitationMeta])(implicit request: RequestHeader, messages: Messages,  assetsFinder: AssetsFinder)
+<div class="my-team-box">
+    @showteam(team)
+
+    @if(userID == team.principal.discordID){
+
+        <div id="panel-search-members" data-terminal:controllers.teamsystem.routes.MemberSupervisorController.findMembers></div>
+
+        @helper.form(action = controllers.teamsystem.routes.TeamManagerController.doInvitation(team.teamID.id)) {
+            @helper.CSRF.formField
+            @helper.select(inviteForm("to"), options = Nil, Symbol("id") -> "members-option-id")
+            @helper.select(inviteForm("status"), options = List(MemberStatus.Official,MemberStatus.Suplente).map(e => (e.name, e. name)))
+            <button type="submit" id="invite-button">Invitar</button>
+        }
+        <div class="invitations-pending">
+            Existen @invitations.size invitaciones pendientes para este equipo.
+        </div>
+        <div class="container-fluid">
+            @request.flash.get("invitation-error").map { msg =>
+                <div class="alert alert-danger" role="alert">
+                    ¡Error!: @msg
+                </div>
+            }
+            @request.flash.get("invitation-success").map { msg =>
+                <div class="alert alert-success" role="alert">
+                    !Hecho! @msg
+                </div>
+            }
+        </div>
+    }
+
+
+    <div class="team-quit">
+        @helper.form(action = controllers.teamsystem.routes.TeamManagerController.quitTeam(team.teamID.id)) {
+            @helper.CSRF.formField
+            <button  class="btn btn-danger"  type="submit">Retirarme del equipo</button>
+        }
+
+        @if(userID == team.principal.discordID){
+            <div class="alert alert-danger" role="alert">
+                Eres el principal miembro del equipo, si te retiras el equipo se eliminará.
+            </div>
+        }
+
+    </div>
+
+</div>

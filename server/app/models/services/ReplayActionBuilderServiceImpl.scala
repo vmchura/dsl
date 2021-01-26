@@ -1,7 +1,7 @@
 package models.services
 
 import jobs.FileIsAlreadyRegistered
-import models.{DiscordID, Smurf, UserSmurf}
+import models.{Smurf, UserSmurf}
 import models.daos.ReplayMatchDAO
 import modules.gameparser.GameReplayManager.ManageGameReplay
 
@@ -20,6 +20,7 @@ import shared.models.StarCraftModels.{OneVsOne, SCPlayer}
 import shared.models.{
   ChallongeOneVsOneMatchGameResult,
   ChallongePlayer,
+  DiscordID,
   DiscordIDSource
 }
 class ReplayActionBuilderServiceImpl @Inject() (

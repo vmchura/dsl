@@ -3,7 +3,6 @@ package modules.teamsystem
 import akka.actor.typed.scaladsl.Behaviors
 import akka.actor.typed.{ActorRef, Behavior}
 import com.google.inject.Inject
-import models.DiscordID
 import models.daos.teamsystem.TeamDAO
 import models.teamsystem.{Member, TeamID}
 

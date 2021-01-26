@@ -1,12 +1,14 @@
 package controllers
 
 import com.mohiva.play.silhouette.api.actions.UserAwareRequest
+
 import javax.inject._
 import models.daos.UserHistoryDAO
-import models.{DiscordID, TournamentSeasonFilled, TournamentSeriesFilled}
+import models.{TournamentSeasonFilled, TournamentSeriesFilled}
 import models.services.{SideBarMenuService, TournamentSeriesService}
 import play.api.i18n.I18nSupport
 import play.api.mvc._
+import shared.models.DiscordID
 
 import scala.concurrent.{ExecutionContext, Future}
 

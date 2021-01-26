@@ -1,6 +1,7 @@
 package modules.winnersgeneration
 
-import models.{DiscordID, TournamentSerieID}
+import models.TournamentSerieID
+import shared.models.DiscordID
 
 case class WinnersInformation(
     tournamentID: Long,

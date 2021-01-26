@@ -1,8 +1,8 @@
 package models.services
 
 import java.util.UUID
-
-import models.{DiscordID, Smurf, UserSmurf, ValidUserSmurf}
+import models.{Smurf, UserSmurf, ValidUserSmurf}
+import shared.models.DiscordID
 
 import scala.concurrent.Future
 

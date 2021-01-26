@@ -14,15 +14,30 @@ class TeamCreatorTest
     with EmptyDBBeforeEach {
   "Team creator" must {
     "Create a team" in {
+
+      /**
+        *  teamCreatorWorker: TeamCreatorWorker,
+      memberSupervisor: MemberSupervisor,
+      teamMemberAddWorker: TeamMemberAddWorker
+        */
       val userRequesting = DiscordID("userID")
-      val teamCreator = app.injector.instanceOf(classOf[TeamCreator])
+      val teamCreatorWorker =
+        app.injector.instanceOf(classOf[TeamCreatorWorker])
+      val memberSupervisor = app.injector.instanceOf(classOf[MemberSupervisor])
+      val teamMemberAddWorker =
+        app.injector.instanceOf(classOf[TeamMemberAddWorker])
+      val teamCreator =
+        TeamCreator(teamCreatorWorker, memberSupervisor, teamMemberAddWorker)
       val teamDAO = app.injector.instanceOf(classOf[TeamDAO])
       val probe =
         testKit.createTestProbe[TeamCreator.CreationResponse]("probe-creation")
-      val teamCreatorActor = testKit.spawn(
-        teamCreator.initialBehavior(userRequesting, "Skt1", probe.ref)
+      val teamCreatorManager = testKit.spawn(teamCreator)
+
+      teamCreatorManager ! TeamCreator.CreateTeam(
+        probe.ref,
+        userRequesting,
+        "Skt1"
       )
-      teamCreatorActor ! TeamCreator.Create()
 
       probe.expectMessage(TeamCreator.CreationDone())
 

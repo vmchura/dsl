@@ -38,7 +38,7 @@ class TeamManagerTest
   }
   "Team Manager" must {
     "Remove member" in {
-
+      implicit val teamDAO = app.injector.instanceOf(classOf[TeamDAO])
       val teamID = setup()
 
       whenReady(teamDAO.loadTeams()) { teams =>
@@ -46,12 +46,19 @@ class TeamManagerTest
         val team = teams.head
         assert(team.isOfficial(officialID))
       }
-      val teamManager = app.injector.instanceOf(classOf[TeamManager])
+      implicit val teamDestroyer: TeamDestroyer =
+        app.injector.instanceOf(classOf[TeamDestroyer])
+      implicit val teamMemberAddWorker: TeamMemberAddWorker =
+        app.injector.instanceOf(classOf[TeamMemberAddWorker])
+      implicit val memberSupervisor: MemberSupervisor =
+        app.injector.instanceOf(classOf[MemberSupervisor])
+
+      val actorRemove = testKit.spawn(TeamManager())
+
       val probe = testKit.createTestProbe[TeamManager.TeamManagerResponse](
         "teammanager-test"
       )
-      val actorRemove = testKit.spawn(teamManager.initialBehavior(probe.ref))
-      actorRemove ! TeamManager.RemoveUserFrom(officialID, teamID)
+      actorRemove ! TeamManager.RemoveUserFrom(officialID, teamID, probe.ref)
       probe.expectMessage(TeamManager.Done())
       whenReady(teamDAO.loadTeams()) { teams =>
         assertResult(1)(teams.size)
@@ -63,18 +70,24 @@ class TeamManagerTest
     "Destroy team if member quitting is principal" in {
 
       val teamID = setup()
+      implicit val teamDestroyer: TeamDestroyer =
+        app.injector.instanceOf(classOf[TeamDestroyer])
+      implicit val teamMemberAddWorker: TeamMemberAddWorker =
+        app.injector.instanceOf(classOf[TeamMemberAddWorker])
+      implicit val memberSupervisor: MemberSupervisor =
+        app.injector.instanceOf(classOf[MemberSupervisor])
+      implicit val teamDAO = app.injector.instanceOf(classOf[TeamDAO])
 
-      val teamManager = app.injector.instanceOf(classOf[TeamManager])
+      val actorRemove = testKit.spawn(TeamManager())
       val probe = testKit.createTestProbe[TeamManager.TeamManagerResponse](
         "teammanager-test"
       )
-      val actorRemove = testKit.spawn(teamManager.initialBehavior(probe.ref))
 
       whenReady(teamDAO.loadTeams()) { teams =>
         assert(teams.nonEmpty)
 
       }
-      actorRemove ! TeamManager.RemoveUserFrom(mainID, teamID)
+      actorRemove ! TeamManager.RemoveUserFrom(mainID, teamID, probe.ref)
       probe.expectMessage(TeamManager.Done())
       whenReady(teamDAO.loadTeams()) { teams =>
         assert(teams.isEmpty)

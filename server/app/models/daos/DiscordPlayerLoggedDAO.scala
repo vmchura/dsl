@@ -1,6 +1,7 @@
 package models.daos
 
-import models.{DiscordID, DiscordPlayerLogged}
+import models.DiscordPlayerLogged
+import shared.models.DiscordID
 
 import scala.concurrent.Future
 

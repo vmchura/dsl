@@ -23,5 +23,14 @@ class TeamSystemModule
       DiscordPlayerSupervisor,
       "Discord-player-supervisor-actor"
     )
+    bindTypedActor(
+      TeamCreator,
+      "Team-creator-manager-actor"
+    )
+    bindTypedActor(
+      InvitationManager,
+      "Team-invitation-manager-actor"
+    )
+    bindTypedActor(TeamManager, "Team-manager-actor")
   }
 }

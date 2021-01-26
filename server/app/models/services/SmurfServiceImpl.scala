@@ -1,10 +1,9 @@
 package models.services
 
 import java.util.UUID
-
 import scala.concurrent.ExecutionContext.Implicits.global
 import javax.inject.Inject
-import models.{DiscordID, Smurf, UserSmurf, ValidUserSmurf}
+import models.{Smurf, UserSmurf, ValidUserSmurf}
 import models.daos.{UserSmurfDAO, ValidUserSmurfDAO}
 import models.services.SmurfService.SmurfAdditionResult.{
   Added,
@@ -12,6 +11,7 @@ import models.services.SmurfService.SmurfAdditionResult.{
   AlreadyRegistered,
   CantBeAdded
 }
+import shared.models.DiscordID
 
 import scala.concurrent.Future
 
@@ -100,7 +100,7 @@ class SmurfServiceImpl @Inject() (
     smurfDAO.findUsersWithSmurfs()
 
   override def addSmurf(
-      discordID: models.DiscordID,
+      discordID: DiscordID,
       smurf: models.Smurf
   ): Future[AdditionResult] = {
     for {
@@ -125,7 +125,7 @@ class SmurfServiceImpl @Inject() (
     validSmurfDAO.all()
 
   override def loadSmurfs(
-      discordID: models.DiscordID
+      discordID: DiscordID
   ): Future[Option[ValidUserSmurf]] = validSmurfDAO.load(discordID)
 
   override def findOwner(smurf: Smurf): Future[Option[DiscordID]] =

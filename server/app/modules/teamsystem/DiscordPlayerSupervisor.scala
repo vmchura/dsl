@@ -3,8 +3,8 @@ package modules.teamsystem
 import akka.actor.typed.{ActorRef, Behavior}
 import akka.actor.typed.scaladsl.Behaviors
 import com.google.inject.Provides
-import models.DiscordID
 import play.api.libs.concurrent.ActorModule
+import shared.models.DiscordID
 
 import scala.concurrent.duration.DurationInt
 import scala.language.postfixOps

@@ -12,9 +12,10 @@ import scala.concurrent.Future
 import scala.concurrent.ExecutionContext.Implicits.global
 import reactivemongo.play.json._
 import collection._
+import shared.models.DiscordID
 class InvitationDAOImpl @Inject() (val reactiveMongoApi: ReactiveMongoApi)
     extends InvitationDAO {
-
+  import models.ModelsJsonImplicits._
   def collection: Future[JSONCollection] =
     reactiveMongoApi.database.map(_.collection("teamsystem.invitation"))
 
@@ -29,12 +30,12 @@ class InvitationDAOImpl @Inject() (val reactiveMongoApi: ReactiveMongoApi)
       )
   }
   override def invitationsToUser(
-      userID: models.DiscordID
+      userID: DiscordID
   ): Future[Seq[Invitation]] =
     invitationQueryExecuter(Json.obj("to" -> userID))
 
   override def invitationsFromUser(
-      userID: models.DiscordID
+      userID: DiscordID
   ): Future[Seq[Invitation]] =
     invitationQueryExecuter(Json.obj("from" -> userID))
 

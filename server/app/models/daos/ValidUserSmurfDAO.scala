@@ -1,6 +1,7 @@
 package models.daos
 
-import models.{DiscordID, Smurf, ValidUserSmurf}
+import models.{Smurf, ValidUserSmurf}
+import shared.models.DiscordID
 
 import scala.concurrent.Future
 

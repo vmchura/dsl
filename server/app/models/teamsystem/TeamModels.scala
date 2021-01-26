@@ -1,7 +1,9 @@
 package models.teamsystem
 
-import models.DiscordID
+import models.daos.DiscordPlayerLoggedDAO
+import models.DiscordPlayerLogged
 import play.api.libs.json.{JsObject, JsResult, JsString, JsValue, Json, OFormat}
+import shared.models.DiscordID
 
 import java.util.UUID
 import scala.util.Try
@@ -45,6 +47,7 @@ object MemberStatus {
 }
 case class Member(userID: DiscordID, memberStatus: MemberStatus)
 object Member {
+  import models.ModelsJsonImplicits._
   implicit val jsonFormat: OFormat[Member] =
     Json.format[Member]
 }
@@ -63,6 +66,61 @@ case class Team(
   def isMember(userID: DiscordID): Boolean = members.exists(_.userID == userID)
 }
 object Team {
+  import models.ModelsJsonImplicits._
+
   implicit val jsonFormat: OFormat[Team] =
     Json.format[Team]
+}
+
+case class TeamWithUsers(
+    teamID: TeamID,
+    teamName: String,
+    principal: DiscordPlayerLogged,
+    officials: Seq[DiscordPlayerLogged],
+    suplentes: Seq[DiscordPlayerLogged]
+)
+object TeamWithUsers {
+  import scala.concurrent.Future
+  import scala.concurrent.ExecutionContext.Implicits.global
+  def apply(team: Team)(implicit
+      discordPlayerLoggedDAO: DiscordPlayerLoggedDAO
+  ): Future[Option[TeamWithUsers]] = {
+    val loader: DiscordID => Future[Option[DiscordPlayerLogged]] =
+      discordPlayerLoggedDAO.load
+    val principalFut = loader(team.principal)
+    val officialsFut = Future.traverse(
+      team.members.filter(_.memberStatus == MemberStatus.Official).map(_.userID)
+    )(loader)
+    val suplentesFut = Future.traverse(
+      team.members.filter(_.memberStatus == MemberStatus.Suplente).map(_.userID)
+    )(loader)
+
+    def allAreDefined[T](seq: Seq[Option[T]]): Option[Seq[T]] = {
+      if (seq.forall(_.isDefined)) {
+        Some(seq.flatten)
+      } else {
+        None
+      }
+    }
+
+    for {
+      principalOpt <- principalFut
+      officialsOpt <- officialsFut
+      suplentesOpt <- suplentesFut
+    } yield {
+      for {
+        principal <- principalOpt
+        officials <- allAreDefined(officialsOpt)
+        suplentes <- allAreDefined(suplentesOpt)
+      } yield {
+        TeamWithUsers(
+          team.teamID,
+          team.teamName,
+          principal,
+          officials,
+          suplentes
+        )
+      }
+    }
+  }
 }

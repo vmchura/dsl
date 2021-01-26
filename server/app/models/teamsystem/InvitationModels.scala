@@ -1,7 +1,7 @@
 package models.teamsystem
 
-import models.DiscordID
 import play.api.libs.json.{Json, OFormat}
+import shared.models.DiscordID
 
 import java.util.UUID
 
@@ -19,6 +19,9 @@ case class Invitation(
     status: MemberStatus
 )
 object Invitation {
+  import models.ModelsJsonImplicits._
   implicit val jsonFormat: OFormat[Invitation] =
     Json.format[Invitation]
 }
+
+case class InvitationMeta(to: DiscordID, status: MemberStatus)

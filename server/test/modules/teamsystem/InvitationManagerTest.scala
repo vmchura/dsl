@@ -23,23 +23,40 @@ class InvitationManagerTest
     with EmptyDBBeforeEach {
   private val mainID = DiscordID("main")
   private val officialID = DiscordID("official")
-  private val suplenteID = DiscordID("suplente")
+
   "Invitation Manager" must {
     "Realize invitation" in {
-      val invitationManager =
-        app.injector.instanceOf(classOf[InvitationManager])
+      val invitationDAOWorker =
+        app.injector.instanceOf(classOf[InvitationDAOWorker])
+      val invitationDAO = app.injector.instanceOf(classOf[InvitationDAO])
+      implicit val teamDestroyer: TeamDestroyer =
+        app.injector.instanceOf(classOf[TeamDestroyer])
+      implicit val teamDAO: TeamDAO = app.injector.instanceOf(classOf[TeamDAO])
+      implicit val teamMemberAddWorker: TeamMemberAddWorker =
+        app.injector.instanceOf(classOf[TeamMemberAddWorker])
+      implicit val memberSupervisor: MemberSupervisor =
+        app.injector.instanceOf(classOf[MemberSupervisor])
+
+      val teamManager = testKit.spawn(TeamManager())
+      val invitationActor = testKit.spawn(
+        InvitationManager(
+          invitationDAOWorker,
+          invitationDAO,
+          teamManager,
+          memberSupervisor
+        )
+      )
       val probe =
         testKit.createTestProbe[InvitationManager.InvitationManagerResponse](
           "probe-invitation-manager"
         )
-      val invitationActor =
-        testKit.spawn(invitationManager.initialBehavior(probe.ref))
-      val invitationDAO = app.injector.instanceOf(classOf[InvitationDAO])
+
       invitationActor ! InvitationManager.Invite(
         mainID,
         officialID,
         TeamID(UUID.randomUUID()),
-        MemberStatus.Official
+        MemberStatus.Official,
+        probe.ref
       )
       probe.expectMessage(InvitationManager.InvitationMade())
       whenReady(invitationDAO.invitationsFromUser(mainID)) { invitations =>
@@ -50,8 +67,8 @@ class InvitationManagerTest
     }
     "Deny invitation" in {
 
-      val teamDAO = app.injector.instanceOf(classOf[TeamDAO])
-      val metaDataInserted = (for {
+      implicit val teamDAO = app.injector.instanceOf(classOf[TeamDAO])
+      val _ = (for {
         created <- teamDAO.save(officialID, "skt1")
         added <- teamDAO.addMemberTo(
           Member(officialID, MemberStatus.Official),
@@ -61,28 +78,44 @@ class InvitationManagerTest
         added
       }).futureValue
 
-      val invitationManager =
-        app.injector.instanceOf(classOf[InvitationManager])
+      val invitationDAOWorker =
+        app.injector.instanceOf(classOf[InvitationDAOWorker])
+      val invitationDAO = app.injector.instanceOf(classOf[InvitationDAO])
+
+      implicit val teamDestroyer: TeamDestroyer =
+        app.injector.instanceOf(classOf[TeamDestroyer])
+      implicit val teamMemberAddWorker: TeamMemberAddWorker =
+        app.injector.instanceOf(classOf[TeamMemberAddWorker])
+      implicit val memberSupervisor: MemberSupervisor =
+        app.injector.instanceOf(classOf[MemberSupervisor])
+
+      val teamManager = testKit.spawn(TeamManager())
+      val invitationActor = testKit.spawn(
+        InvitationManager(
+          invitationDAOWorker,
+          invitationDAO,
+          teamManager,
+          memberSupervisor
+        )
+      )
       val probe =
         testKit.createTestProbe[InvitationManager.InvitationManagerResponse](
           "probe-invitation-manager"
         )
-      val invitationActor =
-        testKit.spawn(invitationManager.initialBehavior(probe.ref))
-      val invitationDAO = app.injector.instanceOf(classOf[InvitationDAO])
       invitationActor ! InvitationManager.Invite(
         mainID,
         officialID,
         TeamID(UUID.randomUUID()),
-        MemberStatus.Official
+        MemberStatus.Official,
+        probe.ref
       )
       probe.expectMessageType[InvitationManager.InvitationError]
     }
     "Accept invitation" in {
-      val teamDAO = app.injector.instanceOf(classOf[TeamDAO])
+      implicit val teamDAO = app.injector.instanceOf(classOf[TeamDAO])
       val teamID = (for {
         created <- teamDAO.save(mainID, "skt1")
-        added <- teamDAO.addMemberTo(
+        _ <- teamDAO.addMemberTo(
           Member(mainID, MemberStatus.Official),
           created
         )
@@ -103,19 +136,37 @@ class InvitationManagerTest
         )
         .futureValue
 
-      val invitationManager =
-        app.injector.instanceOf(classOf[InvitationManager])
+      val invitationDAOWorker =
+        app.injector.instanceOf(classOf[InvitationDAOWorker])
+
+      implicit val teamDestroyer: TeamDestroyer =
+        app.injector.instanceOf(classOf[TeamDestroyer])
+      implicit val teamMemberAddWorker: TeamMemberAddWorker =
+        app.injector.instanceOf(classOf[TeamMemberAddWorker])
+      implicit val memberSupervisor: MemberSupervisor =
+        app.injector.instanceOf(classOf[MemberSupervisor])
+
+      val teamManager = testKit.spawn(TeamManager())
+      val invitationActor = testKit.spawn(
+        InvitationManager(
+          invitationDAOWorker,
+          invitationDAO,
+          teamManager,
+          memberSupervisor
+        )
+      )
       val probe =
         testKit.createTestProbe[InvitationManager.InvitationManagerResponse](
           "probe-invitation-manager"
         )
-      val invitationActor =
-        testKit.spawn(invitationManager.initialBehavior(probe.ref))
 
       whenReady(invitationDAO.invitationsFromUser(mainID)) { invitations =>
         assertResult(1)(invitations.size)
       }
-      invitationActor ! InvitationManager.AcceptInvitation(invitationID)
+      invitationActor ! InvitationManager.AcceptInvitation(
+        invitationID,
+        probe.ref
+      )
       probe.expectMessage(InvitationManager.InvitationAccepted())
 
       whenReady(invitationDAO.invitationsFromUser(mainID)) { invitations =>
@@ -143,20 +194,39 @@ class InvitationManagerTest
           )
         )
         .futureValue
+      val invitationDAOWorker =
+        app.injector.instanceOf(classOf[InvitationDAOWorker])
 
-      val invitationManager =
-        app.injector.instanceOf(classOf[InvitationManager])
+      implicit val teamDestroyer: TeamDestroyer =
+        app.injector.instanceOf(classOf[TeamDestroyer])
+      implicit val teamMemberAddWorker: TeamMemberAddWorker =
+        app.injector.instanceOf(classOf[TeamMemberAddWorker])
+      implicit val memberSupervisor: MemberSupervisor =
+        app.injector.instanceOf(classOf[MemberSupervisor])
+      implicit val teamDAO = app.injector.instanceOf(classOf[TeamDAO])
+
+      val teamManager = testKit.spawn(TeamManager())
+
+      val invitationActor = testKit.spawn(
+        InvitationManager(
+          invitationDAOWorker,
+          invitationDAO,
+          teamManager,
+          memberSupervisor
+        )
+      )
       val probe =
         testKit.createTestProbe[InvitationManager.InvitationManagerResponse](
           "probe-invitation-manager"
         )
-      val invitationActor =
-        testKit.spawn(invitationManager.initialBehavior(probe.ref))
 
       whenReady(invitationDAO.invitationsFromUser(mainID)) { invitations =>
         assertResult(1)(invitations.size)
       }
-      invitationActor ! InvitationManager.RemoveInvitation(invitationID)
+      invitationActor ! InvitationManager.RemoveInvitation(
+        invitationID,
+        probe.ref
+      )
       probe.expectMessage(InvitationManager.InvitationRemoved())
 
       whenReady(invitationDAO.invitationsFromUser(mainID)) { invitations =>

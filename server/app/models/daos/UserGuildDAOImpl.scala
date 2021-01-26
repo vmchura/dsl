@@ -10,9 +10,10 @@ import play.modules.reactivemongo._
 import reactivemongo.api.Cursor
 import reactivemongo.play.json.collection.JSONCollection
 import reactivemongo.play.json.compat._
+import shared.models.DiscordID
 class UserGuildDAOImpl @Inject() (val reactiveMongoApi: ReactiveMongoApi)
     extends UserGuildDAO {
-
+  import models.ModelsJsonImplicits._
   def collection: Future[JSONCollection] =
     reactiveMongoApi.database.map(_.collection("dsl.userguild"))
 

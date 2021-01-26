@@ -1,7 +1,6 @@
 package models.services
 import models.{
   DiscordDiscriminator,
-  DiscordID,
   DiscordPlayerLogged,
   DiscordUser,
   DiscordUserData,
@@ -18,6 +17,7 @@ import play.api.libs.json._
 import javax.inject.Inject
 import play.api.Configuration
 import eu.timepit.refined.api.RefType
+import shared.models.DiscordID
 
 import scala.concurrent.ExecutionContext.Implicits.global
 class DiscordUserServiceImpl @Inject() (configuration: Configuration)

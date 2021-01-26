@@ -1,0 +1,32 @@
+@import play.api.i18n.Messages
+@import play.api.mvc.RequestHeader
+@import controllers.AssetsFinder
+
+@import com.mohiva.play.silhouette.impl.providers.SocialProviderRegistry
+
+@import models.teamsystem.Team
+@import models.teamsystem.TeamWithUsers
+@import views.html.teamsystem.teamMemberLogged
+@import models.teamsystem.Invitation
+@(team: TeamWithUsers)(implicit request: RequestHeader, messages: Messages,  assetsFinder: AssetsFinder)
+<div class="team-box">
+    <p class="team-name">@team.teamName</p>
+    <div class="team-principal">
+        @teamMemberLogged(team.principal)
+    </div>
+    <ul class="team-official">
+        @for(official <- team.officials){
+          <li>
+          @teamMemberLogged(official)
+          </li>
+        }
+    </ul>
+    <ul class="team-suplentes">
+    @for(suplente <- team.suplentes){
+        <li>
+        @teamMemberLogged(suplente)
+        </li>
+    }
+    </ul>
+
+</div>

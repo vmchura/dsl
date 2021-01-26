@@ -1,7 +1,7 @@
 package models.daos.teamsystem
 
-import models.DiscordID
 import models.teamsystem.{Invitation, InvitationID}
+import shared.models.DiscordID
 
 import scala.concurrent.Future
 

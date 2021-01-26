@@ -1,7 +1,7 @@
 package models.daos.teamsystem
 
-import models.DiscordID
 import models.teamsystem.{Member, Team, TeamID}
+import shared.models.DiscordID
 
 import scala.concurrent.Future
 import scala.concurrent.ExecutionContext.Implicits.global
@@ -31,4 +31,6 @@ trait TeamDAO {
     loadTeams().map(
       _.find(_.teamID == teamID).fold(false)(_.principal == userID)
     )
+  def teamsOf(userID: DiscordID): Future[Seq[Team]] =
+    loadTeams().map(_.filter(_.isMember(userID)))
 }

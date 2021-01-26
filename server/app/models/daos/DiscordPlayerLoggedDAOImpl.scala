@@ -5,6 +5,7 @@ import play.api.libs.json.{JsString, Json}
 import play.modules.reactivemongo.ReactiveMongoApi
 import reactivemongo.api.Cursor
 import reactivemongo.play.json.collection.JSONCollection
+import shared.models.DiscordID
 
 import javax.inject.Inject
 import scala.concurrent.ExecutionContext.Implicits.global
@@ -24,14 +25,16 @@ class DiscordPlayerLoggedDAOImpl @Inject() (
     }
 
   override def load(
-      discordID: models.DiscordID
-  ): Future[Option[DiscordPlayerLogged]] =
+      discordID: DiscordID
+  ): Future[Option[DiscordPlayerLogged]] = {
+    import models.ModelsJsonImplicits._
     collection.flatMap {
       _.find(
         Json.obj("discordID" -> discordID),
         Option.empty[DiscordPlayerLogged]
       ).one[DiscordPlayerLogged]
     }
+  }
 
   override def find(query: String): Future[List[DiscordPlayerLogged]] = {
     def queryOnField(

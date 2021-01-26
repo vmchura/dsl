@@ -89,7 +89,8 @@ lazy val shared = crossProject(JSPlatform, JVMPlatform)
   .settings(
     // https://mvnrepository.com/artifact/com.lihaoyi/upickle
     libraryDependencies += "com.lihaoyi" %%% "upickle" % "1.1.0",
-    libraryDependencies += "org.scalatest" %%% "scalatest" % "3.2.2" % "test"
+    libraryDependencies += "org.scalatest" %%% "scalatest" % "3.2.2" % "test",
+    libraryDependencies += "eu.timepit" %%% "refined" % "0.9.20"
   )
   .jsConfigure(_.enablePlugins(ScalaJSWeb))
 

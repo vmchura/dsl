@@ -3,10 +3,10 @@ package modules.teamsystem
 import akka.actor.typed.{ActorRef, Behavior}
 import akka.actor.typed.scaladsl.Behaviors
 import com.google.inject.Inject
-import models.DiscordID
 import models.daos.teamsystem.TeamDAO
 import models.teamsystem.TeamID
 import play.api.libs.concurrent.ActorModule
+import shared.models.DiscordID
 
 import scala.util.{Failure, Success}
 class TeamCreatorWorker @Inject() (teamDAO: TeamDAO) {

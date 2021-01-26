@@ -12,14 +12,15 @@ import play.api.libs.json._
 import reactivemongo.api._
 import reactivemongo.play.json._
 import collection._
+import shared.models.DiscordID
 class TeamDAOImpl @Inject() (val reactiveMongoApi: ReactiveMongoApi)
     extends TeamDAO {
-
+  import models.ModelsJsonImplicits._
   def collection: Future[JSONCollection] =
     reactiveMongoApi.database.map(_.collection("teamsystem.team"))
 
   override def save(
-      userID: models.DiscordID,
+      userID: DiscordID,
       teamName: String
   ): Future[TeamID] = {
     val id = TeamID(UUID.randomUUID())
@@ -57,7 +58,7 @@ class TeamDAOImpl @Inject() (val reactiveMongoApi: ReactiveMongoApi)
       .map(_.ok)
 
   override def removeMember(
-      userID: models.DiscordID,
+      userID: DiscordID,
       teamID: TeamID
   ): Future[Boolean] =
     collection.flatMap(

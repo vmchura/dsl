@@ -3,12 +3,12 @@ package modules.teamsystem
 import akka.actor.typed.{ActorRef, Behavior}
 import akka.actor.typed.scaladsl.Behaviors
 import com.google.inject.Inject
-import models.{DiscordID, DiscordPlayerLogged}
+import models.DiscordPlayerLogged
 import models.daos.DiscordPlayerLoggedDAO
 import models.services.DiscordUserService
 
 import scala.util.{Failure, Success}
-
+import shared.models.DiscordID
 class DiscordPlayerWorker @Inject() (
     discordPlayerLoggedDAO: DiscordPlayerLoggedDAO,
     discordUserService: DiscordUserService
@@ -72,6 +72,7 @@ class DiscordPlayerWorker @Inject() (
     }
 }
 object DiscordPlayerWorker {
+
   sealed trait DiscordPlayerWorkerCommand
 
   case class Register(discordID: DiscordID) extends DiscordPlayerWorkerCommand
