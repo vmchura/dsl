@@ -21,7 +21,7 @@
         </div>
 
 
-        @helper.form(action = controllers.teamsystem.routes.TeamManagerController.doInvitation(team.teamID.id)) {
+        @helper.form(action = controllers.teamsystem.routes.TeamManagerController.doInvitation(team.teamID.id),Symbol("id") -> "form-select-invite-member") {
             @helper.CSRF.formField
             @helper.select(inviteForm("to"), options = Nil, Symbol("id") -> "members-option-id")
             @helper.select(inviteForm("status"), options = List(MemberStatus.Official,MemberStatus.Suplente).map(e => (e.name, e. name)))
