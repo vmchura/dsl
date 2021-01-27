@@ -265,3 +265,7 @@ TOURNAMENT DISTRIBUTION
     display: flex;
     flex-direction: row;
 }
+.invitation-box{
+    display: flex;
+    flex-direction: row;
+}
