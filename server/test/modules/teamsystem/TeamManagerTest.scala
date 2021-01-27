@@ -2,11 +2,11 @@ package modules.teamsystem
 
 import akka.actor.testkit.typed.scaladsl.ScalaTestWithActorTestKit
 import database.EmptyDBBeforeEach
-import models.DiscordID
 import models.daos.teamsystem.TeamDAO
 import models.teamsystem.{Member, MemberStatus, TeamID}
 import org.scalatest.concurrent.ScalaFutures
 import org.scalatest.wordspec.AnyWordSpecLike
+import shared.models.DiscordID
 
 import scala.concurrent.ExecutionContext.Implicits.global
 

@@ -2,10 +2,10 @@ package modules.teamsystem
 
 import akka.actor.testkit.typed.scaladsl.ScalaTestWithActorTestKit
 import database.EmptyDBBeforeEach
-import models.DiscordID
 import models.daos.teamsystem.TeamDAO
 import org.scalatest.concurrent.ScalaFutures
 import org.scalatest.wordspec.AnyWordSpecLike
+import shared.models.DiscordID
 
 class TeamCreatorTest
     extends ScalaTestWithActorTestKit

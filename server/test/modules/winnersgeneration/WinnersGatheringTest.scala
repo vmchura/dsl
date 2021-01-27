@@ -16,6 +16,8 @@ import org.scalatest.wordspec.AnyWordSpecLike
 import org.scalatestplus.play.guice.GuiceOneAppPerSuite
 import play.api.Application
 import play.api.inject.guice.GuiceApplicationBuilder
+import shared.models.DiscordID
+
 import scala.concurrent.duration.DurationInt
 import scala.language.postfixOps
 import java.util.UUID
@@ -87,11 +89,11 @@ class WinnersGatheringTest
     }
     val userGuildDAO = new UserGuildDAO {
       override def load(
-          discordID: models.DiscordID
+          discordID: DiscordID
       ): Future[Set[models.GuildID]] = ???
 
       override def addGuildToUser(
-          discordID: models.DiscordID,
+          discordID: DiscordID,
           guildID: models.GuildID
       ): Future[Boolean] = ???
 

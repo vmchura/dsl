@@ -5,7 +5,6 @@ import com.google.inject.AbstractModule
 import models.daos.UserGuildDAO
 import models.services.{TournamentSeriesService, TournamentService}
 import models.{
-  DiscordID,
   Tournament,
   TournamentSeason,
   TournamentSerieID,
@@ -30,6 +29,7 @@ import org.scalatest.wordspec.AnyWordSpecLike
 import org.scalatestplus.play.guice.GuiceOneAppPerSuite
 import play.api.Application
 import play.api.inject.guice.GuiceApplicationBuilder
+import shared.models.DiscordID
 
 import java.util.UUID
 import scala.concurrent.Future

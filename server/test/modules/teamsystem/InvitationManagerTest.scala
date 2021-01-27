@@ -2,7 +2,6 @@ package modules.teamsystem
 
 import akka.actor.testkit.typed.scaladsl.ScalaTestWithActorTestKit
 import database.EmptyDBBeforeEach
-import models.DiscordID
 import models.daos.teamsystem.{InvitationDAO, TeamDAO}
 import models.teamsystem.{
   Invitation,
@@ -13,6 +12,7 @@ import models.teamsystem.{
 }
 import org.scalatest.wordspec.AnyWordSpecLike
 import org.scalatestplus.play.guice.GuiceOneAppPerSuite
+import shared.models.DiscordID
 
 import java.util.UUID
 import scala.concurrent.ExecutionContext.Implicits.global

@@ -1,12 +1,13 @@
 package models.daos
 import database.EmptyDBBeforeEach
 import models.services.{ParticipantsService, TournamentService}
-import models.{DiscordID, GuildID}
+import models.GuildID
 import org.scalatest.concurrent.PatienceConfiguration.{Interval, Timeout}
 import org.scalatest.concurrent.ScalaFutures
 import org.scalatest.time.{Seconds, Span}
 import org.scalatestplus.play.PlaySpec
 import org.scalatestplus.play.guice.GuiceOneAppPerSuite
+import shared.models.DiscordID
 
 import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.Future

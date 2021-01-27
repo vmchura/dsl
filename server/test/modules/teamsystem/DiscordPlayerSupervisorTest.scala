@@ -2,10 +2,10 @@ package modules.teamsystem
 
 import akka.actor.testkit.typed.scaladsl.ScalaTestWithActorTestKit
 import database.EmptyDBBeforeEach
-import models.DiscordID
 import models.daos.DiscordPlayerLoggedDAO
 import org.scalatest.wordspec.AnyWordSpecLike
 import org.scalatestplus.play.guice.GuiceOneAppPerSuite
+import shared.models.DiscordID
 
 import scala.concurrent.duration.DurationInt
 import scala.language.postfixOps

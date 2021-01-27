@@ -2,9 +2,10 @@ package controllers
 
 import database.DataBaseObjects._
 import database.TemporalDB
-import models.{DiscordID, Smurf}
+import models.Smurf
 import org.scalatestplus.play.PlaySpec
 import play.api.test.Helpers._
+import shared.models.DiscordID
 
 class ReplayMatchControllerPushReplayReversedTest
     extends PlaySpec

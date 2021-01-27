@@ -1,11 +1,12 @@
 package models.daos
 import database.EmptyDBBeforeEach
-import models.{DiscordID, DiscordUserData, GuildID}
+import models.{DiscordUserData, GuildID}
 import org.scalatest.concurrent.ScalaFutures
 import org.scalatest.time.{Seconds, Span}
 import org.scalatestplus.play.PlaySpec
 import org.scalatestplus.play.guice.GuiceOneAppPerSuite
 import eu.timepit.refined.auto._
+import shared.models.DiscordID
 
 import scala.concurrent.ExecutionContext.Implicits.global
 import scala.util.Random

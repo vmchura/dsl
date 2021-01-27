@@ -4,9 +4,10 @@ import database.DataBaseObjects._
 
 import scala.collection.parallel.CollectionConverters._
 import database.TemporalDB
-import models.{DiscordID, Smurf}
+import models.Smurf
 import org.scalatestplus.play.PlaySpec
 import play.api.test.Helpers.status
+import shared.models.DiscordID
 
 class ReplayMatchControllerPushReplayAdminTest
     extends PlaySpec

@@ -3,14 +3,7 @@ package database
 import com.google.inject.AbstractModule
 import com.mohiva.play.silhouette.api.Environment
 import com.mohiva.play.silhouette.test.FakeEnvironment
-import models.{
-  ChallongeTournament,
-  DiscordID,
-  DiscordUser,
-  ReplayRecord,
-  Smurf,
-  User
-}
+import models.{ChallongeTournament, DiscordUser, ReplayRecord, Smurf, User}
 import models.services.{
   ChallongeTournamentService,
   ParseReplayFileService,
@@ -29,6 +22,7 @@ import utils.auth.DefaultEnv
 import DataBaseObjects._
 import models.daos.{ReplayMatchDAO, UserSmurfDAO}
 import models.services.SmurfService.SmurfAdditionResult.AdditionResult
+import shared.models.DiscordID
 
 import java.io.File
 import java.util.UUID

@@ -2,8 +2,9 @@ package controllers
 import database.TemporalDB
 import play.api.test.Helpers._
 import database.DataBaseObjects._
-import models.{DiscordID, Smurf}
+import models.Smurf
 import org.scalatestplus.play.PlaySpec
+import shared.models.DiscordID
 
 import scala.collection.parallel.CollectionConverters._
 class ReplayMatchControllerPushReplayTest
