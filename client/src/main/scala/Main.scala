@@ -30,8 +30,7 @@ object Main {
   }
   @JSExport("initMemberFinder")
   def initMemberFinder(): Unit = {
-    val container =
-      dom.document.getElementById("find-members").asInstanceOf[Div]
+
     val queryTextInput =
       dom.document
         .getElementById("input-query-id")
@@ -39,8 +38,6 @@ object Main {
     val optionsSelect = dom.document
       .getElementById("members-option-id")
       .asInstanceOf[HTMLSelectElement]
-    println(s"This is $optionsSelect")
-    println(s"This was ${dom.document.getElementById("members-option-id")}")
     val searchButton = dom.document
       .getElementById("search-member-button")
       .asInstanceOf[HTMLButtonElement]
