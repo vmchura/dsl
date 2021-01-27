@@ -1,0 +1,20 @@
+@import play.api.i18n.Messages
+@import play.api.mvc.RequestHeader
+@import controllers.AssetsFinder
+
+
+@import views.html.teamsystem.teamMemberLogged
+@import models.teamsystem.InvitationWithUsers
+@(invitation: InvitationWithUsers)(implicit request: RequestHeader, messages: Messages,  assetsFinder: AssetsFinder)
+<div class="invitation-box">
+
+    <ul class="invitation-message">
+        @teamMemberLogged(invitation.from) te ha invitado para formar parte del equipo <b>@invitation.teamName</b>,
+        ¿aceptas?
+    </ul>
+    <a href="@controllers.teamsystem.routes.TeamManagerController.acceptInvitation(invitation.invitationID.id)"
+    class="btn btn-primary" role="button">Aceptar</a>
+    <a href="@controllers.teamsystem.routes.TeamManagerController.removeInvitation(invitation.invitationID.id)"
+    class="btn btn-danger" role="button">Cancelar</a>
+
+</div>

@@ -7,11 +7,16 @@ import controllers.{
   SilhouetteControllerComponents
 }
 import models.daos.DiscordPlayerLoggedDAO
-import models.daos.teamsystem.TeamDAO
+import models.daos.teamsystem.{InvitationDAO, TeamDAO}
 
 import javax.inject._
 import models.services.SideBarMenuService
-import models.teamsystem.{InvitationID, TeamID, TeamWithUsers}
+import models.teamsystem.{
+  InvitationID,
+  InvitationWithUsers,
+  TeamID,
+  TeamWithUsers
+}
 import modules.teamsystem.{
   InvitationManager,
   MemberQueryForm,
@@ -35,7 +40,7 @@ import scala.language.postfixOps
 class TeamManagerController @Inject() (
     scc: SilhouetteControllerComponents,
     sideBarMenuService: SideBarMenuService,
-    teamDAO: TeamDAO,
+    invitationDAO: InvitationDAO,
     teamCreator: ActorRef[CreationCommand],
     teamManager: ActorRef[TeamManager.TeamManagerCommand],
     invitationManager: ActorRef[InvitationManager.InvitationCommand]
@@ -43,7 +48,8 @@ class TeamManagerController @Inject() (
     assets: AssetsFinder,
     ex: ExecutionContext,
     discordPlayerLoggedDAO: DiscordPlayerLoggedDAO,
-    scheduler: akka.actor.typed.Scheduler
+    scheduler: akka.actor.typed.Scheduler,
+    teamDAO: TeamDAO
 ) extends AbstractAuthController(scc)
     with I18nSupport {
   implicit val timeOut: Timeout = 10 seconds
@@ -90,6 +96,20 @@ class TeamManagerController @Inject() (
         invitationManager
           .ask[InvitationManager.InvitationManagerResponse](ref =>
             InvitationManager.AcceptInvitation(InvitationID(invitationID), ref)
+          )
+          .map { _ =>
+            result
+          }
+
+    }
+  def removeInvitation(invitationID: UUID): Action[AnyContent] =
+    silhouette.SecuredAction.async {
+      implicit request: SecuredRequest[EnvType, AnyContent] =>
+        val result = Redirect(routes.TeamManagerController.showMyTeams())
+
+        invitationManager
+          .ask[InvitationManager.InvitationManagerResponse](ref =>
+            InvitationManager.RemoveInvitation(InvitationID(invitationID), ref)
           )
           .map { _ =>
             result
@@ -147,19 +167,27 @@ class TeamManagerController @Inject() (
           val teamsWithUsers =
             teamsFut
               .flatMap(teams => Future.traverse(teams)(TeamWithUsers.apply))
-          teamsWithUsers.map { teams =>
-            Ok(
-              views.html.teamsystem
-                .showmyteams(
-                  request.identity,
-                  userDiscordID,
-                  teams.flatten,
-                  TeamInvitationForm.teamInvitation,
-                  TeamCreationForm.teamCreation,
-                  MemberQueryForm.memberQuery,
-                  socialProviderRegistry
-                )
+          val invitationsWithusers = invitationDAO
+            .invitationsToUser(userDiscordID)
+            .flatMap(invitations =>
+              Future.traverse(invitations)(InvitationWithUsers.apply)
             )
+
+          teamsWithUsers.zip(invitationsWithusers).map {
+            case (teams, invitations) =>
+              Ok(
+                views.html.teamsystem
+                  .showmyteams(
+                    request.identity,
+                    userDiscordID,
+                    teams.flatten,
+                    invitations.flatten,
+                    TeamInvitationForm.teamInvitation,
+                    TeamCreationForm.teamCreation,
+                    MemberQueryForm.memberQuery,
+                    socialProviderRegistry
+                  )
+              )
           }
 
         }

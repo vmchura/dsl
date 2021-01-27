@@ -48,6 +48,7 @@ POST     /winnersgeneration/update       controllers.winnersgeneration.WinnersGe
 POST     /teamsysteam/create      controllers.teamsystem.TeamManagerController.createTeam()
 POST     /teamsysteam/invite/:teamID      controllers.teamsystem.TeamManagerController.doInvitation(teamID: java.util.UUID)
 POST     /teamsysteam/accept/:invitationID      controllers.teamsystem.TeamManagerController.acceptInvitation(invitationID: java.util.UUID)
+POST     /teamsysteam/remove/:invitationID      controllers.teamsystem.TeamManagerController.removeInvitation(invitationID: java.util.UUID)
 POST    /teamsystem/quitteam/:teamID            controllers.teamsystem.TeamManagerController.quitTeam(teamID: java.util.UUID)
 POST    /teamsystem/find            controllers.teamsystem.MemberSupervisorController.findMembers()
 GET    /teamsystem/showmyteams            controllers.teamsystem.TeamManagerController.showMyTeams()

@@ -9,7 +9,7 @@ trait TeamDAO {
   def removeMember(userID: DiscordID, teamID: TeamID): Future[Boolean]
 
   def removeTeam(teamID: TeamID): Future[Boolean]
-
+  def loadTeam(teamID: TeamID): Future[Option[Team]]
   def save(userID: DiscordID, teamName: String): Future[TeamID]
   def loadTeams(): Future[Seq[Team]]
   def addMemberTo(member: Member, teamID: TeamID): Future[Boolean]

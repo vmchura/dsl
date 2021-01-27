@@ -3,13 +3,13 @@
 @import controllers.AssetsFinder
 
 @import models.teamsystem.TeamWithUsers
-@import models.teamsystem.Invitation
+
 @import views.html.teamsystem.showteam
 @import models.teamsystem.InvitationMeta
 @import models.teamsystem.MemberStatus
 @import shared.models.DiscordID
 @import views.html.helper.CSPNonce
-@(userID: DiscordID, team: TeamWithUsers, invitations: Seq[Invitation], inviteForm: Form[InvitationMeta], queryForm: Form[String])(implicit request: RequestHeader, messages: Messages,  assetsFinder: AssetsFinder)
+@(userID: DiscordID, team: TeamWithUsers, inviteForm: Form[InvitationMeta], queryForm: Form[String])(implicit request: RequestHeader, messages: Messages,  assetsFinder: AssetsFinder)
 <div class="my-team-box">
     @showteam(team)
 
@@ -31,9 +31,6 @@
                 Main.initMemberFinder();
         </script>
 
-        <div class="invitations-pending">
-            Existen @invitations.size invitaciones pendientes para este equipo.
-        </div>
         <div class="container-fluid">
             @request.flash.get("invitation-error").map { msg =>
                 <div class="alert alert-danger" role="alert">

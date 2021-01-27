@@ -72,4 +72,9 @@ class TeamDAOImpl @Inject() (val reactiveMongoApi: ReactiveMongoApi)
         )
         .map(_.ok)
     )
+
+  override def loadTeam(teamID: TeamID): Future[Option[Team]] =
+    collection.flatMap(
+      _.find(Json.obj("teamID" -> teamID), Option.empty[Team]).one[Team]
+    )
 }
