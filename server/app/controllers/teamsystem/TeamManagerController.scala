@@ -192,4 +192,25 @@ class TeamManagerController @Inject() (
 
         }
     }
+  def showAllTeams(): Action[AnyContent] =
+    silhouette.UserAwareAction.async { implicit request =>
+      sideBarMenuService.buildUserAwareSideBar().flatMap { implicit menues =>
+        val teamsFut = teamDAO.loadTeams()
+        val teamsWithUsers =
+          teamsFut
+            .flatMap(teams => Future.traverse(teams)(TeamWithUsers.apply))
+
+        teamsWithUsers.map { teams =>
+          Ok(
+            views.html.teamsystem
+              .showteams(
+                request.identity,
+                teams.flatten,
+                socialProviderRegistry
+              )
+          )
+        }
+
+      }
+    }
 }

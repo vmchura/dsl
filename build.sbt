@@ -8,6 +8,7 @@ lazy val server = (project in file("server"))
     // triggers scalaJSPipeline when using compile or continuous compilation
     compile in Compile := ((compile in Compile) dependsOn scalaJSPipeline).value,
     resolvers += "Sonatype snapshots" at "https://oss.sonatype.org/content/repositories/snapshots/",
+    resolvers += "Sonatype OSS Snapshots" at "https://oss.sonatype.org/content/repositories/snapshots/",
     resolvers += Resolver.sonatypeRepo("snapshots"),
     resolvers += Resolver.jcenterRepo,
     fork := true,

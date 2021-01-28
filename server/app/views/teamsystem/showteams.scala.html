@@ -1,0 +1,18 @@
+@import play.api.i18n.Messages
+@import play.api.mvc.RequestHeader
+@import controllers.AssetsFinder
+
+@import com.mohiva.play.silhouette.impl.providers.SocialProviderRegistry
+
+@import models.teamsystem.TeamWithUsers
+@import views.html.teamsystem.showteam
+@(user: Option[models.User], teams: Seq[TeamWithUsers], socialProviders: SocialProviderRegistry)(implicit request: RequestHeader, messages: Messages, menues: Seq[MenuGroup], assetsFinder: AssetsFinder)
+@main("Equipos registrados",user,socialProviders){
+    <div id="all-teams-container">
+        <div id="teams-list">
+            @for(team <- teams){
+              @showteam(team)
+            }
+        </div>
+    </div>
+}

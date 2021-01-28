@@ -15,33 +15,49 @@
 
     @if(userID == team.principal.discordID){
 
-        <div id="find-members">
-            @helper.inputText(queryForm("query"),Symbol("id") -> "input-query-id")
-            <button id="search-member-button">Buscar</button>
-        </div>
+        <div class="my-team-configuration">
+            <div id="find-members">
+                @helper.inputText(queryForm("query"),
+                    Symbol("id") -> "input-query-id",
+                    Symbol("class") -> "form-control",
+                    Symbol("_label") -> "Buscar miembro para invitarlo: ")
+                <button id="search-member-button" class="btn btn-primary">Buscar</button>
+            </div>
 
 
-        @helper.form(action = controllers.teamsystem.routes.TeamManagerController.doInvitation(team.teamID.id),Symbol("id") -> "form-select-invite-member") {
-            @helper.CSRF.formField
-            @helper.select(inviteForm("to"), options = Nil, Symbol("id") -> "members-option-id")
-            @helper.select(inviteForm("status"), options = List(MemberStatus.Official,MemberStatus.Suplente).map(e => (e.name, e. name)))
-            <button type="submit" id="invite-button">Invitar</button>
-        }
-        <script @{CSPNonce.attr}>
-                Main.initMemberFinder();
-        </script>
+            @helper.form(action = controllers.teamsystem.routes.TeamManagerController.doInvitation(team.teamID.id),
+                Symbol("id") -> "invitation-box") {
+                @helper.CSRF.formField
+                @helper.select(inviteForm("to"),
+                    options = Nil,
+                    Symbol("id") -> "members-option-id",
+                    Symbol("class") -> "form-select",
+                    Symbol("_label") -> "Invitar a: ")
+                @helper.select(inviteForm("status"),
+                    options = List(MemberStatus.Official,MemberStatus.Suplente).map(e => (e.name, e. name)),
+                    Symbol("class") -> "form-select",
+                    Symbol("id") -> "members-status-id",
+                    Symbol("_label") -> "¿Oficial o Suplente?: ")
 
-        <div class="container-fluid">
-            @request.flash.get("invitation-error").map { msg =>
-                <div class="alert alert-danger" role="alert">
-                    ¡Error!: @msg
-                </div>
+                <button type="submit" id="members-invite-id" class="btn btn-primary">Invitar</button>
             }
-            @request.flash.get("invitation-success").map { msg =>
-                <div class="alert alert-success" role="alert">
-                    !Hecho! @msg
-                </div>
-            }
+            <script @{CSPNonce.attr}>
+                    Main.initMemberFinder();
+            </script>
+
+            <div class="container-fluid" id="invitation-results-id">
+                @request.flash.get("invitation-error").map { msg =>
+                    <div class="alert alert-danger" role="alert">
+                        ¡Error!: @msg
+                    </div>
+                }
+                @request.flash.get("invitation-success").map { msg =>
+                    <div class="alert alert-success" role="alert">
+                        !Hecho! @msg
+                    </div>
+                }
+            </div>
+
         </div>
     }
 
@@ -49,7 +65,7 @@
     <div class="team-quit">
         @helper.form(action = controllers.teamsystem.routes.TeamManagerController.quitTeam(team.teamID.id)) {
             @helper.CSRF.formField
-            <button  class="btn btn-danger"  type="submit">Retirarme del equipo</button>
+            <button  class="btn btn-danger"  type="submit">Retirarme del equipo @{team.teamName}</button>
         }
 
         @if(userID == team.principal.discordID){

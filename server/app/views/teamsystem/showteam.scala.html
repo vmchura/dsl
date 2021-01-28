@@ -9,22 +9,26 @@
 @import views.html.teamsystem.teamMemberLogged
 @import models.teamsystem.Invitation
 @(team: TeamWithUsers)(implicit request: RequestHeader, messages: Messages,  assetsFinder: AssetsFinder)
-<div class="team-box">
-    <p class="team-name">@team.teamName</p>
-    <div class="team-principal">
+<div class="card text-center team-container">
+    <div class="card-header team-name">
+        @team.teamName
+    </div>
+    <div class="card-body">
         @teamMemberLogged(team.principal)
     </div>
-    <ul class="team-official">
+    <ul class="list-group list-group-flush">
         @for(official <- team.officials){
-          <li>
-          @teamMemberLogged(official)
-          </li>
+            <li class="list-group-item d-flex justify-content-between align-items-center">
+                @{official.username}
+            <span class="badge bg-primary rounded-pill">#@{official.discriminator}</span>
+            </li>
         }
     </ul>
-    <ul class="team-suplentes">
+    <ul class="list-group">
     @for(suplente <- team.suplentes){
-        <li>
-        @teamMemberLogged(suplente)
+        <li class="list-group-item d-flex justify-content-between align-items-center">
+            @{suplente.username}
+        <span class="badge bg-primary rounded-pill">#@{suplente.discriminator}</span>
         </li>
     }
     </ul>

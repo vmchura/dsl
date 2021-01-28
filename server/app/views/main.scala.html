@@ -48,8 +48,11 @@
         <style @{CSPNonce.attr}>
                 @@font-face {
                     font-family: atomicAge;
-                    @*src: url(/versionedAssets/fonts/atomic-font/AtomicAge-Regular.ttf);*@
                     src: url(@controllers.routes.Assets.versioned("fonts/atomic-font/AtomicAge-Regular.ttf"))
+                }
+                @@font-face {
+                    font-family: starCraft;
+                    src: url(@controllers.routes.Assets.versioned("fonts/starcraft.ttf"))
                 }
                 body{
                     background-image: url(@controllers.routes.Assets.versioned("images/fondo_nuevos_torneos.jpg"));

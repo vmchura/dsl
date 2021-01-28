@@ -47,7 +47,13 @@ class SideBarMenuService @Inject() (tournamentService: TournamentService) {
           routes.StaticsController.view().url
         ) :: Nil
       )
-
+      val equipos = MenuGroup(
+        "Equipos",
+        MenuActionDefined(
+          "Listar equipos",
+          controllers.teamsystem.routes.TeamManagerController.showAllTeams().url
+        ) :: Nil
+      )
       val admin = user.flatMap(u =>
         if (WithAdmin.isModeradorID(u.loginInfo.providerKey))
           Some(
@@ -61,7 +67,7 @@ class SideBarMenuService @Inject() (tournamentService: TournamentService) {
         else None
       )
 
-      List(misTorneos, Some(todos), admin).flatten
+      List(misTorneos, Some(todos), Some(equipos), admin).flatten
     }
   }
 

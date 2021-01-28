@@ -23,7 +23,11 @@
     @for(invitation <- invitations){
         @showinvitation(invitation)
     }
-    @for(team <- teams){
-      @showmyteam(discordID, team, inviteForm,queryForm)
-    }
+    <div id="my-teams-container">
+        <div id="teams-list">
+            @for(team <- teams){
+              @showmyteam(discordID, team, inviteForm,queryForm)
+            }
+        </div>
+    </div>
 }

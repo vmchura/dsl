@@ -256,16 +256,113 @@ TOURNAMENT DISTRIBUTION
 .OTHER-SERIES{
 }
 
-
-#find-members{
-    display: flex;
-    flex-direction: row;
+.team-name{
+    font-family: starCraft, atomicAge, "Times New Roman", serif;
+    text-align: center;
+    font-size: 2rem;
+    font-weight: 100;
+    line-height: 2;
 }
+
 #form-select-invite-member{
     display: flex;
-    flex-direction: row;
+    flex-direction: column;
 }
-.invitation-box{
+
+#invitation-box{
+    display: grid;
+    grid-template-areas:
+            "member status"
+            "invite invite";
+}
+#members-option-id{
+    grid-area: member;
+}
+
+#members-status-id{
+    grid-area: status;
+}
+
+#members-invite-id{
+    grid-area: invite;
+}
+dd.info{
+    display: none;
+}
+#find-members{
+    display: grid;
+    grid-template-areas: "input search";
+    grid-template-columns: 4fr 1fr;
+    align-items: center;
+}
+#input-query{
+    grid-area: input;
+}
+#search-member-button{
+    grid-area: search;
+}
+
+#find-members dl {
     display: flex;
-    flex-direction: row;
+    flex-direction: column;
+
+
+}
+form dl {
+    width: 100%;
+    display: flex;
+    flex-direction: column;
+
+}
+
+.my-team-box{
+    display: grid;
+    grid-template-columns: 1fr 100vw 1fr;
+    grid-template-areas:
+            ". myteam ."
+            ". config ."
+            ". teamquit .";
+}
+
+.team-container{
+    grid-area: myteam;
+    margin: 25px 0px;
+}
+.my-team-configuration{
+    grid-area: config;
+}
+.team-quit{
+    grid-area: teamquit;
+}
+
+@media(min-width: 600px){
+    .my-team-box{
+        grid-template-columns: 1fr 600px 1fr;
+    }
+    #my-teams-container{
+        grid-template-columns: 1fr 600px 1fr;
+    }
+    .my-team-configuration{
+        display: grid;
+        grid-template-areas:
+                ". members ."
+                ". invite ."
+                ". invitations .";
+        grid-template-columns: 1fr 600px 1fr;
+    }
+    #find-members{
+        grid-area: members;
+    }
+    #invitation-box{
+        grid-area: invite;
+    }
+    #invitation-results-id{
+        grid-area: invitations;
+    }
+
+    #invitation-box{
+        grid-template-areas: "member status invite";
+        grid-template-columns: 2fr 2fr 1fr;
+        align-items: center;
+    }
 }
