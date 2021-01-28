@@ -12,9 +12,14 @@
         @teamMemberLogged(invitation.from) te ha invitado para formar parte del equipo <b>@invitation.teamName</b>,
         ¿aceptas?
     </ul>
-    <a href="@controllers.teamsystem.routes.TeamManagerController.acceptInvitation(invitation.invitationID.id)"
-    class="btn btn-primary" role="button">Aceptar</a>
-    <a href="@controllers.teamsystem.routes.TeamManagerController.removeInvitation(invitation.invitationID.id)"
-    class="btn btn-danger" role="button">Cancelar</a>
+    @helper.form(controllers.teamsystem.routes.TeamManagerController.acceptInvitation(invitation.invitationID.id)){
+        @helper.CSRF.formField
+
+        <button class="btn btn-primary" type="submit">Aceptar</button>
+    }
+    @helper.form(controllers.teamsystem.routes.TeamManagerController.removeInvitation(invitation.invitationID.id)){
+        @helper.CSRF.formField
+        <button class="btn btn-danger" type="submit">Cancelar</button>
+    }
 
 </div>

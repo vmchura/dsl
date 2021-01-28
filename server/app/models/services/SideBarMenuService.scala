@@ -49,10 +49,17 @@ class SideBarMenuService @Inject() (tournamentService: TournamentService) {
       )
       val equipos = MenuGroup(
         "Equipos",
-        MenuActionDefined(
+        ExtraAction(
           "Listar equipos",
           controllers.teamsystem.routes.TeamManagerController.showAllTeams().url
-        ) :: Nil
+        ) ::
+          MenuActionDefined(
+            "Mi equipo",
+            controllers.teamsystem.routes.TeamManagerController
+              .showMyTeams()
+              .url
+          )
+          :: Nil
       )
       val admin = user.flatMap(u =>
         if (WithAdmin.isModeradorID(u.loginInfo.providerKey))
