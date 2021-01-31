@@ -40,12 +40,11 @@ class InvitationDAOImpl @Inject() (val reactiveMongoApi: ReactiveMongoApi)
     invitationQueryExecuter(Json.obj("from" -> userID))
 
   override def addInvitation(invitation: Invitation): Future[InvitationID] = {
-    val id = InvitationID(UUID.randomUUID())
     collection
       .flatMap(
         _.insert(ordered = true).one(invitation)
       )
-      .map(_ => id)
+      .map(_ => invitation.invitationID)
   }
 
   override def removeInvitation(invitationID: InvitationID): Future[Boolean] =

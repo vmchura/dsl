@@ -5,6 +5,8 @@ import models.daos.{DiscordPlayerLoggedDAO, DiscordPlayerLoggedDAOImpl}
 import models.daos.teamsystem.{
   InvitationDAO,
   InvitationDAOImpl,
+  RequestDAO,
+  RequestDAOImpl,
   TeamDAO,
   TeamDAOImpl
 }
@@ -18,6 +20,7 @@ class TeamSystemModule
   override def configure(): Unit = {
     bind[TeamDAO].to[TeamDAOImpl]
     bind[InvitationDAO].to[InvitationDAOImpl]
+    bind[RequestDAO].to[RequestDAOImpl]
     bind[DiscordPlayerLoggedDAO].to[DiscordPlayerLoggedDAOImpl]
     bindTypedActor(
       DiscordPlayerSupervisor,
@@ -32,5 +35,6 @@ class TeamSystemModule
       "Team-invitation-manager-actor"
     )
     bindTypedActor(TeamManager, "Team-manager-actor")
+    bindTypedActor(RequestJoinManager, "Team-request-manager-actor")
   }
 }
