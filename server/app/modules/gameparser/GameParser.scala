@@ -25,6 +25,8 @@ object GameParser {
 
   sealed trait GameInfo
   case class ReplayParsed(
+      mapName: Option[String],
+      startTime: Option[String],
       gameMode: SCMatchMode,
       teams: List[Team],
       winnerTeamIndex: Int
@@ -39,6 +41,8 @@ object GameParser {
           val playersJson = (json \ "Header" \ "Players")
             .getOrElse(JsArray.empty)
             .asInstanceOf[JsArray]
+          val mapName = (json \ "Header" \ "Map").asOpt[String]
+          val startTime = (json \ "Header" \ "StartTime").asOpt[String]
           val players = playersJson.value.toList
             .flatMap { p =>
               for {
@@ -81,6 +85,8 @@ object GameParser {
             case Some(winnerTeam) =>
               if (players.exists(t => t.index == winnerTeam)) {
                 ReplayParsed(
+                  mapName,
+                  startTime,
                   gameMode,
                   players,
                   winnerTeam
@@ -88,6 +94,8 @@ object GameParser {
               } else {
                 if (players.nonEmpty) {
                   ReplayParsed(
+                    mapName,
+                    startTime,
                     gameMode,
                     players,
                     players.head.index
@@ -99,6 +107,8 @@ object GameParser {
             case None =>
               if (players.nonEmpty) {
                 ReplayParsed(
+                  mapName,
+                  startTime,
                   gameMode,
                   players,
                   players.head.index

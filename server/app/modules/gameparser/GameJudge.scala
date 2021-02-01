@@ -47,7 +47,7 @@ object GameJudge extends ActorModule {
                 }
               } else {
                 replayParsed match {
-                  case ReplayParsed(TopVsBottom, _, _) =>
+                  case ReplayParsed(_, _, TopVsBottom, _, _) =>
                     ManyVsMany(winners, losers)
                   case _ => defaultOnError
                 }

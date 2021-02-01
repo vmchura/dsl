@@ -5,7 +5,10 @@ import modules.gameparser.GameParser.Team
 import org.scalatest.wordspec.AnyWordSpecLike
 import org.scalatestplus.play.guice.GuiceOneAppPerSuite
 import shared.models.StarCraftModels._
+
 import java.io.File
+import scala.concurrent.duration.DurationInt
+import scala.language.postfixOps
 
 class GameParserTest
     extends ScalaTestWithActorTestKit
@@ -22,16 +25,31 @@ class GameParserTest
       val parser = testKit.spawn(GameParser(replayParseService), "parser")
       val probe = testKit.createTestProbe[GameParser.GameInfo]()
       parser ! GameParser.ReplayToParse(file, probe.ref)
-      probe.expectMessage(
-        GameParser.ReplayParsed(
-          TopVsBottom,
-          List(
-            Team(1, List(SCPlayer("G19", Protoss))),
-            Team(2, List(SCPlayer(".Chester", Protoss)))
-          ),
-          1
-        )
+
+      val messageExpected = GameParser.ReplayParsed(
+        Some("Fighting Spirit"),
+        Some("2020-12-04T22:05:16Z"),
+        TopVsBottom,
+        List(
+          Team(1, List(SCPlayer("G19", Protoss))),
+          Team(2, List(SCPlayer(".Chester", Protoss)))
+        ),
+        1
       )
+      val messageGot =
+        probe.receiveMessage(10 seconds).asInstanceOf[GameParser.ReplayParsed]
+      if (
+        messageGot.mapName.zip(messageExpected.mapName).fold(false) {
+          case (got, exp) => got.contains(exp)
+        }
+      ) {
+        val messageGotChangedMapName =
+          messageGot.copy(mapName = messageExpected.mapName)
+        assertResult(messageExpected)(messageGotChangedMapName)
+      } else {
+        fail("Map names are not present")
+      }
+
     }
     "Parse KaoZerg vs Uzumaki 1 " in {
       val file = new File(
@@ -40,16 +58,30 @@ class GameParserTest
       val parser = testKit.spawn(GameParser(replayParseService), "parser")
       val probe = testKit.createTestProbe[GameParser.GameInfo]()
       parser ! GameParser.ReplayToParse(file, probe.ref)
-      probe.expectMessage(
-        GameParser.ReplayParsed(
-          TopVsBottom,
-          List(
-            Team(1, List(SCPlayer("Uzumaki809", Protoss))),
-            Team(2, List(SCPlayer("KaoZerG", Zerg)))
-          ),
-          2
-        )
+
+      val messageExpected = GameParser.ReplayParsed(
+        Some("Fighting Spirit"),
+        Some("2021-01-31T23:13:29Z"),
+        TopVsBottom,
+        List(
+          Team(1, List(SCPlayer("Uzumaki809", Protoss))),
+          Team(2, List(SCPlayer("KaoZerG", Zerg)))
+        ),
+        2
       )
+      val messageGot =
+        probe.receiveMessage(10 seconds).asInstanceOf[GameParser.ReplayParsed]
+      if (
+        messageGot.mapName.zip(messageExpected.mapName).fold(false) {
+          case (got, exp) => got.contains(exp)
+        }
+      ) {
+        val messageGotChangedMapName =
+          messageGot.copy(mapName = messageExpected.mapName)
+        assertResult(messageExpected)(messageGotChangedMapName)
+      } else {
+        fail("Map names are not present")
+      }
     }
     "Parse KaoZerg vs Uzumaki 2" in {
       val file = new File(
@@ -58,16 +90,30 @@ class GameParserTest
       val parser = testKit.spawn(GameParser(replayParseService), "parser")
       val probe = testKit.createTestProbe[GameParser.GameInfo]()
       parser ! GameParser.ReplayToParse(file, probe.ref)
-      probe.expectMessage(
-        GameParser.ReplayParsed(
-          TopVsBottom,
-          List(
-            Team(1, List(SCPlayer("Uzumaki809", Protoss))),
-            Team(2, List(SCPlayer("KaoZerG", Zerg)))
-          ),
-          1
-        )
+
+      val messageExpected = GameParser.ReplayParsed(
+        Some("Polyp"),
+        Some("2021-01-31T23:43:20Z"),
+        TopVsBottom,
+        List(
+          Team(1, List(SCPlayer("Uzumaki809", Protoss))),
+          Team(2, List(SCPlayer("KaoZerG", Zerg)))
+        ),
+        1
       )
+      val messageGot =
+        probe.receiveMessage(10 seconds).asInstanceOf[GameParser.ReplayParsed]
+      if (
+        messageGot.mapName.zip(messageExpected.mapName).fold(false) {
+          case (got, exp) => got.contains(exp)
+        }
+      ) {
+        val messageGotChangedMapName =
+          messageGot.copy(mapName = messageExpected.mapName)
+        assertResult(messageExpected)(messageGotChangedMapName)
+      } else {
+        fail("Map names are not present")
+      }
     }
   }
 }
