@@ -33,5 +33,41 @@ class GameParserTest
         )
       )
     }
+    "Parse KaoZerg vs Uzumaki 1 " in {
+      val file = new File(
+        "/home/vmchura/Documents/uzumaki_vs_KaoZerg_1.rep"
+      )
+      val parser = testKit.spawn(GameParser(replayParseService), "parser")
+      val probe = testKit.createTestProbe[GameParser.GameInfo]()
+      parser ! GameParser.ReplayToParse(file, probe.ref)
+      probe.expectMessage(
+        GameParser.ReplayParsed(
+          TopVsBottom,
+          List(
+            Team(1, List(SCPlayer("Uzumaki809", Protoss))),
+            Team(2, List(SCPlayer("KaoZerG", Zerg)))
+          ),
+          2
+        )
+      )
+    }
+    "Parse KaoZerg vs Uzumaki 2" in {
+      val file = new File(
+        "/home/vmchura/Documents/uzumaki_vs_KaoZerg_2.rep"
+      )
+      val parser = testKit.spawn(GameParser(replayParseService), "parser")
+      val probe = testKit.createTestProbe[GameParser.GameInfo]()
+      parser ! GameParser.ReplayToParse(file, probe.ref)
+      probe.expectMessage(
+        GameParser.ReplayParsed(
+          TopVsBottom,
+          List(
+            Team(1, List(SCPlayer("Uzumaki809", Protoss))),
+            Team(2, List(SCPlayer("KaoZerG", Zerg)))
+          ),
+          1
+        )
+      )
+    }
   }
 }

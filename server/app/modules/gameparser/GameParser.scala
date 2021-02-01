@@ -79,12 +79,33 @@ object GameParser {
           }
           (json \ "Computed" \ "WinnerTeam").asOpt[Int] match {
             case Some(winnerTeam) =>
-              ReplayParsed(
-                gameMode,
-                players,
-                winnerTeam
-              )
-            case None => ImpossibleToParse
+              if (players.exists(t => t.index == winnerTeam)) {
+                ReplayParsed(
+                  gameMode,
+                  players,
+                  winnerTeam
+                )
+              } else {
+                if (players.nonEmpty) {
+                  ReplayParsed(
+                    gameMode,
+                    players,
+                    players.head.index
+                  )
+                } else {
+                  ImpossibleToParse
+                }
+              }
+            case None =>
+              if (players.nonEmpty) {
+                ReplayParsed(
+                  gameMode,
+                  players,
+                  players.head.index
+                )
+              } else {
+                ImpossibleToParse
+              }
           }
 
       }
