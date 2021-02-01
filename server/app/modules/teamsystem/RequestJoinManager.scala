@@ -13,7 +13,6 @@ import scala.language.{existentials, postfixOps}
 object RequestJoinManager extends ActorModule {
 
   sealed trait InternalCommand
-  override type Message = InternalCommand
 
   case class RequestSaved() extends InternalCommand
 
@@ -61,6 +60,8 @@ object RequestJoinManager extends ActorModule {
       extends RequestJoinResponse
       with RemoveRequestResponse
       with AcceptRequestResponse
+
+  override type Message = InternalCommand
 
   @Provides
   def apply(

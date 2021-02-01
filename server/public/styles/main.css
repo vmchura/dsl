@@ -257,7 +257,7 @@ TOURNAMENT DISTRIBUTION
 }
 
 .team-name{
-    font-family: starCraft, atomicAge, "Times New Roman", serif;
+    font-family: "Times New Roman", serif;
     text-align: center;
     font-size: 2rem;
     font-weight: 100;
@@ -321,9 +321,12 @@ form dl {
     grid-template-areas:
             ". myteam ."
             ". config ."
+            ". requests ."
             ". teamquit .";
 }
-
+.team-requests-pending{
+    grid-area: requests;
+}
 .team-container{
     grid-area: myteam;
     margin: 25px 0px;
@@ -334,8 +337,44 @@ form dl {
 .team-quit{
     grid-area: teamquit;
 }
+#all-teams-container{
+    display: grid;
+    grid-template-areas: ". teams .";
+    grid-template-columns: 1fr 100vw 1fr;
+}
+#teams-list{
+    grid-area: teams;
+}
 
+#create-team-box{
+    display: grid;
+    grid-template-areas: ". mensaje ."
+    ". formarea ."
+    ". search .";
+    grid-template-columns: 1fr 1fr 1fr;
+    grid-template-rows: auto;
+    row-gap: 20px;
+    justify-content: center;
+    align-content: center
+}
+#form-create-team{
+    grid-area: formarea;
+}
+#create-team-mensaje{
+    grid-area: mensaje;
+}
+#search-team-mensaje{
+    grid-area: search;
+}
+@media(min-width: 600px) {
+    #create-team-box{
+        grid-template-columns: 1fr 600px 1fr;
+    }
+}
 @media(min-width: 600px){
+    #all-teams-container{
+        grid-template-columns: 1fr 600px 1fr;
+    }
     .my-team-box{
         grid-template-columns: 1fr 600px 1fr;
     }

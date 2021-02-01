@@ -53,5 +53,8 @@ POST    /teamsystem/quitteam/:teamID            controllers.teamsystem.TeamManag
 POST    /teamsystem/find            controllers.teamsystem.MemberSupervisorController.findMembers()
 GET    /teamsystem/showmyteams            controllers.teamsystem.TeamManagerController.showMyTeams()
 GET    /teamsystem/showteams            controllers.teamsystem.TeamManagerController.showAllTeams()
+POST    /teamsystem/request/accept/:requestID            controllers.teamsystem.RequestController.acceptRequest(requestID: java.util.UUID)
+POST    /teamsystem/request/remove/:requestID            controllers.teamsystem.RequestController.removeRequest(requestID: java.util.UUID)
+POST    /teamsystem/request/:teamID            controllers.teamsystem.RequestController.doRequest(teamID: java.util.UUID)
 
 GET     /javascriptRoutes                       controllers.JavaScriptRouter.javascriptRoutes

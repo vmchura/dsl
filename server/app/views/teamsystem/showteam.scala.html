@@ -8,7 +8,7 @@
 @import models.teamsystem.TeamWithUsers
 @import views.html.teamsystem.teamMemberLogged
 @import models.teamsystem.Invitation
-@(team: TeamWithUsers)(implicit request: RequestHeader, messages: Messages,  assetsFinder: AssetsFinder)
+@(team: TeamWithUsers, userCanRequest: Boolean)(implicit request: RequestHeader, messages: Messages,  assetsFinder: AssetsFinder)
 <div class="card text-center team-container">
     <div class="card-header team-name">
         @team.teamName
@@ -32,5 +32,14 @@
         </li>
     }
     </ul>
+    @if(userCanRequest) {
+        <div class="card-footer">
+            @helper.form(controllers.teamsystem.routes.RequestController.doRequest(team.teamID.id)) {
+                @helper.CSRF.formField
+                <button class="btn btn-primary" type="submit">Solicitar unirme al equipo</button>
+            }
+        </div>
+    }
+
 
 </div>

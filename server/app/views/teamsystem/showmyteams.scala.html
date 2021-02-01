@@ -10,23 +10,35 @@
 @import shared.models.DiscordID
 @import models.teamsystem.InvitationWithUsers
 @import views.html.teamsystem.showinvitation
-@(user: models.User,discordID: DiscordID, teams: Seq[TeamWithUsers],invitations: Seq[InvitationWithUsers],inviteForm: Form[InvitationMeta],createForm: Form[String],queryForm: Form[String], socialProviders: SocialProviderRegistry)(implicit request: RequestHeader, messages: Messages, menues: Seq[MenuGroup], assetsFinder: AssetsFinder)
+@import models.teamsystem.RequestJoinWithUsers
+@(user: models.User,discordID: DiscordID, teams: Seq[(TeamWithUsers,Seq[RequestJoinWithUsers])],invitations: Seq[InvitationWithUsers],inviteForm: Form[InvitationMeta],createForm: Form[String],queryForm: Form[String], socialProviders: SocialProviderRegistry)(implicit request: RequestHeader, messages: Messages, menues: Seq[MenuGroup], assetsFinder: AssetsFinder)
 @main("My teams",Some(user),socialProviders){
-    @if(!(teams.exists(_.officials.map(_.discordID).contains(discordID)) || teams.exists(_.principal.discordID == discordID))){
-        @helper.form(controllers.teamsystem.routes.TeamManagerController.createTeam()){
-            @helper.CSRF.formField
-            @helper.inputText(createForm("teamName"))
+    @if(!(teams.map(_._1).exists(_.officials.map(_.discordID).contains(discordID)) || teams.map(_._1).exists(_.principal.discordID == discordID))){
+        <div id="create-team-box">
 
-            <button class="btn btn-primary" type="submit">Crear equipo</button>
+            <p id="create-team-mensaje">Puedes crear tu equipo</p>
+        @helper.form(controllers.teamsystem.routes.TeamManagerController.createTeam(),
+            Symbol("id") -> "form-create-team"){
+            @helper.CSRF.formField
+            @helper.inputText(createForm("teamName"),
+                Symbol("id") -> "input-team-name-create",
+                Symbol("_label") -> "Nombre del equipo nuevo:")
+
+            <button class="btn btn-primary" type="submit" id="submit-team-create">Crear equipo</button>
         }
+            <p id="search-team-mensaje">
+                o buscar uno en
+                <a href="@controllers.teamsystem.routes.TeamManagerController.showAllTeams()"> listar todos los equipos</a>
+            </p>
+        </div>
     }
     @for(invitation <- invitations){
         @showinvitation(invitation)
     }
     <div id="my-teams-container">
         <div id="teams-list">
-            @for(team <- teams){
-              @showmyteam(discordID, team, inviteForm,queryForm)
+            @for((team,requests) <- teams){
+              @showmyteam(discordID, team,requests, inviteForm,queryForm)
             }
         </div>
     </div>

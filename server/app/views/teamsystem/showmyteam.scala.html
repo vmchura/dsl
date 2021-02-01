@@ -9,9 +9,10 @@
 @import models.teamsystem.MemberStatus
 @import shared.models.DiscordID
 @import views.html.helper.CSPNonce
-@(userID: DiscordID, team: TeamWithUsers, inviteForm: Form[InvitationMeta], queryForm: Form[String])(implicit request: RequestHeader, messages: Messages,  assetsFinder: AssetsFinder)
+@import models.teamsystem.RequestJoinWithUsers
+@(userID: DiscordID, team: TeamWithUsers,requests: Seq[RequestJoinWithUsers], inviteForm: Form[InvitationMeta], queryForm: Form[String])(implicit request: RequestHeader, messages: Messages,  assetsFinder: AssetsFinder)
 <div class="my-team-box">
-    @showteam(team)
+    @showteam(team,userCanRequest = false)
 
     @if(userID == team.principal.discordID){
 
@@ -60,8 +61,32 @@
 
         </div>
     }
+    @if(userID == team.principal.discordID) {
+        <div class="team-requests-pending">
+            <ul class="list-group list-group-flush">
+            @for(req <- requests){
+                <li class="list-group-item d-flex justify-content-between align-items-center">
+                @helper.form(action = controllers.teamsystem.routes.RequestController.acceptRequest(req.requestID.id)) {
+                    @helper.CSRF.formField
+                    <button class="btn btn-primary" type="submit">Aceptar a @{
+                        req.from.username
+                    }</button>
+                }
+                    @helper.form(action = controllers.teamsystem.routes.RequestController.removeRequest(req.requestID.id)) {
+                        @helper.CSRF.formField
+                        <button class="btn btn-danger" type="submit">Rechazar a @{
+                            req.from.username
+                        }</button>
+                    }
+                </li>
+            }
+            </ul>
 
 
+
+        </div>
+
+    }
     <div class="team-quit">
         @helper.form(action = controllers.teamsystem.routes.TeamManagerController.quitTeam(team.teamID.id)) {
             @helper.CSRF.formField

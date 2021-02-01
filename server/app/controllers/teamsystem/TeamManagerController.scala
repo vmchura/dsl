@@ -7,19 +7,21 @@ import controllers.{
   SilhouetteControllerComponents
 }
 import models.daos.DiscordPlayerLoggedDAO
-import models.daos.teamsystem.{InvitationDAO, TeamDAO}
+import models.daos.teamsystem.{InvitationDAO, RequestDAO, TeamDAO}
 
 import javax.inject._
 import models.services.SideBarMenuService
 import models.teamsystem.{
   InvitationID,
   InvitationWithUsers,
+  RequestJoinWithUsers,
   TeamID,
   TeamWithUsers
 }
 import modules.teamsystem.{
   InvitationManager,
   MemberQueryForm,
+  MemberSupervisor,
   TeamCreationForm,
   TeamCreator,
   TeamInvitationForm,
@@ -43,7 +45,8 @@ class TeamManagerController @Inject() (
     invitationDAO: InvitationDAO,
     teamCreator: ActorRef[CreationCommand],
     teamManager: ActorRef[TeamManager.TeamManagerCommand],
-    invitationManager: ActorRef[InvitationManager.InvitationCommand]
+    invitationManager: ActorRef[InvitationManager.InvitationCommand],
+    requestDAO: RequestDAO
 )(implicit
     assets: AssetsFinder,
     ex: ExecutionContext,
@@ -167,6 +170,31 @@ class TeamManagerController @Inject() (
           val teamsWithUsers =
             teamsFut
               .flatMap(teams => Future.traverse(teams)(TeamWithUsers.apply))
+              .map(_.flatten)
+              .flatMap(teams =>
+                Future.traverse(teams)(team => {
+                  if (team.principal.discordID == userDiscordID) {
+                    requestDAO
+                      .requestsToTeam(team.teamID)
+                      .map(requests => (team, requests))
+                  } else {
+                    Future.successful((team, Nil))
+                  }
+                })
+              )
+              .flatMap { teams =>
+                Future.traverse(teams) {
+                  case (team, requests) =>
+                    Future
+                      .traverse(requests) { req =>
+                        RequestJoinWithUsers(req)
+                      }
+                      .map(requestsOpt => (team, requestsOpt.flatten))
+
+                }
+
+              }
+
           val invitationsWithusers = invitationDAO
             .invitationsToUser(userDiscordID)
             .flatMap(invitations =>
@@ -180,7 +208,7 @@ class TeamManagerController @Inject() (
                   .showmyteams(
                     request.identity,
                     userDiscordID,
-                    teams.flatten,
+                    teams,
                     invitations.flatten,
                     TeamInvitationForm.teamInvitation,
                     TeamCreationForm.teamCreation,
@@ -200,15 +228,22 @@ class TeamManagerController @Inject() (
           teamsFut
             .flatMap(teams => Future.traverse(teams)(TeamWithUsers.apply))
 
-        teamsWithUsers.map { teams =>
-          Ok(
-            views.html.teamsystem
-              .showteams(
-                request.identity,
-                teams.flatten,
-                socialProviderRegistry
-              )
+        val userCanRequestFut = request.identity
+          .fold(Future.successful(false))(id =>
+            teamDAO.isOfficial(DiscordID(id.loginInfo.providerKey)).map(!_)
           )
+
+        teamsWithUsers.zip(userCanRequestFut).map {
+          case (teams, userCanRequest) =>
+            Ok(
+              views.html.teamsystem
+                .showteams(
+                  request.identity,
+                  teams.flatten,
+                  userCanRequest,
+                  socialProviderRegistry
+                )
+            )
         }
 
       }
