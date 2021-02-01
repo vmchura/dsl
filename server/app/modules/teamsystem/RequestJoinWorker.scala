@@ -132,6 +132,20 @@ class RequestJoinWorker @Inject() ()(implicit
             case _             => RequestError("Petición válida pero no se pudo procesar")
           }
           pendingMemberAdd(request.requestID, replyTo)
+        case (ctx, RequestInvalid()) =>
+          ctx.pipeToSelf(requestDAO.removeRequest(request.requestID)) {
+            case Success(true) => ReqRemoved()
+            case _             => RequestError("Request removal failed")
+          }
+          pendingReqRemoval(
+            RequestProcessError(
+              "La petición ya no es válida, se ha eliminado correctamente"
+            ),
+            RequestProcessError(
+              "La petición ya no es válida, no se ha eliminado esta petición"
+            ),
+            Some(replyTo)
+          )
         case _ =>
           replyTo ! RequestProcessError(
             "La petición de ingreso ya no es válida"
@@ -159,20 +173,6 @@ class RequestJoinWorker @Inject() ()(implicit
 
           requestNotChecked(request, replyTo)
 
-        case (ctx, RequestInvalid()) =>
-          ctx.pipeToSelf(requestDAO.removeRequest(requestID)) {
-            case Success(true) => ReqRemoved()
-            case _             => RequestError("Request removal failed")
-          }
-          pendingReqRemoval(
-            RequestProcessError(
-              "La petición ya no es válida, se ha eliminado correctamente"
-            ),
-            RequestProcessError(
-              "La petición ya no es válida, no se ha eliminado esta petición"
-            ),
-            Some(replyTo)
-          )
         case _ =>
           replyTo ! RequestProcessError("Error checking Petición")
           Behaviors.stopped
