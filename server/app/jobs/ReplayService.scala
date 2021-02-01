@@ -8,10 +8,11 @@ import models.services.{
   ChallongeTournamentService,
   DiscordFileService,
   DropBoxFilesService,
-  ReplayActionBuilderService,
+  ParseReplayFileService,
   S3FilesService,
   TournamentService
 }
+import modules.gameparser.GameParser.{GameInfo, ReplayParsed}
 
 import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.Future
@@ -23,7 +24,7 @@ class ReplayService @Inject() (
     replayMatchDAO: ReplayMatchDAO,
     s3FilesService: S3FilesService,
     discordFileService: DiscordFileService,
-    replayActionBuilderService: ReplayActionBuilderService
+    parseReplayFileService: ParseReplayFileService
 ) {
 
   def formFuture[A](f: Future[A]): Future[Either[JobError, A]] =
@@ -70,6 +71,7 @@ class ReplayService @Inject() (
             matchChallonge.asMatchName(newIDForThisReplay).pathFileOnCloud
           )
         )
+      gameInfo <- parseReplayFileService.parseFile(replay).map(GameInfo.apply)
       _ <- discordInsertion.withFailure(CannotInsertDiscord)
       insertionOnDB <- replayMatchDAO.add(
         ReplayRecord(
@@ -80,9 +82,12 @@ class ReplayService @Inject() (
           tournamentID,
           matchID,
           enabled = true,
-          user.loginInfo.providerKey,
-          //FixMe Provide correct date please
-          None
+          user.loginInfo.providerKey, {
+            gameInfo match {
+              case ReplayParsed(_, startTime, _, _, _) => startTime
+              case _                                   => None
+            }
+          }
         )
       )
     } yield {
