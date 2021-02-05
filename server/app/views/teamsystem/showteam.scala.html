@@ -8,38 +8,40 @@
 @import models.teamsystem.TeamWithUsers
 @import views.html.teamsystem.teamMemberLogged
 @import models.teamsystem.Invitation
-@(team: TeamWithUsers, userCanRequest: Boolean)(implicit request: RequestHeader, messages: Messages,  assetsFinder: AssetsFinder)
-<div class="card text-center team-container">
-    <div class="card-header team-name">
-        @team.teamName
-    </div>
-    <div class="card-body">
-        @teamMemberLogged(team.principal)
-    </div>
-    <ul class="list-group list-group-flush">
-        @for(official <- team.officials){
+@(team: TeamWithUsers, userCanRequest: Boolean, classContainer: String)(implicit request: RequestHeader, messages: Messages,  assetsFinder: AssetsFinder)
+<div class="@classContainer">
+    <div class="card text-center">
+        <div class="card-header team-name">
+            @team.teamName
+        </div>
+        <div class="card-body">
+            @teamMemberLogged(team.principal)
+        </div>
+        <ul class="list-group list-group-flush">
+            @for(official <- team.officials){
+                <li class="list-group-item d-flex justify-content-between align-items-center">
+                    @{official.username}
+                <span class="badge bg-primary rounded-pill">#@{official.discriminator}</span>
+                </li>
+            }
+        </ul>
+        <ul class="list-group">
+        @for(suplente <- team.suplentes){
             <li class="list-group-item d-flex justify-content-between align-items-center">
-                @{official.username}
-            <span class="badge bg-primary rounded-pill">#@{official.discriminator}</span>
+                @{suplente.username}
+            <span class="badge bg-primary rounded-pill">#@{suplente.discriminator}</span>
             </li>
         }
-    </ul>
-    <ul class="list-group">
-    @for(suplente <- team.suplentes){
-        <li class="list-group-item d-flex justify-content-between align-items-center">
-            @{suplente.username}
-        <span class="badge bg-primary rounded-pill">#@{suplente.discriminator}</span>
-        </li>
-    }
-    </ul>
-    @if(userCanRequest) {
-        <div class="card-footer">
-            @helper.form(controllers.teamsystem.routes.RequestController.doRequest(team.teamID.id)) {
-                @helper.CSRF.formField
-                <button class="btn btn-primary" type="submit">Solicitar unirme al equipo</button>
-            }
-        </div>
-    }
+        </ul>
+        @if(userCanRequest) {
+            <div class="card-footer">
+                @helper.form(controllers.teamsystem.routes.RequestController.doRequest(team.teamID.id)) {
+                    @helper.CSRF.formField
+                    <button class="btn btn-primary" type="submit">Solicitar unirme al equipo</button>
+                }
+            </div>
+        }
 
 
+    </div>
 </div>

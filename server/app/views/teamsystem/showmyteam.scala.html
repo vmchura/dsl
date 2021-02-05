@@ -12,7 +12,7 @@
 @import models.teamsystem.RequestJoinWithUsers
 @(userID: DiscordID, team: TeamWithUsers,requests: Seq[RequestJoinWithUsers], inviteForm: Form[InvitationMeta], queryForm: Form[String])(implicit request: RequestHeader, messages: Messages,  assetsFinder: AssetsFinder)
 <div class="my-team-box">
-    @showteam(team,userCanRequest = false)
+    @showteam(team,userCanRequest = false,"my-team-container")
 
     @if(userID == team.principal.discordID){
 

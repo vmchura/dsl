@@ -7,6 +7,7 @@ import play.modules.reactivemongo.ReactiveMongoApi
 import reactivemongo.api.{Cursor, ReadPreference}
 import reactivemongo.play.json._
 import reactivemongo.play.json.collection.{JSONCollection, _}
+import shared.models.DiscordID
 
 import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.Future
@@ -54,4 +55,14 @@ class RequestDAOImpl @Inject() (val reactiveMongoApi: ReactiveMongoApi)
         _.delete(ordered = true).one(Json.obj("requestID" -> requestID))
       )
       .map(_.ok)
+
+  override def requestsFromUser(
+      discordID: DiscordID
+  ): Future[Seq[RequestJoin]] =
+    collection
+      .flatMap(
+        _.find(Json.obj("from" -> discordID), Option.empty[RequestJoin])
+          .cursor[RequestJoin](readPreference = ReadPreference.primary)
+          .collect[Seq](-1, Cursor.FailOnError[Seq[RequestJoin]]())
+      )
 }

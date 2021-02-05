@@ -36,7 +36,7 @@
         @showinvitation(invitation)
     }
     <div id="my-teams-container">
-        <div id="teams-list">
+        <div id="my-teams-list">
             @for((team,requests) <- teams){
               @showmyteam(discordID, team,requests, inviteForm,queryForm)
             }

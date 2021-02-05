@@ -14,6 +14,7 @@ import models.services.SideBarMenuService
 import models.teamsystem.{
   InvitationID,
   InvitationWithUsers,
+  RequestJoin,
   RequestJoinWithUsers,
   TeamID,
   TeamWithUsers
@@ -21,7 +22,6 @@ import models.teamsystem.{
 import modules.teamsystem.{
   InvitationManager,
   MemberQueryForm,
-  MemberSupervisor,
   TeamCreationForm,
   TeamCreator,
   TeamInvitationForm,
@@ -233,14 +233,21 @@ class TeamManagerController @Inject() (
             teamDAO.isOfficial(DiscordID(id.loginInfo.providerKey)).map(!_)
           )
 
-        teamsWithUsers.zip(userCanRequestFut).map {
-          case (teams, userCanRequest) =>
+        val requestsPendingFut = request.identity
+          .fold(Future.successful(Seq.empty[RequestJoin])) { id =>
+            requestDAO.requestsFromUser(DiscordID(id.loginInfo.providerKey))
+          }
+          .flatMap(seq => Future.traverse(seq)(RequestJoinWithUsers.apply))
+
+        teamsWithUsers.zip(userCanRequestFut).zip(requestsPendingFut).map {
+          case ((teams, userCanRequest), requestsPending) =>
             Ok(
               views.html.teamsystem
                 .showteams(
                   request.identity,
                   teams.flatten,
                   userCanRequest,
+                  requestsPending.flatten,
                   socialProviderRegistry
                 )
             )

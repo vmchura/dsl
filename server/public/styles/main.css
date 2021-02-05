@@ -327,7 +327,7 @@ form dl {
 .team-requests-pending{
     grid-area: requests;
 }
-.team-container{
+.my-team-container{
     grid-area: myteam;
     margin: 25px 0px;
 }
@@ -337,14 +337,7 @@ form dl {
 .team-quit{
     grid-area: teamquit;
 }
-#all-teams-container{
-    display: grid;
-    grid-template-areas: ". teams .";
-    grid-template-columns: 1fr 100vw 1fr;
-}
-#teams-list{
-    grid-area: teams;
-}
+
 
 #create-team-box{
     display: grid;
@@ -366,15 +359,32 @@ form dl {
 #search-team-mensaje{
     grid-area: search;
 }
+#my-teams-container{
+    display: grid;
+    grid-template-columns: 1fr 100vw 1fr;
+    grid-template-areas: ". myteams .";
+}
+#my-teams-list{
+    grid-area: myteams;
+}
+
+#teams-list{
+    display: grid;
+    grid-template-columns: repeat(auto-fit,minmax(300px,1fr));
+    grid-gap: 20px;
+    align-items: stretch;
+}
+#requests-pending{
+    margin: 40px;
+}
+
 @media(min-width: 600px) {
     #create-team-box{
         grid-template-columns: 1fr 600px 1fr;
     }
 }
 @media(min-width: 600px){
-    #all-teams-container{
-        grid-template-columns: 1fr 600px 1fr;
-    }
+
     .my-team-box{
         grid-template-columns: 1fr 600px 1fr;
     }

@@ -6,13 +6,18 @@
 
 @import models.teamsystem.TeamWithUsers
 @import views.html.teamsystem.showteam
-@(user: Option[models.User], teams: Seq[TeamWithUsers],userCanRequest: Boolean, socialProviders: SocialProviderRegistry)(implicit request: RequestHeader, messages: Messages, menues: Seq[MenuGroup], assetsFinder: AssetsFinder)
+@import models.teamsystem.RequestJoinWithUsers
+@import views.html.teamsystem.showrequestpending
+@(user: Option[models.User], teams: Seq[TeamWithUsers],userCanRequest: Boolean,requestsPending: Seq[RequestJoinWithUsers], socialProviders: SocialProviderRegistry)(implicit request: RequestHeader, messages: Messages, menues: Seq[MenuGroup], assetsFinder: AssetsFinder)
 @main("Equipos registrados",user,socialProviders){
-    <div id="all-teams-container">
-        <div id="teams-list">
-            @for(team <- teams){
-              @showteam(team,userCanRequest)
-            }
+    @if(user.isDefined && requestsPending.nonEmpty) {
+        <div id="requests-pending">
+            @showrequestpending(requestsPending)
         </div>
+    }
+    <div id="teams-list">
+        @for(team <- teams){
+          @showteam(team,userCanRequest,"team-container")
+        }
     </div>
 }

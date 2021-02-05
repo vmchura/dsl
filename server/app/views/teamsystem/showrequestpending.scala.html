@@ -1,0 +1,19 @@
+@import play.api.i18n.Messages
+@import play.api.mvc.RequestHeader
+@import controllers.AssetsFinder
+
+
+@import views.html.teamsystem.teamMemberLogged
+@import models.teamsystem.InvitationWithUsers
+@import models.teamsystem.RequestJoinWithUsers
+@(requestsPending: Seq[RequestJoinWithUsers])(implicit request: RequestHeader, messages: Messages,  assetsFinder: AssetsFinder)
+<div class="alert alert-success" role="alert">
+    Las siguientes peticiones a unirse a un equipo aún están pendientes de ser contestadas:
+</div>
+
+<ul class="list-group">
+    @for(req <- requestsPending){
+        <li class="list-group-item">Team: @req.teamName</li>
+    }
+</ul>
+
