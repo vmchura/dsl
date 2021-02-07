@@ -10,6 +10,5 @@ Receives the next messages:
     - the sender has not responded
 - Await sender
     - expects response
-- IsReplayAwaiting
-    - checks if a replays is pending to be processed 
+ 
 
