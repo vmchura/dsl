@@ -46,6 +46,9 @@ object StarCraftModels {
   trait SCGameMode
 
   case class OneVsOne(winner: SCPlayer, loser: SCPlayer) extends SCGameMode
+  object OneVsOne {
+    implicit val rw: RW[OneVsOne] = macroRW
+  }
 
   case class ManyVsMany(winners: Seq[SCPlayer], losers: Seq[SCPlayer])
       extends SCGameMode
