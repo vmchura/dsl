@@ -8,6 +8,8 @@ import java.util.UUID
 case class ReplayTeamID(id: UUID) extends AnyVal
 object ReplayTeamID {
   implicit val rw: RW[ReplayTeamID] = macroRW
+  def apply(): ReplayTeamID = new ReplayTeamID(UUID.randomUUID())
+  def apply(id: UUID): ReplayTeamID = new ReplayTeamID(id)
 }
 
 case class ReplayTeamRecord(
