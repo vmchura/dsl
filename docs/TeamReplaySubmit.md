@@ -15,5 +15,5 @@ stateDiagram-v2
     AwaitSaveReplay --> [*] : Replay saved
     AwaitSaveRelation --> AwaitSaveRepInfo : [S] sent to leader
     AwaitSaveRepInfo --> AwaitSaveReplay : Replay info saved
-    AwaitSmurfSender --> AwaitSaveRelation : [S] sender to validate
+    AwaitSmurfSender --> AwaitSaveRelation : [S] selected
 ```
