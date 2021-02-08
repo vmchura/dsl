@@ -1,0 +1,91 @@
+package modules.teamsystem
+
+import akka.actor.typed.scaladsl.Behaviors
+import akka.actor.typed.{ActorRef, Behavior}
+import com.google.inject.Provides
+import models.Smurf
+import play.api.libs.concurrent.ActorModule
+import shared.models.{DiscordID, ReplayTeamID}
+
+import java.io.File
+import scala.concurrent.duration.DurationInt
+import scala.language.postfixOps
+
+object TeamReplayManager extends ActorModule {
+  sealed trait InternalCommand
+  sealed trait Command extends InternalCommand
+  case class Submit(
+      senderID: DiscordID,
+      replay: File,
+      replyTo: ActorRef[TeamReplaySubmit.Response]
+  ) extends Command
+  case class SmurfSelected(
+      replayTeamID: ReplayTeamID,
+      smurf: Smurf,
+      replyTo: ActorRef[TeamReplaySubmit.Response]
+  ) extends Command
+  case class SenderTimeOut(
+      replayTeamID: ReplayTeamID
+  ) extends Command
+  case class AwaitSender(
+      replayTeamID: ReplayTeamID
+  ) extends Command
+
+  case class WorkerDone(
+      replayTeamID: ReplayTeamID
+  ) extends InternalCommand
+  override type Message = Command
+
+  @Provides
+  def apply(): Behavior[Command] = {
+
+    Behaviors
+      .setup[InternalCommand] { ctx =>
+        var current: Map[ReplayTeamID, ActorRef[TeamReplaySubmit.Command]] =
+          Map.empty
+        var awaiting: Map[ReplayTeamID, ActorRef[TeamReplaySubmit.Command]] =
+          Map.empty
+        Behaviors.receiveMessage {
+          case Submit(senderID, replay, replyTo) =>
+            val worker = ctx.spawnAnonymous(TeamReplaySubmit())
+            val newID = ReplayTeamID()
+            current = current + (newID -> worker)
+            worker ! TeamReplaySubmit.Submit(
+              newID,
+              senderID,
+              replay,
+              replyTo,
+              ctx.self
+            )
+            ctx.watchWith(worker, WorkerDone(newID))
+            ctx.scheduleOnce(3 minutes, ctx.self, SenderTimeOut(newID))
+            Behaviors.same
+          case SmurfSelected(replayTeamID, smurf, replyTo) =>
+            awaiting.get(replayTeamID) match {
+              case Some(worker) =>
+                worker ! TeamReplaySubmit.SmurfSelected(smurf, replyTo)
+              case None =>
+                replyTo ! TeamReplaySubmit.SubmitError(
+                  "Demora en contestar, intenta nuevamente"
+                )
+            }
+            Behaviors.same
+          case SenderTimeOut(replayTeamID) =>
+            current.get(replayTeamID).foreach(ctx.stop)
+            awaiting = awaiting - replayTeamID
+            current = current - replayTeamID
+            Behaviors.same
+          case AwaitSender(replayTeamID) =>
+            awaiting = current
+              .get(replayTeamID)
+              .fold(awaiting)(worker => awaiting + (replayTeamID -> worker))
+            Behaviors.same
+          case WorkerDone(replayTeamID) =>
+            awaiting = awaiting - replayTeamID
+            current = current - replayTeamID
+            Behaviors.same
+        }
+      }
+      .narrow
+  }
+}
