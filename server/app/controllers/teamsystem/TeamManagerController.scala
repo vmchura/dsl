@@ -85,6 +85,10 @@ class TeamManagerController @Inject() (
                   result.flashing(
                     "invitation-error" -> s"Error al guardar: $reason"
                   )
+                case _ =>
+                  result.flashing(
+                    "invitation-error" -> s"Error al guardar: Illegal State"
+                  )
 
               }
           }
