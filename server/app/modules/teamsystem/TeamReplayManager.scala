@@ -4,6 +4,9 @@ import akka.actor.typed.scaladsl.Behaviors
 import akka.actor.typed.{ActorRef, Behavior}
 import com.google.inject.Provides
 import models.Smurf
+import models.services.ParseReplayFileService
+import models.teamsystem.TeamID
+import modules.gameparser.GameJudge
 import play.api.libs.concurrent.ActorModule
 import shared.models.{DiscordID, ReplayTeamID}
 
@@ -16,6 +19,7 @@ object TeamReplayManager extends ActorModule {
   sealed trait Command extends InternalCommand
   case class Submit(
       senderID: DiscordID,
+      teamID: TeamID,
       replay: File,
       replyTo: ActorRef[TeamReplaySubmit.Response]
   ) extends Command
@@ -37,7 +41,12 @@ object TeamReplayManager extends ActorModule {
   override type Message = Command
 
   @Provides
-  def apply(): Behavior[Command] = {
+  def apply()(implicit
+      parseReplayFileService: ParseReplayFileService,
+      judger: ActorRef[GameJudge.JudgeGame],
+      uniqueReplayWatcher: ActorRef[UniqueReplayWatcher.Command],
+      uniqueSmurfWatcher: ActorRef[UniqueSmurfWatcher.Command]
+  ): Behavior[Command] = {
 
     Behaviors
       .setup[InternalCommand] { ctx =>
@@ -46,13 +55,15 @@ object TeamReplayManager extends ActorModule {
         var awaiting: Map[ReplayTeamID, ActorRef[TeamReplaySubmit.Command]] =
           Map.empty
         Behaviors.receiveMessage {
-          case Submit(senderID, replay, replyTo) =>
-            val worker = ctx.spawnAnonymous(TeamReplaySubmit())
+          case Submit(senderID, teamID, replay, replyTo) =>
+            val worker =
+              ctx.spawnAnonymous(TeamReplaySubmit(uniqueReplayWatcher))
             val newID = ReplayTeamID()
             current = current + (newID -> worker)
             worker ! TeamReplaySubmit.Submit(
               newID,
               senderID,
+              teamID,
               replay,
               replyTo,
               ctx.self
