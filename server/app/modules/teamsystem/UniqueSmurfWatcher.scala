@@ -4,10 +4,12 @@ import akka.actor.typed.scaladsl.Behaviors
 import akka.actor.typed.{ActorRef, Behavior}
 import com.google.inject.Provides
 import models.Smurf
+import models.daos.teamsystem.TeamUserSmurfDAO
 import models.daos.{DiscordPlayerLoggedDAO, ValidUserSmurfDAO}
 import play.api.libs.concurrent.ActorModule
 import shared.models.{DiscordID, DiscordPlayerLogged}
-
+import scala.concurrent.ExecutionContext.Implicits.global
+import scala.concurrent.Future
 import scala.util.{Failure, Success}
 
 object UniqueSmurfWatcher extends ActorModule {
@@ -42,13 +44,25 @@ object UniqueSmurfWatcher extends ActorModule {
   @Provides
   def apply(
       validUserSmurfDAO: ValidUserSmurfDAO,
+      teamUserSmurfDAO: TeamUserSmurfDAO,
       discordPlayerLoggedDAO: DiscordPlayerLoggedDAO
-  ): Behavior[Command] =
+  ): Behavior[Command] = {
+    def findOwner(smurf: Smurf): Future[Option[DiscordID]] =
+      validUserSmurfDAO
+        .findOwner(smurf)
+        .zip(teamUserSmurfDAO.findOwner(smurf))
+        .map {
+          case (Some(u), Some(v)) => if (u == v) Some(v) else None
+          case (None, Some(v))    => Some(v)
+          case (Some(u), None)    => Some(u)
+          case (None, None)       => None
+        }
+
     Behaviors
       .setup[InternalCommand] { ctx =>
         Behaviors.receiveMessage {
           case LocateOwner(smurf, replyTo) =>
-            ctx.pipeToSelf(validUserSmurfDAO.findOwner(smurf)) {
+            ctx.pipeToSelf(findOwner(smurf)) {
               case Success(Some(discordID)) =>
                 DiscordIDSmurf(discordID, replyTo)
               case Success(None) => SmurfNotAssignedOnDB(replyTo)
@@ -81,4 +95,5 @@ object UniqueSmurfWatcher extends ActorModule {
 
       }
       .narrow
+  }
 }
