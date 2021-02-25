@@ -5,10 +5,16 @@ import models.daos.{DiscordPlayerLoggedDAO, DiscordPlayerLoggedDAOImpl}
 import models.daos.teamsystem.{
   InvitationDAO,
   InvitationDAOImpl,
+  ReplayTeamDAO,
+  ReplayTeamDAOImpl,
   RequestDAO,
   RequestDAOImpl,
   TeamDAO,
-  TeamDAOImpl
+  TeamDAOImpl,
+  TeamUserSmurfDAO,
+  TeamUserSmurfDAOImpl,
+  TeamUserSmurfPendingDAO,
+  TeamUserSmurfPendingDAOImpl
 }
 import net.codingwell.scalaguice.ScalaModule
 import play.api.libs.concurrent.AkkaGuiceSupport
@@ -36,5 +42,13 @@ class TeamSystemModule
     )
     bindTypedActor(TeamManager, "Team-manager-actor")
     bindTypedActor(RequestJoinManager, "Team-request-manager-actor")
+
+    bindTypedActor(FilePusherActor, "team-file-saver")
+    bindTypedActor(UniqueReplayWatcher, "unique-replay-actor")
+    bindTypedActor(UniqueSmurfWatcher, "unique-smurf-actor")
+    bind[ReplayTeamDAO].to[ReplayTeamDAOImpl]
+    bind[TeamUserSmurfPendingDAO].to[TeamUserSmurfPendingDAOImpl]
+    bind[TeamUserSmurfDAO].to[TeamUserSmurfDAOImpl]
+
   }
 }

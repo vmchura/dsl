@@ -2,7 +2,7 @@ package models.teamsystem
 
 import models.daos.DiscordPlayerLoggedDAO
 import play.api.libs.json.{JsObject, JsResult, JsString, JsValue, Json, OFormat}
-import shared.models.{DiscordID, DiscordPlayerLogged}
+import shared.models.{DiscordID, DiscordPlayerLogged, ReplayTeamID}
 
 import java.util.UUID
 import scala.util.Try
@@ -12,6 +12,7 @@ object TeamID {
   implicit val jsonFormat: OFormat[TeamID] =
     Json.format[TeamID]
 }
+
 sealed trait MemberStatus {
   def name: String
 }
@@ -122,4 +123,16 @@ object TeamWithUsers {
       }
     }
   }
+}
+
+case class PendingSmurf(
+    discordID: DiscordID,
+    smurf: models.Smurf,
+    replayTeamID: ReplayTeamID
+)
+object PendingSmurf {
+  import models.ModelsJsonImplicits._
+
+  implicit val jsonFormat: OFormat[PendingSmurf] =
+    Json.format[PendingSmurf]
 }

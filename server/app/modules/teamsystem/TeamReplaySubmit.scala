@@ -5,7 +5,7 @@ import akka.actor.typed.scaladsl.{ActorContext, Behaviors}
 import models.daos.teamsystem.{TeamReplayDAO, TeamUserSmurfPendingDAO}
 import models.services.ParseReplayFileService
 import models.{ReplayRecord, Smurf}
-import models.teamsystem.{TeamID, TeamReplayInfo}
+import models.teamsystem.{PendingSmurf, TeamID, TeamReplayInfo}
 import modules.gameparser.GameJudge
 import modules.gameparser.GameParser.{GameInfo, ImpossibleToParse, ReplayParsed}
 import shared.models.StarCraftModels.OneVsOne
@@ -143,7 +143,7 @@ object TeamReplaySubmit {
   ): Unit =
     ctx.pipeToSelf(
       teamUserSmurfPendingDAO
-        .add(metaInfoReplay.senderID, smurf, metaInfoReplay.id)
+        .add(PendingSmurf(metaInfoReplay.senderID, smurf, metaInfoReplay.id))
     ) {
       case Success(true) => SmurfSentToLeader()
       case Success(false) =>
