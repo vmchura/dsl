@@ -34,7 +34,8 @@ object TeamReplaySubmit {
   sealed trait Response
   case class SubmitError(reason: String) extends Response
   case class ReplaySavedResponse() extends Response
-  case class SmurfMustBeSelectedResponse(oneVsOne: OneVsOne) extends Response
+  case class SmurfMustBeSelectedResponse(id: ReplayTeamID, oneVsOne: OneVsOne)
+      extends Response
 
   case class Unique() extends InternalCommand
   case class Duplicated() extends InternalCommand
@@ -244,7 +245,7 @@ object TeamReplaySubmit {
   ): Behavior[InternalCommand] =
     Behaviors.receive {
       case (_, BothSmurfsFree(oneVsOne)) =>
-        replyTo ! SmurfMustBeSelectedResponse(oneVsOne)
+        replyTo ! SmurfMustBeSelectedResponse(metaInfoReplay.id, oneVsOne)
         parent ! TeamReplayManager.AwaitSender(metaInfoReplay.id)
         awaitSmurfOfSender(metaInfoReplay)
       case (ctx, SmurfSenderValid(_, _)) =>
@@ -369,13 +370,6 @@ object TeamReplaySubmit {
       teamUserSmurfPendingDAO: TeamUserSmurfPendingDAO
   ): Behavior[InternalCommand] =
     Behaviors.receive {
-      case (_, BothSmurfsFree(oneVsOne)) =>
-        replyTo ! SmurfMustBeSelectedResponse(oneVsOne)
-        parent ! TeamReplayManager.AwaitSender(metaInfoReplay.id)
-        awaitSmurfOfSender(metaInfoReplay)
-      case (ctx, SmurfSenderValid(_, _)) =>
-        saveReplayInfo(ctx, metaInfoReplay)
-        replayInfoSaving(metaInfoReplay)(replyTo, pusher)
       case (ctx, ReplayParsedMessage(replayParsed)) =>
         judger ! GameJudge.JudgeGame(
           replayParsed,
@@ -403,7 +397,9 @@ object TeamReplaySubmit {
       case (_, ReplayErrorParsing(reason)) =>
         replyTo ! SubmitError(reason)
         Behaviors.stopped
-      case _ => Behaviors.unhandled
+      case _ =>
+        replyTo ! SubmitError("Error en el sistema")
+        Behaviors.stopped
     }
 
   def checkDuplicatePending(
