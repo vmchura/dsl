@@ -1,6 +1,11 @@
 import java.util.UUID
 import play.api.libs.json.{Json, OFormat}
-import shared.models.{DiscordID, DiscordPlayerLogged, ReplayTeamID}
+import shared.models.{
+  DiscordID,
+  DiscordPlayerLogged,
+  ReplayTeamID,
+  ReplayTeamRecord
+}
 
 package object models {
 
@@ -21,11 +26,14 @@ package object models {
   }
   object ModelsJsonImplicits {
     import be.venneborg.refined.play.RefinedJsonFormats._
-    implicit val replayTeamID: OFormat[ReplayTeamID] =
+    implicit val replayTeamIDJsonImplicit: OFormat[ReplayTeamID] =
       Json.format[ReplayTeamID]
-    implicit val discordIDjsonFormat: OFormat[DiscordID] =
+    implicit val replayTeamRecordJsonImplicit: OFormat[ReplayTeamRecord] =
+      Json.format[ReplayTeamRecord]
+    implicit val discordIDjsonFormatJsonImplicit: OFormat[DiscordID] =
       Json.format[DiscordID]
-    implicit val discordPlayerLoggedFormat: OFormat[DiscordPlayerLogged] =
+    implicit val discordPlayerLoggedFormatJsonImplicit
+        : OFormat[DiscordPlayerLogged] =
       Json.format[DiscordPlayerLogged]
 
   }
