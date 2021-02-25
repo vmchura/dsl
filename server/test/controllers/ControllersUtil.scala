@@ -49,6 +49,24 @@ object ControllersUtil {
       badParts = Nil
     )
   }
+
+  def resultParseTeamReplay(
+      app: play.api.Application
+  )(resourceReplay: String, userQuerying: User)(implicit
+      env: Environment[DefaultEnv]
+  ): Future[Result] = {
+    val multipartFormData = buildMultiFormData(app)(resourceReplay, Map.empty)
+    route(
+      app,
+      addCSRFToken(
+        FakeRequest(
+          controllers.teamsystem.routes.TeamReplayController.submitTeamReplay()
+        ).withAuthenticator[DefaultEnv](userQuerying.loginInfo)
+          .withMultipartFormDataBody(multipartFormData)
+      )
+    ).getOrElse(throw FailureException(failure("required Some")))
+  }
+
   def resultParseReplay(
       app: play.api.Application
   )(
