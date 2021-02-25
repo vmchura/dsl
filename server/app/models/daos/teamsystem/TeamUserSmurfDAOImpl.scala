@@ -8,7 +8,7 @@ import javax.inject.Inject
 import scala.concurrent.Future
 import scala.concurrent.ExecutionContext.Implicits.global
 
-class TeamUsersSmurfDAOImpl @Inject() (val reactiveMongoApi: ReactiveMongoApi)
+class TeamUserSmurfDAOImpl @Inject() (val reactiveMongoApi: ReactiveMongoApi)
     extends TeamUserSmurfDAO
     with SmurfQueryableImpl {
   def collection: Future[JSONCollection] =
