@@ -7,7 +7,6 @@ import models.Smurf
 import models.daos.teamsystem.{TeamReplayDAO, TeamUserSmurfPendingDAO}
 import models.services.ParseReplayFileService
 import models.teamsystem.TeamID
-import modules.gameparser.GameJudge
 import play.api.libs.concurrent.ActorModule
 import shared.models.{DiscordID, ReplayTeamID}
 
@@ -30,7 +29,8 @@ object TeamReplayManager extends ActorModule {
       replyTo: ActorRef[TeamReplaySubmit.Response]
   ) extends Command
   case class SenderTimeOut(
-      replayTeamID: ReplayTeamID
+      replayTeamID: ReplayTeamID,
+      replyTo: ActorRef[TeamReplaySubmit.Response]
   ) extends Command
   case class AwaitSender(
       replayTeamID: ReplayTeamID
@@ -44,7 +44,6 @@ object TeamReplayManager extends ActorModule {
   @Provides
   def apply()(implicit
       parseReplayFileService: ParseReplayFileService,
-      judger: ActorRef[GameJudge.JudgeGame],
       uniqueReplayWatcher: ActorRef[UniqueReplayWatcher.Command],
       uniqueSmurfWatcher: ActorRef[UniqueSmurfWatcher.Command],
       teamReplayDAO: TeamReplayDAO,
@@ -73,7 +72,7 @@ object TeamReplayManager extends ActorModule {
               ctx.self
             )
             ctx.watchWith(worker, WorkerDone(newID))
-            ctx.scheduleOnce(3 minutes, ctx.self, SenderTimeOut(newID))
+            ctx.scheduleOnce(3 seconds, ctx.self, SenderTimeOut(newID, replyTo))
             Behaviors.same
           case SmurfSelected(replayTeamID, smurf, replyTo) =>
             awaiting.get(replayTeamID) match {
@@ -85,10 +84,13 @@ object TeamReplayManager extends ActorModule {
                 )
             }
             Behaviors.same
-          case SenderTimeOut(replayTeamID) =>
+          case SenderTimeOut(replayTeamID, replyTo) =>
             current.get(replayTeamID).foreach(ctx.stop)
             awaiting = awaiting - replayTeamID
             current = current - replayTeamID
+            replyTo ! TeamReplaySubmit.SubmitError(
+              "Mucho tiempo de operación, error en el sistema"
+            )
             Behaviors.same
           case AwaitSender(replayTeamID) =>
             awaiting = current

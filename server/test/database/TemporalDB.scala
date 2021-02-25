@@ -22,6 +22,7 @@ import utils.auth.DefaultEnv
 import DataBaseObjects._
 import models.daos.{ReplayMatchDAO, UserSmurfDAO}
 import models.services.SmurfService.SmurfAdditionResult.AdditionResult
+import modules.teamsystem.FileSaver
 import shared.models.DiscordID
 
 import java.io.File
@@ -96,7 +97,10 @@ trait TemporalDB
       override def isRegistered(hash: String): Future[Boolean] =
         Future.successful(false)
     }
-
+    private val fileServerPush = new FileSaver {
+      override def push(file: File, replayName: String): Future[Boolean] =
+        Future.successful(true)
+    }
     override def configure(): Unit = {
       bind[Environment[DefaultEnv]].toInstance(env)
       bind[ChallongeTournamentService].toInstance(challongeTournamentService)
@@ -104,6 +108,7 @@ trait TemporalDB
       bind[ParseReplayFileService].toInstance(
         TestServices.parseReplayFileService
       )
+      bind[FileSaver].toInstance(fileServerPush)
     }
   }
   System.setProperty("config.resource", "test-application.conf")

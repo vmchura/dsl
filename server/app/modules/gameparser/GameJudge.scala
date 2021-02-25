@@ -2,15 +2,11 @@ package modules.gameparser
 
 import akka.actor.typed.scaladsl.Behaviors
 import modules.gameparser.GameParser.{ReplayParsed, Team}
-import play.api.libs.concurrent.ActorModule
-import akka.actor.typed.ActorRef
-import com.google.inject.Provides
+import akka.actor.typed.{ActorRef, Behavior}
 import shared.models.StarCraftModels._
-object GameJudge extends ActorModule {
-  override type Message = JudgeGame
+object GameJudge {
   case class JudgeGame(gameInfo: ReplayParsed, replyTo: ActorRef[SCGameMode])
-  @Provides
-  def apply(): Behaviors.Receive[JudgeGame] =
+  def apply(): Behavior[JudgeGame] =
     Behaviors.receive { (_, command) =>
       command match {
         case JudgeGame(replayParsed, replyTo) =>

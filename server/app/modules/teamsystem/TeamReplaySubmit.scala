@@ -41,11 +41,12 @@ object TeamReplaySubmit {
   case class Duplicated() extends InternalCommand
   case class Pending() extends InternalCommand
   case class BothSmurfsFree(oneVsOne: OneVsOne) extends InternalCommand
-  case class WinnerOwnerResponse(response: UniqueSmurfWatcher.Response)
-      extends InternalCommand
+  case class OwnerResponse(
+      oneVsOne: OneVsOne,
+      response: UniqueSmurfWatcher.Response
+  ) extends InternalCommand
   case class GameParsed(oneVsOne: OneVsOne) extends InternalCommand
-  case class LoserOwnerResponse(response: UniqueSmurfWatcher.Response)
-      extends InternalCommand
+
   case class ReplayParsedMessage(replayParsed: ReplayParsed)
       extends InternalCommand
   case class ReplayErrorParsing(reason: String) extends InternalCommand
@@ -264,7 +265,6 @@ object TeamReplaySubmit {
       replyTo: ActorRef[Response],
       parent: ActorRef[TeamReplayManager.Command]
   )(implicit
-      judger: ActorRef[GameJudge.JudgeGame],
       uniqueSmurfWatcher: ActorRef[UniqueSmurfWatcher.Command],
       teamReplayDAO: TeamReplayDAO,
       pusher: ActorRef[FilePusherActor.Command],
@@ -275,34 +275,55 @@ object TeamReplaySubmit {
       case (ctx, message) =>
         val newGame = message match {
           case GameParsed(oneVsOne) => gameBySmurf.copy(game = Some(oneVsOne))
-          case WinnerOwnerResponse(
+          case OwnerResponse(
+                oneVsOne @ OneVsOne(_, loser),
                 UniqueSmurfWatcher.UserOwner(discordPlayerLogged)
               ) =>
-            gameBySmurf.copy(winnersOwner =
-              Some(Right(Some(discordPlayerLogged)))
-            )
-          case WinnerOwnerResponse(
+            if (gameBySmurf.winnersOwner.isEmpty) {
+              uniqueSmurfWatcher ! UniqueSmurfWatcher.LocateOwner(
+                Smurf(loser.smurf),
+                ctx.messageAdapter(response =>
+                  OwnerResponse(oneVsOne, response)
+                )
+              )
+              gameBySmurf
+                .copy(winnersOwner = Some(Right(Some(discordPlayerLogged))))
+            } else {
+              gameBySmurf.copy(loserssOwner =
+                Some(Right(Some(discordPlayerLogged)))
+              )
+            }
+
+          case OwnerResponse(
+                oneVsOne @ OneVsOne(_, loser),
                 UniqueSmurfWatcher.SmurfNotAssigned()
               ) =>
-            gameBySmurf.copy(winnersOwner = Some(Right(None)))
-          case WinnerOwnerResponse(
+            if (gameBySmurf.winnersOwner.isEmpty) {
+              uniqueSmurfWatcher ! UniqueSmurfWatcher.LocateOwner(
+                Smurf(loser.smurf),
+                ctx.messageAdapter(response =>
+                  OwnerResponse(oneVsOne, response)
+                )
+              )
+              gameBySmurf.copy(winnersOwner = Some(Right(None)))
+            } else {
+              gameBySmurf.copy(loserssOwner = Some(Right(None)))
+            }
+          case OwnerResponse(
+                oneVsOne @ OneVsOne(_, loser),
                 UniqueSmurfWatcher.ErrorSmurfWatcher(reason)
               ) =>
-            gameBySmurf.copy(winnersOwner = Some(Left(reason)))
-          case LoserOwnerResponse(
-                UniqueSmurfWatcher.UserOwner(discordPlayerLogged)
-              ) =>
-            gameBySmurf.copy(loserssOwner =
-              Some(Right(Some(discordPlayerLogged)))
-            )
-          case LoserOwnerResponse(
-                UniqueSmurfWatcher.SmurfNotAssigned()
-              ) =>
-            gameBySmurf.copy(loserssOwner = Some(Right(None)))
-          case LoserOwnerResponse(
-                UniqueSmurfWatcher.ErrorSmurfWatcher(reason)
-              ) =>
-            gameBySmurf.copy(loserssOwner = Some(Left(reason)))
+            if (gameBySmurf.winnersOwner.isEmpty) {
+              uniqueSmurfWatcher ! UniqueSmurfWatcher.LocateOwner(
+                Smurf(loser.smurf),
+                ctx.messageAdapter(response =>
+                  OwnerResponse(oneVsOne, response)
+                )
+              )
+              gameBySmurf.copy(winnersOwner = Some(Left(reason)))
+            } else {
+              gameBySmurf.copy(loserssOwner = Some(Left(reason)))
+            }
         }
 
         if (newGame.isComplete) {
@@ -352,7 +373,12 @@ object TeamReplaySubmit {
           ctx.self ! messageToSend
           awaitingResultOfSmurfs(metaInfoReplay, replyTo, parent)
         } else {
-          Behaviors.same
+          awaitingOwnersOfSmurfs(
+            metaInfoReplay,
+            newGame,
+            replyTo,
+            parent
+          )
         }
 
     }
@@ -363,7 +389,6 @@ object TeamReplaySubmit {
       replyTo: ActorRef[Response],
       parent: ActorRef[TeamReplayManager.Command]
   )(implicit
-      judger: ActorRef[GameJudge.JudgeGame],
       uniqueSmurfWatcher: ActorRef[UniqueSmurfWatcher.Command],
       teamReplayDAO: TeamReplayDAO,
       pusher: ActorRef[FilePusherActor.Command],
@@ -371,17 +396,16 @@ object TeamReplaySubmit {
   ): Behavior[InternalCommand] =
     Behaviors.receive {
       case (ctx, ReplayParsedMessage(replayParsed)) =>
+        val judger = ctx.spawnAnonymous(GameJudge())
         judger ! GameJudge.JudgeGame(
           replayParsed,
           ctx.messageAdapter {
-            case onevsone @ OneVsOne(winner, loser) =>
+            case onevsone @ OneVsOne(winner, _) =>
               uniqueSmurfWatcher ! UniqueSmurfWatcher.LocateOwner(
                 Smurf(winner.smurf),
-                ctx.messageAdapter(WinnerOwnerResponse)
-              )
-              uniqueSmurfWatcher ! UniqueSmurfWatcher.LocateOwner(
-                Smurf(loser.smurf),
-                ctx.messageAdapter(LoserOwnerResponse)
+                ctx.messageAdapter(response =>
+                  OwnerResponse(onevsone, response)
+                )
               )
               GameParsed(onevsone)
             case _ =>
@@ -408,7 +432,6 @@ object TeamReplaySubmit {
       parent: ActorRef[TeamReplayManager.Command]
   )(implicit
       parseReplayFileService: ParseReplayFileService,
-      judger: ActorRef[GameJudge.JudgeGame],
       uniqueSmurfWatcher: ActorRef[UniqueSmurfWatcher.Command],
       teamReplayDAO: TeamReplayDAO,
       pusher: ActorRef[FilePusherActor.Command],
@@ -437,7 +460,8 @@ object TeamReplaySubmit {
       case (_, ReplayErrorParsing(reason)) =>
         replyTo ! SubmitError(reason)
         Behaviors.stopped
-      case _ => Behaviors.unhandled
+      case (_, _) =>
+        Behaviors.unhandled
     }
   }
 
@@ -445,7 +469,6 @@ object TeamReplaySubmit {
       uniqueReplayWatcher: ActorRef[UniqueReplayWatcher.Command]
   )(implicit
       parseReplayFileService: ParseReplayFileService,
-      judger: ActorRef[GameJudge.JudgeGame],
       uniqueSmurfWatcher: ActorRef[UniqueSmurfWatcher.Command],
       teamReplayDAO: TeamReplayDAO,
       pusher: ActorRef[FilePusherActor.Command],
@@ -469,7 +492,8 @@ object TeamReplaySubmit {
             replyTo,
             parent
           )
-        case _ => Behaviors.unhandled
+        case _ =>
+          Behaviors.unhandled
       }
       .narrow
 }

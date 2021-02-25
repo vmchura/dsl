@@ -11,6 +11,8 @@ import models.daos.teamsystem.{
   RequestDAOImpl,
   TeamDAO,
   TeamDAOImpl,
+  TeamReplayDAO,
+  TeamReplayDAOImpl,
   TeamUserSmurfDAO,
   TeamUserSmurfDAOImpl,
   TeamUserSmurfPendingDAO,
@@ -46,9 +48,12 @@ class TeamSystemModule
     bindTypedActor(FilePusherActor, "team-file-saver")
     bindTypedActor(UniqueReplayWatcher, "unique-replay-actor")
     bindTypedActor(UniqueSmurfWatcher, "unique-smurf-actor")
+    bindTypedActor(TeamReplayManager, "team-replay-manager")
     bind[ReplayTeamDAO].to[ReplayTeamDAOImpl]
     bind[TeamUserSmurfPendingDAO].to[TeamUserSmurfPendingDAOImpl]
     bind[TeamUserSmurfDAO].to[TeamUserSmurfDAOImpl]
+    bind[FileSaver].to[FileSaverImpl]
+    bind[TeamReplayDAO].to[TeamReplayDAOImpl]
 
   }
 }
