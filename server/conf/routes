@@ -56,5 +56,6 @@ GET    /teamsystem/showteams            controllers.teamsystem.TeamManagerContro
 POST    /teamsystem/request/accept/:requestID            controllers.teamsystem.RequestController.acceptRequest(requestID: java.util.UUID)
 POST    /teamsystem/request/remove/:requestID            controllers.teamsystem.RequestController.removeRequest(requestID: java.util.UUID)
 POST    /teamsystem/request/:teamID            controllers.teamsystem.RequestController.doRequest(teamID: java.util.UUID)
+POST    /teamsystem/submit                      controllers.teamsystem.TeamReplayController.submitTeamReplay()
 
 GET     /javascriptRoutes                       controllers.JavaScriptRouter.javascriptRoutes

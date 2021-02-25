@@ -92,6 +92,9 @@ trait TemporalDB
           replayID: UUID,
           cloudLocation: String
       ): Future[Boolean] = Future.successful(true)
+
+      override def isRegistered(hash: String): Future[Boolean] =
+        Future.successful(false)
     }
 
     override def configure(): Unit = {
