@@ -4,6 +4,7 @@ import akka.actor.typed.scaladsl.Behaviors
 import akka.actor.typed.{ActorRef, Behavior}
 import com.google.inject.Provides
 import models.Smurf
+import models.daos.teamsystem.{TeamReplayDAO, TeamUserSmurfPendingDAO}
 import models.services.ParseReplayFileService
 import models.teamsystem.TeamID
 import modules.gameparser.GameJudge
@@ -45,7 +46,10 @@ object TeamReplayManager extends ActorModule {
       parseReplayFileService: ParseReplayFileService,
       judger: ActorRef[GameJudge.JudgeGame],
       uniqueReplayWatcher: ActorRef[UniqueReplayWatcher.Command],
-      uniqueSmurfWatcher: ActorRef[UniqueSmurfWatcher.Command]
+      uniqueSmurfWatcher: ActorRef[UniqueSmurfWatcher.Command],
+      teamReplayDAO: TeamReplayDAO,
+      pusherFileActor: ActorRef[FilePusherActor.Command],
+      teamUserSmurfPendingDAO: TeamUserSmurfPendingDAO
   ): Behavior[Command] = {
 
     Behaviors

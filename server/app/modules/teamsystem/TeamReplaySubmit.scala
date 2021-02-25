@@ -1,13 +1,14 @@
 package modules.teamsystem
 
-import akka.actor.typed.{ActorRef, Behavior, scaladsl}
-import akka.actor.typed.scaladsl.Behaviors
+import akka.actor.typed.{ActorRef, Behavior}
+import akka.actor.typed.scaladsl.{ActorContext, Behaviors}
+import models.daos.teamsystem.{TeamReplayDAO, TeamUserSmurfPendingDAO}
 import models.services.ParseReplayFileService
 import models.{ReplayRecord, Smurf}
-import models.teamsystem.TeamID
+import models.teamsystem.{TeamID, TeamReplayInfo}
 import modules.gameparser.GameJudge
 import modules.gameparser.GameParser.{GameInfo, ImpossibleToParse, ReplayParsed}
-import shared.models.StarCraftModels.{OneVsOne, OneVsOneMode}
+import shared.models.StarCraftModels.OneVsOne
 import shared.models.{DiscordID, DiscordPlayerLogged, ReplayTeamID}
 
 import java.io.File
@@ -49,17 +50,40 @@ object TeamReplaySubmit {
   case class ReplayErrorParsing(reason: String) extends InternalCommand
   case class SmurfSenderValid(oneVsOne: OneVsOne, smurf: Smurf)
       extends InternalCommand
+  case class SmurfSenderToCheck(smurf: Smurf) extends InternalCommand
 
   case class SmurfSentToLeader() extends InternalCommand
-  case class ReplayInfoSaved() extends InternalCommand
+  case class ReplayInfoSaved(teamReplayInfo: TeamReplayInfo)
+      extends InternalCommand
   case class ReplaySaved() extends InternalCommand
 
+  def saveReplayInfo(
+      context: ActorContext[InternalCommand],
+      metaInfoReplay: MetaInfoReplay
+  )(implicit teamReplayDAO: TeamReplayDAO): Unit = {
+    context.pipeToSelf(
+      teamReplayDAO.save(
+        TeamReplayInfo(
+          metaInfoReplay.id,
+          s"teamreplays/${metaInfoReplay.id.id.toString}.rep",
+          metaInfoReplay.senderID
+        )
+      )
+    ) {
+      case Success(teamReplayInfo) => ReplayInfoSaved(teamReplayInfo)
+      case Failure(error) =>
+        ReplayErrorParsing(s"Error saving InfoReplay: ${error.getMessage}")
+    }
+  }
   def replaySaving(implicit
       replyTo: ActorRef[Response]
   ): Behavior[InternalCommand] =
     Behaviors.receiveMessage {
       case ReplaySaved() =>
         replyTo ! ReplaySavedResponse()
+        Behaviors.stopped
+      case ReplayErrorParsing(reason) =>
+        replyTo ! SubmitError(reason)
         Behaviors.stopped
       case _ =>
         replyTo ! SubmitError("Replay no se ha guardado satisfactoriamente")
@@ -69,12 +93,23 @@ object TeamReplaySubmit {
   def replayInfoSaving(
       metaInfoReplay: MetaInfoReplay
   )(implicit
-      replyTo: ActorRef[Response]
+      replyTo: ActorRef[Response],
+      pusher: ActorRef[FilePusherActor.Command]
   ): Behavior[InternalCommand] =
-    Behaviors.receiveMessage {
-      case ReplayInfoSaved() =>
-        //TODO push and save replay file
+    Behaviors.receive {
+      case (ctx, ReplayInfoSaved(_)) =>
+        pusher ! FilePusherActor.Push(
+          metaInfoReplay.replay,
+          metaInfoReplay.id,
+          ctx.messageAdapter {
+            case FilePusherActor.Pushed()          => ReplaySaved()
+            case FilePusherActor.PushError(reason) => ReplayErrorParsing(reason)
+          }
+        )
         replaySaving
+      case (_, ReplayErrorParsing(reason)) =>
+        replyTo ! SubmitError(reason)
+        Behaviors.stopped
       case _ =>
         replyTo ! SubmitError(
           "Replay Info no se ha guardado satisfactoriamente"
@@ -85,11 +120,14 @@ object TeamReplaySubmit {
   def smurfRelationSaving(
       metaInfoReplay: MetaInfoReplay
   )(implicit
-      replyTo: ActorRef[Response]
+      replyTo: ActorRef[Response],
+      teamReplyDAO: TeamReplayDAO,
+      pusher: ActorRef[FilePusherActor.Command]
   ): Behavior[InternalCommand] =
-    Behaviors.receiveMessage {
-      case SmurfSentToLeader() =>
-        //TODO push info
+    Behaviors.receive {
+      case (ctx, SmurfSentToLeader()) =>
+        saveReplayInfo(ctx, metaInfoReplay)
+
         replayInfoSaving(metaInfoReplay)
       case _ =>
         replyTo ! SubmitError(
@@ -98,16 +136,88 @@ object TeamReplaySubmit {
         Behaviors.stopped
     }
 
+  def sendSmurfToBeChecked(
+      metaInfoReplay: MetaInfoReplay
+  )(smurf: Smurf, ctx: ActorContext[InternalCommand])(implicit
+      teamUserSmurfPendingDAO: TeamUserSmurfPendingDAO
+  ): Unit =
+    ctx.pipeToSelf(
+      teamUserSmurfPendingDAO
+        .add(metaInfoReplay.senderID, smurf, metaInfoReplay.id)
+    ) {
+      case Success(true) => SmurfSentToLeader()
+      case Success(false) =>
+        ReplayErrorParsing("Can't save request of smurf")
+      case Failure(exception) => ReplayErrorParsing(exception.getMessage)
+    }
+
   def awaitSmurfOfSender(
       metaInfoReplay: MetaInfoReplay
+  )(implicit
+      teamReplyDAO: TeamReplayDAO,
+      pusher: ActorRef[FilePusherActor.Command],
+      teamUserSmurfPendingDAO: TeamUserSmurfPendingDAO
   ): Behavior[InternalCommand] =
-    Behaviors.receiveMessage {
-      case SmurfSelected(smurf, replyTo) =>
-        //TODO send smurf to be accepted by the team leader
-        smurfRelationSaving(metaInfoReplay)(replyTo)
+    Behaviors.receive {
+      case (ctx, SmurfSelected(smurf, replyTo)) =>
+        sendSmurfToBeChecked(metaInfoReplay)(smurf, ctx)
+        smurfRelationSaving(metaInfoReplay)(replyTo, teamReplyDAO, pusher)
       case _ => Behaviors.unhandled
     }
 
+  private case class GameBySmurfComplete(
+      winnersOwner: Either[String, Option[DiscordPlayerLogged]],
+      loserssOwner: Either[String, Option[DiscordPlayerLogged]],
+      game: OneVsOne
+  ) {
+
+    def isWinner(discordID: DiscordID): Boolean =
+      winnersOwner match {
+        case Right(Some(discordPlayerLogged)) =>
+          discordPlayerLogged.discordID == discordID
+        case _ => false
+      }
+    def isLoser(discordID: DiscordID): Boolean =
+      winnersOwner match {
+        case Right(Some(discordPlayerLogged)) =>
+          discordPlayerLogged.discordID == discordID
+        case _ => false
+      }
+    def isAPlayer(discordID: DiscordID): Boolean =
+      isWinner(discordID) || isLoser(discordID)
+
+    val bothPlayersCompleteCorrectly: Boolean =
+      (winnersOwner, loserssOwner) match {
+        case (Right(_), Right(_)) => true
+        case _                    => false
+      }
+    def canNotBeAPlayer(discordID: DiscordID): Boolean =
+      if (isAPlayer(discordID))
+        false
+      else {
+        (winnersOwner, loserssOwner) match {
+          case (Right(Some(_)), Right(Some(_))) => true
+          case _                                => false
+        }
+      }
+    def canFillSpace(
+        discordID: DiscordID
+    )(space: Either[String, Option[DiscordPlayerLogged]]): Boolean =
+      if (isAPlayer(discordID))
+        false
+      else {
+        space match {
+          case Right(None) => true
+          case _           => false
+        }
+      }
+    def canFillToBeWinner(discordID: DiscordID): Boolean =
+      canFillSpace(discordID)(winnersOwner)
+    def canFillToBeLoser(discordID: DiscordID): Boolean =
+      canFillSpace(discordID)(loserssOwner)
+    def canFillBothSpaces(discordID: DiscordID): Boolean =
+      canFillToBeWinner(discordID) && canFillToBeLoser(discordID)
+  }
   private case class GameBySmurf(
       winnersOwner: Option[Either[String, Option[DiscordPlayerLogged]]] = None,
       loserssOwner: Option[Either[String, Option[DiscordPlayerLogged]]] = None,
@@ -115,20 +225,7 @@ object TeamReplaySubmit {
   ) {
     val isComplete: Boolean =
       Seq(winnersOwner, loserssOwner, game).forall(_.isDefined)
-    private def take(
-        owner: Option[Either[String, Option[DiscordPlayerLogged]]]
-    )(discordID: DiscordID): Option[DiscordPlayerLogged] =
-      owner match {
-        case Some(Right(Some(logged))) if logged.discordID == discordID =>
-          Some(logged)
-        case _ => None
-      }
-    private def takeIfWinner(discordID: DiscordID) =
-      take(winnersOwner)(discordID)
-    private def takeIfLoser(discordID: DiscordID) =
-      take(loserssOwner)(discordID)
-    def isAPlayer(discordID: DiscordID): Option[DiscordPlayerLogged] =
-      takeIfWinner(discordID).orElse(takeIfLoser(discordID))
+
   }
   private case class MetaInfoReplay(
       id: ReplayTeamID,
@@ -140,15 +237,25 @@ object TeamReplaySubmit {
       metaInfoReplay: MetaInfoReplay,
       replyTo: ActorRef[Response],
       parent: ActorRef[TeamReplayManager.Command]
+  )(implicit
+      teamReplayDAO: TeamReplayDAO,
+      pusher: ActorRef[FilePusherActor.Command],
+      teamUserSmurfPendingDAO: TeamUserSmurfPendingDAO
   ): Behavior[InternalCommand] =
-    Behaviors.receiveMessage {
-      case BothSmurfsFree(oneVsOne) =>
+    Behaviors.receive {
+      case (_, BothSmurfsFree(oneVsOne)) =>
         replyTo ! SmurfMustBeSelectedResponse(oneVsOne)
         parent ! TeamReplayManager.AwaitSender(metaInfoReplay.id)
         awaitSmurfOfSender(metaInfoReplay)
-      case SmurfSenderValid(oneVsOne, smurf) =>
-        //TODO push replay info
-        replayInfoSaving(metaInfoReplay)(replyTo)
+      case (ctx, SmurfSenderValid(_, _)) =>
+        saveReplayInfo(ctx, metaInfoReplay)
+        replayInfoSaving(metaInfoReplay)(replyTo, pusher)
+      case (ctx, SmurfSenderToCheck(smurf)) =>
+        sendSmurfToBeChecked(metaInfoReplay)(smurf, ctx)
+        smurfRelationSaving(metaInfoReplay)(replyTo, teamReplayDAO, pusher)
+      case (_, ReplayErrorParsing(reason)) =>
+        replyTo ! SubmitError(reason)
+        Behaviors.stopped
     }
   def awaitingOwnersOfSmurfs(
       metaInfoReplay: MetaInfoReplay,
@@ -157,7 +264,10 @@ object TeamReplaySubmit {
       parent: ActorRef[TeamReplayManager.Command]
   )(implicit
       judger: ActorRef[GameJudge.JudgeGame],
-      uniqueSmurfWatcher: ActorRef[UniqueSmurfWatcher.Command]
+      uniqueSmurfWatcher: ActorRef[UniqueSmurfWatcher.Command],
+      teamReplayDAO: TeamReplayDAO,
+      pusher: ActorRef[FilePusherActor.Command],
+      teamUserSmurfPendingDAO: TeamUserSmurfPendingDAO
   ): Behavior[InternalCommand] = {
 
     Behaviors.receive {
@@ -195,8 +305,50 @@ object TeamReplaySubmit {
         }
 
         if (newGame.isComplete) {
-          val senderIsAPlayer = newGame.isAPlayer(metaInfoReplay.senderID)
-
+          val completeGame = GameBySmurfComplete(
+            newGame.winnersOwner.get,
+            newGame.loserssOwner.get,
+            newGame.game.get
+          )
+          val messageToSend =
+            if (completeGame.isAPlayer(metaInfoReplay.senderID)) {
+              SmurfSenderValid(
+                completeGame.game, {
+                  if (completeGame.isWinner(metaInfoReplay.senderID))
+                    Smurf(completeGame.game.winner.smurf)
+                  else {
+                    Smurf(completeGame.game.loser.smurf)
+                  }
+                }
+              )
+            } else {
+              if (completeGame.canNotBeAPlayer(metaInfoReplay.senderID)) {
+                ReplayErrorParsing("smurfs ya pertenecen a otros usuarios")
+              } else {
+                if (completeGame.bothPlayersCompleteCorrectly) {
+                  if (completeGame.canFillBothSpaces(metaInfoReplay.senderID)) {
+                    BothSmurfsFree(completeGame.game)
+                  } else {
+                    if (
+                      completeGame.canFillToBeWinner(metaInfoReplay.senderID)
+                    ) {
+                      SmurfSenderToCheck(Smurf(completeGame.game.winner.smurf))
+                    } else {
+                      if (
+                        completeGame.canFillToBeLoser(metaInfoReplay.senderID)
+                      ) {
+                        SmurfSenderToCheck(Smurf(completeGame.game.loser.smurf))
+                      } else {
+                        ReplayErrorParsing("Error en la lógica del sistema")
+                      }
+                    }
+                  }
+                } else {
+                  ReplayErrorParsing("Error al obtener el jugador de un smurf")
+                }
+              }
+            }
+          ctx.self ! messageToSend
           awaitingResultOfSmurfs(metaInfoReplay, replyTo, parent)
         } else {
           Behaviors.same
@@ -211,16 +363,19 @@ object TeamReplaySubmit {
       parent: ActorRef[TeamReplayManager.Command]
   )(implicit
       judger: ActorRef[GameJudge.JudgeGame],
-      uniqueSmurfWatcher: ActorRef[UniqueSmurfWatcher.Command]
+      uniqueSmurfWatcher: ActorRef[UniqueSmurfWatcher.Command],
+      teamReplayDAO: TeamReplayDAO,
+      pusher: ActorRef[FilePusherActor.Command],
+      teamUserSmurfPendingDAO: TeamUserSmurfPendingDAO
   ): Behavior[InternalCommand] =
     Behaviors.receive {
       case (_, BothSmurfsFree(oneVsOne)) =>
         replyTo ! SmurfMustBeSelectedResponse(oneVsOne)
         parent ! TeamReplayManager.AwaitSender(metaInfoReplay.id)
         awaitSmurfOfSender(metaInfoReplay)
-      case (_, SmurfSenderValid(oneVsOne, smurf)) =>
-        //TODO push replay info
-        replayInfoSaving(metaInfoReplay)(replyTo)
+      case (ctx, SmurfSenderValid(_, _)) =>
+        saveReplayInfo(ctx, metaInfoReplay)
+        replayInfoSaving(metaInfoReplay)(replyTo, pusher)
       case (ctx, ReplayParsedMessage(replayParsed)) =>
         judger ! GameJudge.JudgeGame(
           replayParsed,
@@ -258,19 +413,23 @@ object TeamReplaySubmit {
   )(implicit
       parseReplayFileService: ParseReplayFileService,
       judger: ActorRef[GameJudge.JudgeGame],
-      uniqueSmurfWatcher: ActorRef[UniqueSmurfWatcher.Command]
+      uniqueSmurfWatcher: ActorRef[UniqueSmurfWatcher.Command],
+      teamReplayDAO: TeamReplayDAO,
+      pusher: ActorRef[FilePusherActor.Command],
+      teamUserSmurfPendingDAO: TeamUserSmurfPendingDAO
   ): Behavior[InternalCommand] = {
     Behaviors.receive {
       case (ctx, Unique()) =>
-        //TODO parse replay
         ctx.pipeToSelf(
           parseReplayFileService
             .parseFile(metaInfoReplay.replay)
             .map(GameInfo.apply)
         ) {
-          case Success(parsed: ReplayParsed) => ???
-          case Success(ImpossibleToParse)    => ???
-          case Failure(error)                => ???
+          case Success(parsed: ReplayParsed) => ReplayParsedMessage(parsed)
+          case Success(ImpossibleToParse) =>
+            ReplayErrorParsing("Impossible to parse replay")
+          case Failure(error) =>
+            ReplayErrorParsing(s"Error parsing file: ${error.getMessage}")
         }
         checkingReplayStatus(metaInfoReplay, replyTo, parent)
       case (_, Pending()) =>
@@ -291,7 +450,10 @@ object TeamReplaySubmit {
   )(implicit
       parseReplayFileService: ParseReplayFileService,
       judger: ActorRef[GameJudge.JudgeGame],
-      uniqueSmurfWatcher: ActorRef[UniqueSmurfWatcher.Command]
+      uniqueSmurfWatcher: ActorRef[UniqueSmurfWatcher.Command],
+      teamReplayDAO: TeamReplayDAO,
+      pusher: ActorRef[FilePusherActor.Command],
+      teamUserSmurfPendingDAO: TeamUserSmurfPendingDAO
   ): Behavior[Command] =
     Behaviors
       .receive[InternalCommand] {
