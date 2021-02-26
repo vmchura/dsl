@@ -10,11 +10,13 @@ import models.daos.teamsystem.TeamDAO
 import modules.teamsystem.{TeamReplayManager, TeamReplaySubmit}
 import play.api.i18n.I18nSupport
 import play.api.libs.Files
-import play.api.mvc.{Action, MultipartFormData}
-import shared.models.DiscordID
+import play.api.mvc.{Action, AnyContent, MultipartFormData}
+import shared.models.{DiscordID, ReplayTeamID}
 import akka.actor.typed.scaladsl.AskPattern._
 import akka.util.Timeout
+import models.Smurf
 
+import java.util.UUID
 import javax.inject.Inject
 import scala.concurrent.duration.DurationInt
 import scala.concurrent.{ExecutionContext, Future}
@@ -54,8 +56,13 @@ class TeamReplayController @Inject() (
                       case TeamReplaySubmit.ReplaySavedResponse() =>
                         Ok("replay saved")
                       case TeamReplaySubmit
-                            .SmurfMustBeSelectedResponse(_, _) =>
-                        Ok("needs confirmation")
+                            .SmurfMustBeSelectedResponse(
+                              replayTeamID,
+                              oneVsOne
+                            ) =>
+                        Ok(
+                          s"needs confirmation [${replayTeamID.id.toString}] $oneVsOne"
+                        )
                     }
                 case None => Future.successful(Ok("No replay acquired"))
               }
@@ -63,6 +70,30 @@ class TeamReplayController @Inject() (
             case None =>
               Future.successful(Ok("You are not official member of a team"))
           }
+
+    }
+
+  def selectSmurf(smurf: String, replayTeamID: UUID): Action[AnyContent] =
+    silhouette.SecuredAction.async { implicit request =>
+      submitActor
+        .ask[TeamReplaySubmit.Response](ref =>
+          TeamReplayManager
+            .SmurfSelected(
+              replayTeamID = ReplayTeamID(replayTeamID),
+              smurf = Smurf(smurf),
+              replyTo = ref
+            )
+        )
+        .map {
+          case TeamReplaySubmit.SubmitError(reason) =>
+            Ok(reason)
+          case TeamReplaySubmit.ReplaySavedResponse() =>
+            Ok("replay saved")
+          case _ =>
+            Ok(
+              s"Unexpected response"
+            )
+        }
 
     }
 }
