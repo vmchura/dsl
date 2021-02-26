@@ -1,12 +1,6 @@
 package controllers
 import play.api.test.Helpers._
-import akka.http.scaladsl.model.HttpHeader.ParsingResult.Ok
-import database.DataBaseObjects.{
-  first_match,
-  first_user,
-  second_user,
-  third_user
-}
+import database.DataBaseObjects.{first_user, second_user, third_user}
 import database.TemporalDB
 import models.Smurf
 import models.daos.DiscordPlayerLoggedDAO
@@ -30,8 +24,6 @@ import shared.models.teamsystem.{
 }
 import upickle.default._
 
-import java.lang.IllegalStateException
-import java.util.UUID
 class TeamReplayControllerTest
     extends PlaySpec
     with TemporalDB
@@ -58,12 +50,10 @@ class TeamReplayControllerTest
       status(result) mustEqual OK
       val bodyText = contentAsString(result)
 
-      val response = read[Either[String, TeamReplayResponse]](bodyText)
-      response.map(SpecificTeamReplayResponse.apply) match {
-        case Left(error) => fail(error)
-        case Right(Some(TeamReplayError(reason))) =>
+      SpecificTeamReplayResponse(read[TeamReplayResponse](bodyText)) match {
+        case Some(TeamReplayError(reason)) =>
           assert(reason.contains("You are not official member of a team"))
-        case Right(messageResponse) =>
+        case messageResponse =>
           fail(s"Not expected response: $messageResponse")
       }
     }
@@ -76,12 +66,11 @@ class TeamReplayControllerTest
         )
       status(result) mustEqual OK
       val bodyText = contentAsString(result)
-      val response = read[Either[String, TeamReplayResponse]](bodyText)
-      response.map(SpecificTeamReplayResponse.apply) match {
-        case Left(error) => fail(error)
-        case Right(Some(SmurfToVerify(_, _))) =>
+
+      SpecificTeamReplayResponse(read[TeamReplayResponse](bodyText)) match {
+        case Some(SmurfToVerify(_, _)) =>
           succeed
-        case Right(messageResponse) =>
+        case messageResponse =>
           fail(s"Not expected response: $messageResponse")
       }
     }
@@ -108,11 +97,9 @@ class TeamReplayControllerTest
         )
       status(result) mustEqual OK
       val bodyText = contentAsString(result)
-      val response = read[Either[String, TeamReplayResponse]](bodyText)
-      response.map(SpecificTeamReplayResponse.apply) match {
-        case Left(error)                => fail(error)
-        case Right(Some(ReplaySaved())) =>
-        case Right(messageResponse) =>
+      SpecificTeamReplayResponse(read[TeamReplayResponse](bodyText)) match {
+        case Some(ReplaySaved()) =>
+        case messageResponse =>
           fail(s"Not expected response: $messageResponse")
       }
       val pending = app.injector.instanceOf(classOf[TeamUserSmurfPendingDAO])
@@ -156,12 +143,10 @@ class TeamReplayControllerTest
         )
       status(result) mustEqual OK
       val bodyText = contentAsString(result)
-      val response = read[Either[String, TeamReplayResponse]](bodyText)
-      response.map(SpecificTeamReplayResponse.apply) match {
-        case Left(error) => fail(error)
-        case Right(Some(TeamReplayError(reason))) =>
+      SpecificTeamReplayResponse(read[TeamReplayResponse](bodyText)) match {
+        case Some(TeamReplayError(reason)) =>
           assert(reason.contains("otros"))
-        case Right(messageResponse) =>
+        case messageResponse =>
           fail(s"Not expected response: $messageResponse")
       }
       val pending = app.injector.instanceOf(classOf[TeamUserSmurfPendingDAO])
@@ -179,14 +164,13 @@ class TeamReplayControllerTest
         )
       status(result) mustEqual OK
       val bodyText = contentAsString(result)
-      val response = read[Either[String, TeamReplayResponse]](bodyText)
-      val smtv = response.map(SpecificTeamReplayResponse.apply) match {
-        case Left(error) => fail(error)
-        case Right(Some(stv @ SmurfToVerify(replayTeamID, oneVsOne))) =>
-          stv
-        case Right(messageResponse) =>
-          fail(s"Not expected response: $messageResponse")
-      }
+      val smtv =
+        SpecificTeamReplayResponse(read[TeamReplayResponse](bodyText)) match {
+          case Some(stv @ SmurfToVerify(_, _)) =>
+            stv
+          case messageResponse =>
+            fail(s"Not expected response: $messageResponse")
+        }
 
       val replayTeamID = smtv.replayTeamID.id
       val finalResult = route(
@@ -200,12 +184,11 @@ class TeamReplayControllerTest
       ).getOrElse(throw new IllegalStateException("Select smurf broken"))
 
       val finalBodyText = contentAsString(finalResult)
-      val finalResponse =
-        read[Either[String, TeamReplayResponse]](finalBodyText)
-      finalResponse.map(SpecificTeamReplayResponse.apply) match {
-        case Left(error)                => fail(error)
-        case Right(Some(ReplaySaved())) =>
-        case Right(messageResponse) =>
+      SpecificTeamReplayResponse(
+        read[TeamReplayResponse](finalBodyText)
+      ) match {
+        case Some(ReplaySaved()) =>
+        case messageResponse =>
           fail(s"Not expected response: $messageResponse")
       }
       val pending = app.injector.instanceOf(classOf[TeamUserSmurfPendingDAO])

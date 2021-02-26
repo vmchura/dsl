@@ -15,7 +15,6 @@ import shared.models.{DiscordID, ReplayTeamID}
 import akka.actor.typed.scaladsl.AskPattern._
 import akka.util.Timeout
 import models.Smurf
-import play.api.libs.json.Json
 import shared.models.teamsystem.{
   ReplaySaved,
   SmurfToVerify,
@@ -47,10 +46,10 @@ class TeamReplayController @Inject() (
   ): Future[Result] = {
     futResponse
       .map { response =>
-        Right(TeamReplayResponse(response)): Either[String, TeamReplayResponse]
+        TeamReplayResponse(response)
       }
       .recover { error =>
-        Left(error.getMessage): Either[String, TeamReplayResponse]
+        TeamReplayResponse(TeamReplayError(error.getMessage))
       }
       .map { response =>
         Ok(write(response))
