@@ -10,18 +10,26 @@ import models.daos.teamsystem.TeamDAO
 import modules.teamsystem.{TeamReplayManager, TeamReplaySubmit}
 import play.api.i18n.I18nSupport
 import play.api.libs.Files
-import play.api.mvc.{Action, AnyContent, MultipartFormData}
+import play.api.mvc.{Action, AnyContent, MultipartFormData, Result}
 import shared.models.{DiscordID, ReplayTeamID}
 import akka.actor.typed.scaladsl.AskPattern._
 import akka.util.Timeout
 import models.Smurf
+import play.api.libs.json.Json
+import shared.models.teamsystem.{
+  ReplaySaved,
+  SmurfToVerify,
+  SpecificTeamReplayResponse,
+  TeamReplayError,
+  TeamReplayResponse
+}
 
 import java.util.UUID
 import javax.inject.Inject
 import scala.concurrent.duration.DurationInt
 import scala.concurrent.{ExecutionContext, Future}
 import scala.language.postfixOps
-
+import upickle.default._
 class TeamReplayController @Inject() (
     scc: SilhouetteControllerComponents,
     submitActor: ActorRef[TeamReplayManager.Command]
@@ -34,11 +42,26 @@ class TeamReplayController @Inject() (
     with I18nSupport {
   implicit val timeOut: Timeout = 10 seconds
 
+  def buildResponse(
+      futResponse: Future[SpecificTeamReplayResponse]
+  ): Future[Result] = {
+    futResponse
+      .map { response =>
+        Right(TeamReplayResponse(response)): Either[String, TeamReplayResponse]
+      }
+      .recover { error =>
+        Left(error.getMessage): Either[String, TeamReplayResponse]
+      }
+      .map { response =>
+        Ok(write(response))
+      }
+  }
+
   def submitTeamReplay(): Action[MultipartFormData[Files.TemporaryFile]] =
     silhouette.SecuredAction.async(parse.multipartFormData) {
       implicit request =>
         val discordID = DiscordID(request.identity.loginInfo.providerKey)
-        teamDAO
+        val futResponse = teamDAO
           .teamsOf(discordID)
           .map(_.find(_.isOfficial(discordID)))
           .flatMap {
@@ -52,30 +75,36 @@ class TeamReplayController @Inject() (
                     )
                     .map {
                       case TeamReplaySubmit.SubmitError(reason) =>
-                        Ok(reason)
+                        TeamReplayError(reason)
                       case TeamReplaySubmit.ReplaySavedResponse() =>
-                        Ok("replay saved")
+                        ReplaySaved()
                       case TeamReplaySubmit
                             .SmurfMustBeSelectedResponse(
                               replayTeamID,
                               oneVsOne
                             ) =>
-                        Ok(
-                          s"needs confirmation [${replayTeamID.id.toString}] $oneVsOne"
-                        )
+                        SmurfToVerify(replayTeamID, oneVsOne)
+
                     }
-                case None => Future.successful(Ok("No replay acquired"))
+                case None =>
+                  Future.successful(
+                    TeamReplayError("No replay acquired")
+                  )
               }
 
             case None =>
-              Future.successful(Ok("You are not official member of a team"))
+              Future.successful(
+                TeamReplayError("You are not official member of a team")
+              )
           }
+
+        buildResponse(futResponse)
 
     }
 
   def selectSmurf(smurf: String, replayTeamID: UUID): Action[AnyContent] =
     silhouette.SecuredAction.async { implicit request =>
-      submitActor
+      val futResponse = submitActor
         .ask[TeamReplaySubmit.Response](ref =>
           TeamReplayManager
             .SmurfSelected(
@@ -86,14 +115,11 @@ class TeamReplayController @Inject() (
         )
         .map {
           case TeamReplaySubmit.SubmitError(reason) =>
-            Ok(reason)
+            TeamReplayError(reason)
           case TeamReplaySubmit.ReplaySavedResponse() =>
-            Ok("replay saved")
-          case _ =>
-            Ok(
-              s"Unexpected response"
-            )
+            ReplaySaved()
+          case _ => TeamReplayError("Unexpected response")
         }
-
+      buildResponse(futResponse)
     }
 }

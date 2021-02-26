@@ -21,6 +21,14 @@ import utils.auth.DefaultEnv
 
 import scala.concurrent.ExecutionContext.Implicits.global
 import com.mohiva.play.silhouette.test._
+import shared.models.teamsystem.{
+  ReplaySaved,
+  SmurfToVerify,
+  SpecificTeamReplayResponse,
+  TeamReplayError,
+  TeamReplayResponse
+}
+import upickle.default._
 
 import java.lang.IllegalStateException
 import java.util.UUID
@@ -50,7 +58,14 @@ class TeamReplayControllerTest
       status(result) mustEqual OK
       val bodyText = contentAsString(result)
 
-      assert(bodyText.contains("You are not official member of a team"))
+      val response = read[Either[String, TeamReplayResponse]](bodyText)
+      response.map(SpecificTeamReplayResponse.apply) match {
+        case Left(error) => fail(error)
+        case Right(Some(TeamReplayError(reason))) =>
+          assert(reason.contains("You are not official member of a team"))
+        case Right(messageResponse) =>
+          fail(s"Not expected response: $messageResponse")
+      }
     }
     "Response with select smurfs" in {
       createTeamAndAdd(DiscordID(first_user.loginInfo.providerKey))
@@ -61,8 +76,14 @@ class TeamReplayControllerTest
         )
       status(result) mustEqual OK
       val bodyText = contentAsString(result)
-
-      assert(bodyText.contains("needs confirmation"))
+      val response = read[Either[String, TeamReplayResponse]](bodyText)
+      response.map(SpecificTeamReplayResponse.apply) match {
+        case Left(error) => fail(error)
+        case Right(Some(SmurfToVerify(_, _))) =>
+          succeed
+        case Right(messageResponse) =>
+          fail(s"Not expected response: $messageResponse")
+      }
     }
     "Response with smurf to be checked" in {
       createTeamAndAdd(DiscordID(first_user.loginInfo.providerKey))
@@ -87,7 +108,13 @@ class TeamReplayControllerTest
         )
       status(result) mustEqual OK
       val bodyText = contentAsString(result)
-      assert(bodyText.contains("replay saved"))
+      val response = read[Either[String, TeamReplayResponse]](bodyText)
+      response.map(SpecificTeamReplayResponse.apply) match {
+        case Left(error)                => fail(error)
+        case Right(Some(ReplaySaved())) =>
+        case Right(messageResponse) =>
+          fail(s"Not expected response: $messageResponse")
+      }
       val pending = app.injector.instanceOf(classOf[TeamUserSmurfPendingDAO])
       whenReady(pending.load(DiscordID(first_user.loginInfo.providerKey))) {
         res =>
@@ -129,7 +156,14 @@ class TeamReplayControllerTest
         )
       status(result) mustEqual OK
       val bodyText = contentAsString(result)
-      assert(bodyText.contains("otros"))
+      val response = read[Either[String, TeamReplayResponse]](bodyText)
+      response.map(SpecificTeamReplayResponse.apply) match {
+        case Left(error) => fail(error)
+        case Right(Some(TeamReplayError(reason))) =>
+          assert(reason.contains("otros"))
+        case Right(messageResponse) =>
+          fail(s"Not expected response: $messageResponse")
+      }
       val pending = app.injector.instanceOf(classOf[TeamUserSmurfPendingDAO])
       whenReady(pending.load(DiscordID(first_user.loginInfo.providerKey))) {
         res =>
@@ -145,29 +179,41 @@ class TeamReplayControllerTest
         )
       status(result) mustEqual OK
       val bodyText = contentAsString(result)
-      val initIndex = bodyText.indexOf('[')
-      val endIndex = bodyText.indexOf(']')
-      val replayTeamID =
-        UUID.fromString(bodyText.substring(initIndex + 1, endIndex))
+      val response = read[Either[String, TeamReplayResponse]](bodyText)
+      val smtv = response.map(SpecificTeamReplayResponse.apply) match {
+        case Left(error) => fail(error)
+        case Right(Some(stv @ SmurfToVerify(replayTeamID, oneVsOne))) =>
+          stv
+        case Right(messageResponse) =>
+          fail(s"Not expected response: $messageResponse")
+      }
+
+      val replayTeamID = smtv.replayTeamID.id
       val finalResult = route(
         app,
         addCSRFToken(
           FakeRequest(
             controllers.teamsystem.routes.TeamReplayController
-              .selectSmurf("G19", replayTeamID)
+              .selectSmurf(smtv.oneVsOne.winner.smurf, replayTeamID)
           ).withAuthenticator[DefaultEnv](first_user.loginInfo)
         )
       ).getOrElse(throw new IllegalStateException("Select smurf broken"))
 
       val finalBodyText = contentAsString(finalResult)
-      assert(finalBodyText.contains("replay saved"))
+      val finalResponse =
+        read[Either[String, TeamReplayResponse]](finalBodyText)
+      finalResponse.map(SpecificTeamReplayResponse.apply) match {
+        case Left(error)                => fail(error)
+        case Right(Some(ReplaySaved())) =>
+        case Right(messageResponse) =>
+          fail(s"Not expected response: $messageResponse")
+      }
       val pending = app.injector.instanceOf(classOf[TeamUserSmurfPendingDAO])
       whenReady(pending.load(DiscordID(first_user.loginInfo.providerKey))) {
         res =>
           assertResult(1)(res.length)
           assertResult(Some(Smurf("G19")))(res.headOption.map(_.smurf))
       }
-      assert(bodyText.contains("needs confirmation"))
     }
   }
 }
