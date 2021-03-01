@@ -12,27 +12,35 @@ import play.api.Configuration
 import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.Future
 
-class DiscordFileServiceImpl @Inject()(configuration: Configuration) extends DiscordFileService with Logger {
-  implicit val sttpBackend: SttpBackend[Future, Nothing, WebSocketHandler] = AsyncHttpClientFutureBackend()
+class DiscordFileServiceImpl @Inject() (configuration: Configuration)
+    extends DiscordFileService
+    with Logger {
+  implicit val sttpBackend: SttpBackend[Future, Nothing, WebSocketHandler] =
+    AsyncHttpClientFutureBackend()
 
-  override protected val bot_token: String = configuration.get[String]("discord.bottoken")
+  override protected val bot_token: String =
+    configuration.get[String]("discord.bottoken")
 
   import net.dv8tion.jda.api.JDA
   import net.dv8tion.jda.api.JDABuilder
 
   private val jda: JDA = JDABuilder.createDefault(bot_token).build
-  def pushFileOnChannel(channelID: String, file: File, comment: String, fileName: String): Future[Boolean] = {
+  def pushFileOnChannel(
+      channelID: String,
+      file: File,
+      comment: String,
+      fileName: String
+  ): Future[Boolean] = {
 
-    try{
+    try {
       jda.awaitReady
       val channel = jda.getTextChannelById(channelID.toLong)
-      val res = channel.sendFile(file,fileName)
+      val res = channel.sendFile(file, fileName)
       res.queue(_.getAuthor)
       Future.successful(true)
-    }catch{
-      case _:Throwable => Future.successful(false)
+    } catch {
+      case _: Throwable => Future.successful(false)
     }
-
 
   }
 }
