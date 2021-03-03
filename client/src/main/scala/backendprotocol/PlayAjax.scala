@@ -72,7 +72,23 @@ class PlayAjax[O](playCall: PlayCall[O]) {
     runCallWithParser(parseRequest, data)
 
   }
+  def callByAjaxWithTextParser(
+      parser: String => O,
+      data: FormData = new FormData()
+  ): Future[Either[String, O]] = {
 
+    def parseRequest(response: XMLHttpRequest): Either[String, O] = {
+
+      try {
+
+        Right(parser(response.responseText))
+      } catch {
+        case e: Throwable => Left("ERROR describing JSON?: " + e.toString)
+      }
+    }
+    runCallWithParser(parseRequest, data)
+
+  }
   def callByAjaxGetText(): Future[Either[String, String]] = {
     def parseRequest(response: XMLHttpRequest): Either[String, String] =
       if (response.status == 200) {

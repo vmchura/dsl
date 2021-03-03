@@ -14,7 +14,7 @@ class ParseReplayFileServiceLocal extends ParseReplayFileService {
     if (res == 0) {
       Future.successful(Right(buffer.toString()))
     } else {
-      println(buffer.toString())
+
       Future.failed(
         new IllegalArgumentException("screp not installed correctly")
       )
