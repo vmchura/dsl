@@ -14,7 +14,8 @@ class JavaScriptRouter @Inject() (components: ControllerComponents)
         JavaScriptReverseRouter("jsRoutes")(
           routes.javascript.ReplayMatchController.parseReplay,
           teamsystem.routes.javascript.MemberSupervisorController.findMembers,
-          teamsystem.routes.javascript.TeamReplayController.submitTeamReplay
+          teamsystem.routes.javascript.TeamReplayController.submitTeamReplay,
+          teamsystem.routes.javascript.TeamReplayController.selectSmurf
         )
       )
     }

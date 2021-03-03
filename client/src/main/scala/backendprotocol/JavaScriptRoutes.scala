@@ -4,6 +4,7 @@ import shared.PlayCall
 import shared.models.teamsystem.TeamReplayResponse
 import shared.models.{ChallongeOneVsOneMatchGameResult, DiscordPlayerLogged}
 
+import java.util.UUID
 import scala.scalajs.js
 import scala.scalajs.js.annotation.JSGlobal
 
@@ -40,5 +41,10 @@ trait TMemberSupervisorController extends js.Object {
 @js.native
 trait TTeamReplayController extends js.Object {
   def submitTeamReplay(): PlayCall[TeamReplayResponse] =
+    js.native
+  def selectSmurf(
+      smurf: String,
+      replayTeamID: UUID
+  ): PlayCall[TeamReplayResponse] =
     js.native
 }
