@@ -33,8 +33,14 @@ object GameJudge {
             if (winnerDefined) {
               if (is1v1) {
                 val resultOneVsOne = (winners, losers) match {
-                  case (winner :: Nil, loser :: Nil) => OneVsOne(winner, loser)
-                  case _                             => InvalidSCGameMode(winners ::: losers)
+                  case (winner :: Nil, loser :: Nil) =>
+                    OneVsOne(
+                      winner,
+                      loser,
+                      replayParsed.mapName.getOrElse("???"),
+                      replayParsed.startTime.getOrElse("???")
+                    )
+                  case _ => InvalidSCGameMode(winners ::: losers)
                 }
                 replayParsed.gameMode match {
                   case OneVsOneMode | TopVsBottom | Melee | DangerMode =>
@@ -44,7 +50,12 @@ object GameJudge {
               } else {
                 replayParsed match {
                   case ReplayParsed(_, _, TopVsBottom, _, _) =>
-                    ManyVsMany(winners, losers)
+                    ManyVsMany(
+                      winners,
+                      losers,
+                      replayParsed.mapName.getOrElse("???"),
+                      replayParsed.startTime.getOrElse("???")
+                    )
                   case _ => defaultOnError
                 }
               }

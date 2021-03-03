@@ -276,7 +276,7 @@ object TeamReplaySubmit {
         val newGame = message match {
           case GameParsed(oneVsOne) => gameBySmurf.copy(game = Some(oneVsOne))
           case OwnerResponse(
-                oneVsOne @ OneVsOne(_, loser),
+                oneVsOne @ OneVsOne(_, loser, _, _),
                 UniqueSmurfWatcher.UserOwner(discordPlayerLogged)
               ) =>
             if (gameBySmurf.winnersOwner.isEmpty) {
@@ -295,7 +295,7 @@ object TeamReplaySubmit {
             }
 
           case OwnerResponse(
-                oneVsOne @ OneVsOne(_, loser),
+                oneVsOne @ OneVsOne(_, loser, _, _),
                 UniqueSmurfWatcher.SmurfNotAssigned()
               ) =>
             if (gameBySmurf.winnersOwner.isEmpty) {
@@ -310,7 +310,7 @@ object TeamReplaySubmit {
               gameBySmurf.copy(loserssOwner = Some(Right(None)))
             }
           case OwnerResponse(
-                oneVsOne @ OneVsOne(_, loser),
+                oneVsOne @ OneVsOne(_, loser, _, _),
                 UniqueSmurfWatcher.ErrorSmurfWatcher(reason)
               ) =>
             if (gameBySmurf.winnersOwner.isEmpty) {
@@ -400,7 +400,7 @@ object TeamReplaySubmit {
         judger ! GameJudge.JudgeGame(
           replayParsed,
           ctx.messageAdapter {
-            case onevsone @ OneVsOne(winner, _) =>
+            case onevsone @ OneVsOne(winner, _, _, _) =>
               uniqueSmurfWatcher ! UniqueSmurfWatcher.LocateOwner(
                 Smurf(winner.smurf),
                 ctx.messageAdapter(response =>

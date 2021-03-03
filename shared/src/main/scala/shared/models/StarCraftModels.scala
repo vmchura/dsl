@@ -66,10 +66,12 @@ object StarCraftModels {
   ) extends SCGameMode
 
   case class InvalidSCGameMode(
-      participants: Seq[SCPlayer],
-      mapName: String,
-      startTime: String
-  ) extends SCGameMode
+      participants: Seq[SCPlayer]
+  ) extends SCGameMode {
+    override val mapName: String = "???"
+
+    override val startTime: String = "???"
+  }
 
   trait SCMatchMode
 
