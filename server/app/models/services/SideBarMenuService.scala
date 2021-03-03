@@ -58,6 +58,12 @@ class SideBarMenuService @Inject() (tournamentService: TournamentService) {
             controllers.teamsystem.routes.TeamManagerController
               .showMyTeams()
               .url
+          ) ::
+          MenuActionDefined(
+            "Subir replay - equipo",
+            controllers.teamsystem.routes.TeamReplayController
+              .view()
+              .url
           )
           :: Nil
       )
