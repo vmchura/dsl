@@ -1,3 +1,6 @@
+package dslclient
+
+import backendprotocol.{JavaScriptRoutes, PlayAjax}
 import com.thoughtworks.binding.Binding
 import com.thoughtworks.binding.Binding.Var
 import org.lrng.binding.html
@@ -357,7 +360,7 @@ trait ReplayUploader {
     }
 
 
-      
+
 
     </div>
   }

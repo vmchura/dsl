@@ -1,3 +1,5 @@
+package backendprotocol
+
 import shared.PlayCall
 import shared.models.{ChallongeOneVsOneMatchGameResult, DiscordPlayerLogged}
 

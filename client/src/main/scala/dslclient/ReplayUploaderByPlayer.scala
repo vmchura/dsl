@@ -1,3 +1,5 @@
+package dslclient
+
 import com.thoughtworks.binding.Binding
 import org.lrng.binding.html
 import org.scalajs.dom.Node

@@ -1,3 +1,6 @@
+package backendprotocol
+
+import dslclient.Main
 import org.scalajs.dom.XMLHttpRequest
 import org.scalajs.dom.ext.Ajax
 import org.scalajs.dom.raw.FormData
@@ -10,10 +13,19 @@ import scala.scalajs.js.JSON
 
 class PlayAjax[O](playCall: PlayCall[O]) {
 
-  private def runCallWithParser[U](parseRequest: XMLHttpRequest => Either[String, U], data: FormData = new FormData()): Future[Either[String, U]] = {
+  private def runCallWithParser[U](
+      parseRequest: XMLHttpRequest => Either[String, U],
+      data: FormData = new FormData()
+  ): Future[Either[String, U]] = {
 
     if (playCall.method.equals("POST"))
-      Ajax.post(playCall.url, headers = Map("Csrf-Token" -> Main.findTokenValue()), data = data).map(parseRequest)
+      Ajax
+        .post(
+          playCall.url,
+          headers = Map("Csrf-Token" -> Main.findTokenValue()),
+          data = data
+        )
+        .map(parseRequest)
     else {
       if (playCall.method.equals("GET")) {
         Ajax.get(playCall.url).map(parseRequest)
@@ -26,7 +38,11 @@ class PlayAjax[O](playCall: PlayCall[O]) {
   def runCall(data: FormData = new FormData()): Future[XMLHttpRequest] = {
 
     if (playCall.method.equals("POST"))
-      Ajax.post(playCall.url, headers = Map("Csrf-Token" -> Main.findTokenValue()), data = data)
+      Ajax.post(
+        playCall.url,
+        headers = Map("Csrf-Token" -> Main.findTokenValue()),
+        data = data
+      )
     else {
       if (playCall.method.equals("GET")) {
         Ajax.get(playCall.url)
@@ -35,7 +51,10 @@ class PlayAjax[O](playCall: PlayCall[O]) {
       }
     }
   }
-  def callByAjaxWithParser(parser: js.Dynamic => O, data: FormData = new FormData()): Future[Either[String, O]] = {
+  def callByAjaxWithParser(
+      parser: js.Dynamic => O,
+      data: FormData = new FormData()
+  ): Future[Either[String, O]] = {
 
     def parseRequest(response: XMLHttpRequest): Either[String, O] = {
 
@@ -43,7 +62,8 @@ class PlayAjax[O](playCall: PlayCall[O]) {
 
         JSON.parse(response.responseText) match {
           case json: js.Dynamic => Right(parser(json))
-          case _ => Left("Response can not parse it as JSON: " + response.responseText)
+          case _ =>
+            Left("Response can not parse it as JSON: " + response.responseText)
         }
       } catch {
         case e: Throwable => Left("ERROR describing JSON?: " + e.toString)
@@ -54,11 +74,12 @@ class PlayAjax[O](playCall: PlayCall[O]) {
   }
 
   def callByAjaxGetText(): Future[Either[String, String]] = {
-    def parseRequest(response: XMLHttpRequest): Either[String, String] = if (response.status == 200) {
-      Right(response.responseText)
-    } else {
-      Left(response.responseText)
-    }
+    def parseRequest(response: XMLHttpRequest): Either[String, String] =
+      if (response.status == 200) {
+        Right(response.responseText)
+      } else {
+        Left(response.responseText)
+      }
     runCallWithParser(parseRequest)
 
   }

@@ -1,23 +1,15 @@
+package dslclient
+
+import backendprotocol.{JavaScriptRoutes, PlayAjax}
 import org.scalajs.dom
-import org.scalajs.dom.html.{Div, Input}
-import org.scalajs.dom.raw.{
-  FormData,
-  HTMLButtonElement,
-  HTMLCollection,
-  HTMLFormElement,
-  HTMLInputElement,
-  HTMLOptionElement,
-  HTMLOptionsCollection,
-  HTMLSelectElement
-}
+import org.scalajs.dom.html.Input
+import org.scalajs.dom.raw._
 import shared.models.DiscordPlayerLogged
 import upickle.default.read
 
-import scala.collection.mutable
 import scala.scalajs.js.annotation.{JSExport, JSExportTopLevel}
 import scala.util.{Failure, Success}
 import scala.scalajs.concurrent.JSExecutionContext.Implicits.queue
-
 @JSExportTopLevel("Main")
 object Main {
 
