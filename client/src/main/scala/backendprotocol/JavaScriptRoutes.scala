@@ -1,6 +1,7 @@
 package backendprotocol
 
 import shared.PlayCall
+import shared.models.teamsystem.TeamReplayResponse
 import shared.models.{ChallongeOneVsOneMatchGameResult, DiscordPlayerLogged}
 
 import scala.scalajs.js
@@ -27,10 +28,17 @@ trait TReplayMatchController extends js.Object {
 @js.native
 trait TTeamSystem extends js.Object {
   val MemberSupervisorController: TMemberSupervisorController = js.native
+  val TeamReplayController: TTeamReplayController = js.native
 }
 
 @js.native
 trait TMemberSupervisorController extends js.Object {
   def findMembers(): PlayCall[Either[String, Seq[DiscordPlayerLogged]]] =
+    js.native
+}
+
+@js.native
+trait TTeamReplayController extends js.Object {
+  def submitTeamReplay(): PlayCall[TeamReplayResponse] =
     js.native
 }

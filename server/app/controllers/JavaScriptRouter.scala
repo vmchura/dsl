@@ -13,7 +13,8 @@ class JavaScriptRouter @Inject() (components: ControllerComponents)
       Ok(
         JavaScriptReverseRouter("jsRoutes")(
           routes.javascript.ReplayMatchController.parseReplay,
-          teamsystem.routes.javascript.MemberSupervisorController.findMembers
+          teamsystem.routes.javascript.MemberSupervisorController.findMembers,
+          teamsystem.routes.javascript.TeamReplayController.submitTeamReplay
         )
       )
     }
