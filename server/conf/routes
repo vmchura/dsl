@@ -58,6 +58,6 @@ POST    /teamsystem/request/remove/:requestID            controllers.teamsystem.
 POST    /teamsystem/request/:teamID            controllers.teamsystem.RequestController.doRequest(teamID: java.util.UUID)
 POST    /teamsystem/submit                      controllers.teamsystem.TeamReplayController.submitTeamReplay()
 POST    /teamsystem/smurfselected/:replayID/:smurf                      controllers.teamsystem.TeamReplayController.selectSmurf(smurf: String, replayID: java.util.UUID)
-POST    /teamsystem/viewform        controllers.teamsystem.TeamReplayController.view()
+GET    /teamsystem/viewform        controllers.teamsystem.TeamReplayController.view()
 
 GET     /javascriptRoutes                       controllers.JavaScriptRouter.javascriptRoutes

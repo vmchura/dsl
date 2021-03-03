@@ -3,8 +3,12 @@
 @import controllers.AssetsFinder
 
 @import com.mohiva.play.silhouette.impl.providers.SocialProviderRegistry
-
+@import views.html.helper._
 @(user: User)(implicit request: RequestHeader, messages: Messages,  assetsFinder: AssetsFinder,menues: Seq[MenuGroup], socialProviders: SocialProviderRegistry)
 @main("Upload replay",Some(user),socialProviders){
-    <button>Select replays</button>
+    <button id="btn-upload-team-replay">Select replays</button>
+  <div id="replays-teams-upload"></div>
+    <script @{CSPNonce.attr} type="text/javascript">
+        TeamsReplay.init("btn-upload-team-replay","replays-teams-upload");
+    </script>
 }

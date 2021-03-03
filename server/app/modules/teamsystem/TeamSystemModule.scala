@@ -52,7 +52,6 @@ class TeamSystemModule
     bind[ReplayTeamDAO].to[ReplayTeamDAOImpl]
     bind[TeamUserSmurfPendingDAO].to[TeamUserSmurfPendingDAOImpl]
     bind[TeamUserSmurfDAO].to[TeamUserSmurfDAOImpl]
-    bind[FileSaver].to[FileSaverImpl]
     bind[TeamReplayDAO].to[TeamReplayDAOImpl]
 
   }
