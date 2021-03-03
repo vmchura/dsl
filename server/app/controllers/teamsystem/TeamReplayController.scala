@@ -14,7 +14,9 @@ import play.api.mvc.{Action, AnyContent, MultipartFormData, Result}
 import shared.models.{DiscordID, ReplayTeamID}
 import akka.actor.typed.scaladsl.AskPattern._
 import akka.util.Timeout
+import com.mohiva.play.silhouette.impl.providers.SocialProviderRegistry
 import models.Smurf
+import models.services.SideBarMenuService
 import shared.models.teamsystem.{
   ReplaySaved,
   SmurfToVerify,
@@ -31,7 +33,8 @@ import scala.language.postfixOps
 import upickle.default._
 class TeamReplayController @Inject() (
     scc: SilhouetteControllerComponents,
-    submitActor: ActorRef[TeamReplayManager.Command]
+    submitActor: ActorRef[TeamReplayManager.Command],
+    sideBarMenuService: SideBarMenuService
 )(implicit
     assets: AssetsFinder,
     ex: ExecutionContext,
@@ -120,5 +123,14 @@ class TeamReplayController @Inject() (
           case _ => TeamReplayError("Unexpected response")
         }
       buildResponse(futResponse)
+    }
+
+  def view(): Action[AnyContent] =
+    silhouette.SecuredAction.async { implicit request =>
+      implicit val socialRegisters: SocialProviderRegistry =
+        socialProviderRegistry
+      sideBarMenuService.buildLoggedSideBar().map { implicit menues =>
+        Ok(views.html.teamsystem.showformuploadreplays(request.identity))
+      }
     }
 }

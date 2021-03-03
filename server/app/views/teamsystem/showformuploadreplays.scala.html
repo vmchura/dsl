@@ -1,0 +1,10 @@
+@import play.api.i18n.Messages
+@import play.api.mvc.RequestHeader
+@import controllers.AssetsFinder
+
+@import com.mohiva.play.silhouette.impl.providers.SocialProviderRegistry
+
+@(user: User)(implicit request: RequestHeader, messages: Messages,  assetsFinder: AssetsFinder,menues: Seq[MenuGroup], socialProviders: SocialProviderRegistry)
+@main("Upload replay",Some(user),socialProviders){
+    <button>Select replays</button>
+}
