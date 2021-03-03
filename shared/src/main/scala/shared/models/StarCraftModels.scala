@@ -43,17 +43,33 @@ object StarCraftModels {
     implicit val rw: RW[SCPlayer] = macroRW
   }
 
-  trait SCGameMode
+  trait SCGameMode {
+    def mapName: String
+    def startTime: String
+  }
 
-  case class OneVsOne(winner: SCPlayer, loser: SCPlayer) extends SCGameMode
+  case class OneVsOne(
+      winner: SCPlayer,
+      loser: SCPlayer,
+      mapName: String,
+      startTime: String
+  ) extends SCGameMode
   object OneVsOne {
     implicit val rw: RW[OneVsOne] = macroRW
   }
 
-  case class ManyVsMany(winners: Seq[SCPlayer], losers: Seq[SCPlayer])
-      extends SCGameMode
+  case class ManyVsMany(
+      winners: Seq[SCPlayer],
+      losers: Seq[SCPlayer],
+      mapName: String,
+      startTime: String
+  ) extends SCGameMode
 
-  case class InvalidSCGameMode(participants: Seq[SCPlayer]) extends SCGameMode
+  case class InvalidSCGameMode(
+      participants: Seq[SCPlayer],
+      mapName: String,
+      startTime: String
+  ) extends SCGameMode
 
   trait SCMatchMode
 
