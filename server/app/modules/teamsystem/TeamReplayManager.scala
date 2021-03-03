@@ -72,7 +72,7 @@ object TeamReplayManager extends ActorModule {
               ctx.self
             )
             ctx.watchWith(worker, WorkerDone(newID))
-            ctx.scheduleOnce(3 seconds, ctx.self, SenderTimeOut(newID, replyTo))
+            ctx.scheduleOnce(3 minutes, ctx.self, SenderTimeOut(newID, replyTo))
             Behaviors.same
           case SmurfSelected(replayTeamID, smurf, replyTo) =>
             awaiting.get(replayTeamID) match {
