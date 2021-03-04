@@ -85,6 +85,7 @@ object TeamReplaySubmit {
             TeamReplayInfo(
               metaInfoReplay.id,
               s"teamreplays/${metaInfoReplay.id.id.toString}.rep",
+              oneVsOne,
               metaInfoReplay.senderID
             )
           )

@@ -1,11 +1,14 @@
 import java.util.UUID
-import play.api.libs.json.{Json, OFormat}
+import play.api.libs.json.{JsObject, JsResult, JsString, Json, OFormat}
+import shared.models.StarCraftModels.{OneVsOne, SCPlayer, SCRace}
 import shared.models.{
   DiscordID,
   DiscordPlayerLogged,
   ReplayTeamID,
   ReplayTeamRecord
 }
+
+import scala.util.Try
 
 package object models {
 
@@ -30,6 +33,15 @@ package object models {
       Json.format[ReplayTeamID]
     implicit val discordIDjsonFormatJsonImplicit: OFormat[DiscordID] =
       Json.format[DiscordID]
+    implicit val scRaceFormatJsonImplicit: OFormat[SCRace] =
+      OFormat[SCRace](
+        jsValue => JsResult.fromTry(Try(SCRace((jsValue \ "race").as[String]))),
+        sCRace => JsObject(Map("race" -> JsString(sCRace.str)))
+      )
+    implicit val scPlayerFormatJsonImplicit: OFormat[SCPlayer] =
+      Json.format[SCPlayer]
+    implicit val oneVsOnejsonFormatJsonImplicit: OFormat[OneVsOne] =
+      Json.format[OneVsOne]
     implicit val replayTeamRecordJsonImplicit: OFormat[ReplayTeamRecord] =
       Json.format[ReplayTeamRecord]
     implicit val discordPlayerLoggedFormatJsonImplicit
