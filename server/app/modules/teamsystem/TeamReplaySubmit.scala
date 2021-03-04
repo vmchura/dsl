@@ -89,7 +89,6 @@ object TeamReplaySubmit {
             )
           )
       }.flatMap { tri =>
-        println(tri)
         replayTeamDAO
           .save(
             ReplayTeamRecord(

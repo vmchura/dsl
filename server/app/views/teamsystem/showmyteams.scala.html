@@ -12,7 +12,6 @@
 @import views.html.teamsystem.showinvitation
 @import models.teamsystem.RequestJoinWithUsers
 @import models.teamsystem.PendingSmurfWithUser
-@import views.html.teamsystem.showPendingSmurf
 @(user: models.User,discordID: DiscordID, teams: Seq[(TeamWithUsers,Seq[RequestJoinWithUsers])],invitations: Seq[InvitationWithUsers],pendingSmurfs: Seq[PendingSmurfWithUser],inviteForm: Form[InvitationMeta],createForm: Form[String],queryForm: Form[String], socialProviders: SocialProviderRegistry)(implicit request: RequestHeader, messages: Messages, menues: Seq[MenuGroup], assetsFinder: AssetsFinder)
 @main("My teams",Some(user),socialProviders){
     @if(!(teams.map(_._1).exists(_.officials.map(_.discordID).contains(discordID)) || teams.map(_._1).exists(_.principal.discordID == discordID))){
@@ -37,14 +36,13 @@
     @for(invitation <- invitations){
         @showinvitation(invitation)
     }
-    @for(pendingSmurf <- pendingSmurfs){
-        @showPendingSmurf(pendingSmurf)
-    }
+
     <div id="my-teams-container">
         <div id="my-teams-list">
             @for((team,requests) <- teams){
-              @showmyteam(discordID, team,requests, inviteForm,queryForm)
+              @showmyteam(discordID, team,requests,pendingSmurfs, inviteForm,queryForm)
             }
         </div>
     </div>
+
 }

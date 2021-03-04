@@ -10,7 +10,9 @@
 @import shared.models.DiscordID
 @import views.html.helper.CSPNonce
 @import models.teamsystem.RequestJoinWithUsers
-@(userID: DiscordID, team: TeamWithUsers,requests: Seq[RequestJoinWithUsers], inviteForm: Form[InvitationMeta], queryForm: Form[String])(implicit request: RequestHeader, messages: Messages,  assetsFinder: AssetsFinder)
+@import models.teamsystem.PendingSmurfWithUser
+@import views.html.teamsystem.showPendingSmurf
+@(userID: DiscordID, team: TeamWithUsers,requests: Seq[RequestJoinWithUsers],pendingSmurfs: Seq[PendingSmurfWithUser], inviteForm: Form[InvitationMeta], queryForm: Form[String])(implicit request: RequestHeader, messages: Messages,  assetsFinder: AssetsFinder)
 <div class="my-team-box">
     @showteam(team,userCanRequest = false,"my-team-container")
 
@@ -58,8 +60,18 @@
                     </div>
                 }
             </div>
+            <div class="smurfs-pending-box">
+                @if(pendingSmurfs.nonEmpty) {
+                    <div class="alert alert-info" role="alert">
+                        Se requiere confirmar los siguientes smurfs, por favor sé cuidado y responsable como líder del equipo, ya que cualquier error perjudica a otros jugadores.
+                    </div>
+                }
+                @for(pendingSmurf <- pendingSmurfs){
+                    @showPendingSmurf(pendingSmurf)
+                }
+            </div>
 
-        </div>
+
     }
     @if(userID == team.principal.discordID) {
         <div class="team-requests-pending">
@@ -86,6 +98,7 @@
 
         </div>
 
+        </div>
     }
     <div class="team-quit">
         @helper.form(action = controllers.teamsystem.routes.TeamManagerController.quitTeam(team.teamID.id)) {
