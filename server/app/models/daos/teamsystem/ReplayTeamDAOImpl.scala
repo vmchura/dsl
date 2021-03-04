@@ -15,12 +15,15 @@ class ReplayTeamDAOImpl @Inject() (val reactiveMongoApi: ReactiveMongoApi)
   def collection: Future[JSONCollection] =
     reactiveMongoApi.database.map(_.collection("teamsystem.replayteamrecord"))
   override def save(replay: ReplayTeamRecord): Future[Boolean] = {
-
-    collection
+    println(s"replayTeamRecord to save$replay")
+    val res = collection
       .flatMap(
         _.insert(ordered = true).one(replay)
       )
       .map(_.ok)
+    res.foreach(println)
+
+    res
   }
 
   override def isRegistered(hash: String): Future[Boolean] = {

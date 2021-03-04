@@ -2,14 +2,24 @@ package modules.teamsystem
 
 import akka.actor.typed.{ActorRef, Behavior}
 import akka.actor.typed.scaladsl.{ActorContext, Behaviors}
-import models.daos.teamsystem.{TeamReplayDAO, TeamUserSmurfPendingDAO}
+import awscala.DateTime
+import models.daos.teamsystem.{
+  ReplayTeamDAO,
+  TeamReplayDAO,
+  TeamUserSmurfPendingDAO
+}
 import models.services.ParseReplayFileService
 import models.{ReplayRecord, Smurf}
 import models.teamsystem.{PendingSmurf, TeamID, TeamReplayInfo}
 import modules.gameparser.GameJudge
 import modules.gameparser.GameParser.{GameInfo, ImpossibleToParse, ReplayParsed}
 import shared.models.StarCraftModels.OneVsOne
-import shared.models.{DiscordID, DiscordPlayerLogged, ReplayTeamID}
+import shared.models.{
+  DiscordID,
+  DiscordPlayerLogged,
+  ReplayTeamID,
+  ReplayTeamRecord
+}
 
 import java.io.File
 import scala.util.{Failure, Success}
@@ -52,25 +62,54 @@ object TeamReplaySubmit {
   case class ReplayErrorParsing(reason: String) extends InternalCommand
   case class SmurfSenderValid(oneVsOne: OneVsOne, smurf: Smurf)
       extends InternalCommand
-  case class SmurfSenderToCheck(smurf: Smurf) extends InternalCommand
+  case class SmurfSenderToCheck(smurf: Smurf, oneVsOne: OneVsOne)
+      extends InternalCommand
 
-  case class SmurfSentToLeader() extends InternalCommand
+  case class SmurfSentToLeader(oneVsOne: OneVsOne) extends InternalCommand
   case class ReplayInfoSaved(teamReplayInfo: TeamReplayInfo)
       extends InternalCommand
   case class ReplaySaved() extends InternalCommand
 
   def saveReplayInfo(
       context: ActorContext[InternalCommand],
-      metaInfoReplay: MetaInfoReplay
-  )(implicit teamReplayDAO: TeamReplayDAO): Unit = {
+      metaInfoReplay: MetaInfoReplay,
+      oneVsOne: OneVsOne
+  )(implicit
+      teamReplayDAO: TeamReplayDAO,
+      replayTeamDAO: ReplayTeamDAO
+  ): Unit = {
+
     context.pipeToSelf(
-      teamReplayDAO.save(
-        TeamReplayInfo(
-          metaInfoReplay.id,
-          s"teamreplays/${metaInfoReplay.id.id.toString}.rep",
-          metaInfoReplay.senderID
-        )
-      )
+      {
+        teamReplayDAO
+          .save(
+            TeamReplayInfo(
+              metaInfoReplay.id,
+              s"teamreplays/${metaInfoReplay.id.id.toString}.rep",
+              metaInfoReplay.senderID
+            )
+          )
+      }.flatMap { tri =>
+          println(tri)
+          replayTeamDAO
+            .save(
+              ReplayTeamRecord(
+                metaInfoReplay.id,
+                ReplayRecord.md5HashString(metaInfoReplay.replay),
+                /* TODO name*/ "???",
+                oneVsOne.startTime,
+                DateTime.now().getMillis,
+                metaInfoReplay.senderID
+              )
+            )
+            .map { res =>
+              if (res) {
+                tri
+              } else {
+                throw new IllegalStateException("Replay info hash no saved")
+              }
+            }
+        }
     ) {
       case Success(teamReplayInfo) => ReplayInfoSaved(teamReplayInfo)
       case Failure(error) =>
@@ -124,11 +163,12 @@ object TeamReplaySubmit {
   )(implicit
       replyTo: ActorRef[Response],
       teamReplyDAO: TeamReplayDAO,
-      pusher: ActorRef[FilePusherActor.Command]
+      pusher: ActorRef[FilePusherActor.Command],
+      replayTeamDAO: ReplayTeamDAO
   ): Behavior[InternalCommand] =
     Behaviors.receive {
-      case (ctx, SmurfSentToLeader()) =>
-        saveReplayInfo(ctx, metaInfoReplay)
+      case (ctx, SmurfSentToLeader(oneVsOne)) =>
+        saveReplayInfo(ctx, metaInfoReplay, oneVsOne)
 
         replayInfoSaving(metaInfoReplay)
       case _ =>
@@ -139,7 +179,8 @@ object TeamReplaySubmit {
     }
 
   def sendSmurfToBeChecked(
-      metaInfoReplay: MetaInfoReplay
+      metaInfoReplay: MetaInfoReplay,
+      oneVsOne: OneVsOne
   )(smurf: Smurf, ctx: ActorContext[InternalCommand])(implicit
       teamUserSmurfPendingDAO: TeamUserSmurfPendingDAO
   ): Unit =
@@ -147,23 +188,30 @@ object TeamReplaySubmit {
       teamUserSmurfPendingDAO
         .add(PendingSmurf(metaInfoReplay.senderID, smurf, metaInfoReplay.id))
     ) {
-      case Success(true) => SmurfSentToLeader()
+      case Success(true) => SmurfSentToLeader(oneVsOne)
       case Success(false) =>
         ReplayErrorParsing("Can't save request of smurf")
       case Failure(exception) => ReplayErrorParsing(exception.getMessage)
     }
 
   def awaitSmurfOfSender(
-      metaInfoReplay: MetaInfoReplay
+      metaInfoReplay: MetaInfoReplay,
+      oneVsOne: OneVsOne
   )(implicit
       teamReplyDAO: TeamReplayDAO,
       pusher: ActorRef[FilePusherActor.Command],
-      teamUserSmurfPendingDAO: TeamUserSmurfPendingDAO
+      teamUserSmurfPendingDAO: TeamUserSmurfPendingDAO,
+      replayTeamDAO: ReplayTeamDAO
   ): Behavior[InternalCommand] =
     Behaviors.receive {
       case (ctx, SmurfSelected(smurf, replyTo)) =>
-        sendSmurfToBeChecked(metaInfoReplay)(smurf, ctx)
-        smurfRelationSaving(metaInfoReplay)(replyTo, teamReplyDAO, pusher)
+        sendSmurfToBeChecked(metaInfoReplay, oneVsOne)(smurf, ctx)
+        smurfRelationSaving(metaInfoReplay)(
+          replyTo,
+          teamReplyDAO,
+          pusher,
+          replayTeamDAO
+        )
       case _ => Behaviors.unhandled
     }
 
@@ -242,19 +290,25 @@ object TeamReplaySubmit {
   )(implicit
       teamReplayDAO: TeamReplayDAO,
       pusher: ActorRef[FilePusherActor.Command],
-      teamUserSmurfPendingDAO: TeamUserSmurfPendingDAO
+      teamUserSmurfPendingDAO: TeamUserSmurfPendingDAO,
+      replayTeamDAO: ReplayTeamDAO
   ): Behavior[InternalCommand] =
     Behaviors.receive {
       case (_, BothSmurfsFree(oneVsOne)) =>
         replyTo ! SmurfMustBeSelectedResponse(metaInfoReplay.id, oneVsOne)
         parent ! TeamReplayManager.AwaitSender(metaInfoReplay.id)
-        awaitSmurfOfSender(metaInfoReplay)
-      case (ctx, SmurfSenderValid(_, _)) =>
-        saveReplayInfo(ctx, metaInfoReplay)
+        awaitSmurfOfSender(metaInfoReplay, oneVsOne)
+      case (ctx, SmurfSenderValid(oneVsOne, _)) =>
+        saveReplayInfo(ctx, metaInfoReplay, oneVsOne)
         replayInfoSaving(metaInfoReplay)(replyTo, pusher)
-      case (ctx, SmurfSenderToCheck(smurf)) =>
-        sendSmurfToBeChecked(metaInfoReplay)(smurf, ctx)
-        smurfRelationSaving(metaInfoReplay)(replyTo, teamReplayDAO, pusher)
+      case (ctx, SmurfSenderToCheck(smurf, oneVsOne)) =>
+        sendSmurfToBeChecked(metaInfoReplay, oneVsOne)(smurf, ctx)
+        smurfRelationSaving(metaInfoReplay)(
+          replyTo,
+          teamReplayDAO,
+          pusher,
+          replayTeamDAO
+        )
       case (_, ReplayErrorParsing(reason)) =>
         replyTo ! SubmitError(reason)
         Behaviors.stopped
@@ -268,7 +322,8 @@ object TeamReplaySubmit {
       uniqueSmurfWatcher: ActorRef[UniqueSmurfWatcher.Command],
       teamReplayDAO: TeamReplayDAO,
       pusher: ActorRef[FilePusherActor.Command],
-      teamUserSmurfPendingDAO: TeamUserSmurfPendingDAO
+      teamUserSmurfPendingDAO: TeamUserSmurfPendingDAO,
+      replayTeamDAO: ReplayTeamDAO
   ): Behavior[InternalCommand] = {
 
     Behaviors.receive {
@@ -354,12 +409,18 @@ object TeamReplaySubmit {
                     if (
                       completeGame.canFillToBeWinner(metaInfoReplay.senderID)
                     ) {
-                      SmurfSenderToCheck(Smurf(completeGame.game.winner.smurf))
+                      SmurfSenderToCheck(
+                        Smurf(completeGame.game.winner.smurf),
+                        completeGame.game
+                      )
                     } else {
                       if (
                         completeGame.canFillToBeLoser(metaInfoReplay.senderID)
                       ) {
-                        SmurfSenderToCheck(Smurf(completeGame.game.loser.smurf))
+                        SmurfSenderToCheck(
+                          Smurf(completeGame.game.loser.smurf),
+                          completeGame.game
+                        )
                       } else {
                         ReplayErrorParsing("Error en la lógica del sistema")
                       }
@@ -392,7 +453,8 @@ object TeamReplaySubmit {
       uniqueSmurfWatcher: ActorRef[UniqueSmurfWatcher.Command],
       teamReplayDAO: TeamReplayDAO,
       pusher: ActorRef[FilePusherActor.Command],
-      teamUserSmurfPendingDAO: TeamUserSmurfPendingDAO
+      teamUserSmurfPendingDAO: TeamUserSmurfPendingDAO,
+      replayTeamDAO: ReplayTeamDAO
   ): Behavior[InternalCommand] =
     Behaviors.receive {
       case (ctx, ReplayParsedMessage(replayParsed)) =>
@@ -435,7 +497,8 @@ object TeamReplaySubmit {
       uniqueSmurfWatcher: ActorRef[UniqueSmurfWatcher.Command],
       teamReplayDAO: TeamReplayDAO,
       pusher: ActorRef[FilePusherActor.Command],
-      teamUserSmurfPendingDAO: TeamUserSmurfPendingDAO
+      teamUserSmurfPendingDAO: TeamUserSmurfPendingDAO,
+      replayTeamDAO: ReplayTeamDAO
   ): Behavior[InternalCommand] = {
     Behaviors.receive {
       case (ctx, Unique()) =>
@@ -472,7 +535,8 @@ object TeamReplaySubmit {
       uniqueSmurfWatcher: ActorRef[UniqueSmurfWatcher.Command],
       teamReplayDAO: TeamReplayDAO,
       pusher: ActorRef[FilePusherActor.Command],
-      teamUserSmurfPendingDAO: TeamUserSmurfPendingDAO
+      teamUserSmurfPendingDAO: TeamUserSmurfPendingDAO,
+      replayTeamDAO: ReplayTeamDAO
   ): Behavior[Command] =
     Behaviors
       .receive[InternalCommand] {

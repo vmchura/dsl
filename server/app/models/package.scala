@@ -28,10 +28,10 @@ package object models {
     import be.venneborg.refined.play.RefinedJsonFormats._
     implicit val replayTeamIDJsonImplicit: OFormat[ReplayTeamID] =
       Json.format[ReplayTeamID]
-    implicit val replayTeamRecordJsonImplicit: OFormat[ReplayTeamRecord] =
-      Json.format[ReplayTeamRecord]
     implicit val discordIDjsonFormatJsonImplicit: OFormat[DiscordID] =
       Json.format[DiscordID]
+    implicit val replayTeamRecordJsonImplicit: OFormat[ReplayTeamRecord] =
+      Json.format[ReplayTeamRecord]
     implicit val discordPlayerLoggedFormatJsonImplicit
         : OFormat[DiscordPlayerLogged] =
       Json.format[DiscordPlayerLogged]
