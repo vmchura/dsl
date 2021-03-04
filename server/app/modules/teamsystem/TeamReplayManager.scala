@@ -5,7 +5,7 @@ import akka.actor.typed.{ActorRef, Behavior}
 import com.google.inject.Provides
 import models.Smurf
 import models.daos.teamsystem.{
-  ReplayTeamDAO,
+  TeamMetaReplayTeamDAO,
   TeamReplayDAO,
   TeamUserSmurfPendingDAO
 }
@@ -53,7 +53,7 @@ object TeamReplayManager extends ActorModule {
       teamReplayDAO: TeamReplayDAO,
       pusherFileActor: ActorRef[FilePusherActor.Command],
       teamUserSmurfPendingDAO: TeamUserSmurfPendingDAO,
-      replayTeamDAO: ReplayTeamDAO
+      replayTeamDAO: TeamMetaReplayTeamDAO
   ): Behavior[Command] = {
 
     Behaviors

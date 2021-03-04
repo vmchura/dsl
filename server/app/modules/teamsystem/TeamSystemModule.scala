@@ -5,8 +5,8 @@ import models.daos.{DiscordPlayerLoggedDAO, DiscordPlayerLoggedDAOImpl}
 import models.daos.teamsystem.{
   InvitationDAO,
   InvitationDAOImpl,
-  ReplayTeamDAO,
-  ReplayTeamDAOImpl,
+  TeamMetaReplayTeamDAO,
+  TeamMetaReplayTeamDAOImpl,
   RequestDAO,
   RequestDAOImpl,
   TeamDAO,
@@ -49,7 +49,7 @@ class TeamSystemModule
     bindTypedActor(UniqueReplayWatcher, "unique-replay-actor")
     bindTypedActor(UniqueSmurfWatcher, "unique-smurf-actor")
     bindTypedActor(TeamReplayManager, "team-replay-manager")
-    bind[ReplayTeamDAO].to[ReplayTeamDAOImpl]
+    bind[TeamMetaReplayTeamDAO].to[TeamMetaReplayTeamDAOImpl]
     bind[TeamUserSmurfPendingDAO].to[TeamUserSmurfPendingDAOImpl]
     bind[TeamUserSmurfDAO].to[TeamUserSmurfDAOImpl]
     bind[TeamReplayDAO].to[TeamReplayDAOImpl]

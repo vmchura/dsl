@@ -4,7 +4,7 @@ import akka.actor.typed.{ActorRef, Behavior}
 import akka.actor.typed.scaladsl.Behaviors
 import com.google.inject.Provides
 import models.daos.ReplayMatchDAO
-import models.daos.teamsystem.ReplayTeamDAO
+import models.daos.teamsystem.TeamMetaReplayTeamDAO
 import play.api.libs.concurrent.ActorModule
 
 import scala.concurrent.Future
@@ -38,7 +38,7 @@ object UniqueReplayWatcher extends ActorModule {
   case class Enqueued() extends Response
   @Provides
   def apply(
-      replayTeamDAO: ReplayTeamDAO,
+      replayTeamDAO: TeamMetaReplayTeamDAO,
       replayMatchDAO: ReplayMatchDAO
   ): Behavior[Command] = {
 

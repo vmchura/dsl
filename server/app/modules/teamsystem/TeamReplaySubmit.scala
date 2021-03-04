@@ -3,7 +3,7 @@ package modules.teamsystem
 import akka.actor.typed.{ActorRef, Behavior}
 import akka.actor.typed.scaladsl.{ActorContext, Behaviors}
 import models.daos.teamsystem.{
-  ReplayTeamDAO,
+  TeamMetaReplayTeamDAO,
   TeamReplayDAO,
   TeamUserSmurfPendingDAO
 }
@@ -75,7 +75,7 @@ object TeamReplaySubmit {
       oneVsOne: OneVsOne
   )(implicit
       teamReplayDAO: TeamReplayDAO,
-      replayTeamDAO: ReplayTeamDAO
+      replayTeamDAO: TeamMetaReplayTeamDAO
   ): Unit = {
 
     context.pipeToSelf(
@@ -162,7 +162,7 @@ object TeamReplaySubmit {
       replyTo: ActorRef[Response],
       teamReplyDAO: TeamReplayDAO,
       pusher: ActorRef[FilePusherActor.Command],
-      replayTeamDAO: ReplayTeamDAO
+      replayTeamDAO: TeamMetaReplayTeamDAO
   ): Behavior[InternalCommand] =
     Behaviors.receive {
       case (ctx, SmurfSentToLeader(oneVsOne)) =>
@@ -199,7 +199,7 @@ object TeamReplaySubmit {
       teamReplyDAO: TeamReplayDAO,
       pusher: ActorRef[FilePusherActor.Command],
       teamUserSmurfPendingDAO: TeamUserSmurfPendingDAO,
-      replayTeamDAO: ReplayTeamDAO
+      replayTeamDAO: TeamMetaReplayTeamDAO
   ): Behavior[InternalCommand] =
     Behaviors.receive {
       case (ctx, SmurfSelected(smurf, replyTo)) =>
@@ -289,7 +289,7 @@ object TeamReplaySubmit {
       teamReplayDAO: TeamReplayDAO,
       pusher: ActorRef[FilePusherActor.Command],
       teamUserSmurfPendingDAO: TeamUserSmurfPendingDAO,
-      replayTeamDAO: ReplayTeamDAO
+      replayTeamDAO: TeamMetaReplayTeamDAO
   ): Behavior[InternalCommand] =
     Behaviors.receive {
       case (_, BothSmurfsFree(oneVsOne)) =>
@@ -321,7 +321,7 @@ object TeamReplaySubmit {
       teamReplayDAO: TeamReplayDAO,
       pusher: ActorRef[FilePusherActor.Command],
       teamUserSmurfPendingDAO: TeamUserSmurfPendingDAO,
-      replayTeamDAO: ReplayTeamDAO
+      replayTeamDAO: TeamMetaReplayTeamDAO
   ): Behavior[InternalCommand] = {
 
     Behaviors.receive {
@@ -452,7 +452,7 @@ object TeamReplaySubmit {
       teamReplayDAO: TeamReplayDAO,
       pusher: ActorRef[FilePusherActor.Command],
       teamUserSmurfPendingDAO: TeamUserSmurfPendingDAO,
-      replayTeamDAO: ReplayTeamDAO
+      replayTeamDAO: TeamMetaReplayTeamDAO
   ): Behavior[InternalCommand] =
     Behaviors.receive {
       case (ctx, ReplayParsedMessage(replayParsed)) =>
@@ -496,7 +496,7 @@ object TeamReplaySubmit {
       teamReplayDAO: TeamReplayDAO,
       pusher: ActorRef[FilePusherActor.Command],
       teamUserSmurfPendingDAO: TeamUserSmurfPendingDAO,
-      replayTeamDAO: ReplayTeamDAO
+      replayTeamDAO: TeamMetaReplayTeamDAO
   ): Behavior[InternalCommand] = {
     Behaviors.receive {
       case (ctx, Unique()) =>
@@ -534,7 +534,7 @@ object TeamReplaySubmit {
       teamReplayDAO: TeamReplayDAO,
       pusher: ActorRef[FilePusherActor.Command],
       teamUserSmurfPendingDAO: TeamUserSmurfPendingDAO,
-      replayTeamDAO: ReplayTeamDAO
+      replayTeamDAO: TeamMetaReplayTeamDAO
   ): Behavior[Command] =
     Behaviors
       .receive[InternalCommand] {

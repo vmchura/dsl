@@ -8,12 +8,13 @@ import shared.models.{ReplayTeamID, ReplayTeamRecord}
 import scala.concurrent.Future
 import scala.concurrent.ExecutionContext.Implicits.global
 
-class ReplayTeamDAOImpl @Inject() (val reactiveMongoApi: ReactiveMongoApi)
-    extends ReplayTeamDAO {
+class TeamMetaReplayTeamDAOImpl @Inject() (
+    val reactiveMongoApi: ReactiveMongoApi
+) extends TeamMetaReplayTeamDAO {
   import models.ModelsJsonImplicits._
 
   def collection: Future[JSONCollection] =
-    reactiveMongoApi.database.map(_.collection("teamsystem.replayteamrecord"))
+    reactiveMongoApi.database.map(_.collection("teamsystem.teammetareplay"))
   override def save(replay: ReplayTeamRecord): Future[Boolean] = {
     collection
       .flatMap(

@@ -10,7 +10,7 @@ import scala.concurrent.ExecutionContext.Implicits.global
 class TeamReplayDAOImpl @Inject() (val reactiveMongoApi: ReactiveMongoApi)
     extends TeamReplayDAO {
   def collection: Future[JSONCollection] =
-    reactiveMongoApi.database.map(_.collection("teamsystem.replayinfo"))
+    reactiveMongoApi.database.map(_.collection("teamsystem.teamreplayinfo"))
   override def save(replayInfo: TeamReplayInfo): Future[TeamReplayInfo] =
     collection
       .flatMap(
