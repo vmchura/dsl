@@ -7,13 +7,20 @@ import controllers.{
   SilhouetteControllerComponents
 }
 import models.daos.DiscordPlayerLoggedDAO
-import models.daos.teamsystem.{InvitationDAO, RequestDAO, TeamDAO}
+import models.daos.teamsystem.{
+  InvitationDAO,
+  RequestDAO,
+  TeamDAO,
+  TeamUserSmurfPendingDAO
+}
 
 import javax.inject._
 import models.services.SideBarMenuService
 import models.teamsystem.{
   InvitationID,
   InvitationWithUsers,
+  PendingSmurf,
+  PendingSmurfWithUser,
   RequestJoin,
   RequestJoinWithUsers,
   TeamID,
@@ -46,7 +53,8 @@ class TeamManagerController @Inject() (
     teamCreator: ActorRef[CreationCommand],
     teamManager: ActorRef[TeamManager.TeamManagerCommand],
     invitationManager: ActorRef[InvitationManager.InvitationCommand],
-    requestDAO: RequestDAO
+    requestDAO: RequestDAO,
+    teamUserSmurfPendingDAO: TeamUserSmurfPendingDAO
 )(implicit
     assets: AssetsFinder,
     ex: ExecutionContext,
@@ -205,22 +213,38 @@ class TeamManagerController @Inject() (
               Future.traverse(invitations)(InvitationWithUsers.apply)
             )
 
-          teamsWithUsers.zip(invitationsWithusers).map {
-            case (teams, invitations) =>
-              Ok(
-                views.html.teamsystem
-                  .showmyteams(
-                    request.identity,
-                    userDiscordID,
-                    teams,
-                    invitations.flatten,
-                    TeamInvitationForm.teamInvitation,
-                    TeamCreationForm.teamCreation,
-                    MemberQueryForm.memberQuery,
-                    socialProviderRegistry
-                  )
-              )
+          val smurfsPendingWithUsers = for {
+            responsableTeam <-
+              teamsFut.map(_.find(_.principal == userDiscordID))
+            pending <- responsableTeam.fold(
+              Future.successful(Seq.empty[PendingSmurf])
+            )(team => teamUserSmurfPendingDAO.loadFromTeam(team.teamID))
+            pendingWithUsers <-
+              Future.traverse(pending)(PendingSmurfWithUser.apply)
+          } yield {
+            pendingWithUsers.flatten
           }
+
+          teamsWithUsers
+            .zip(invitationsWithusers)
+            .zip(smurfsPendingWithUsers)
+            .map {
+              case ((teams, invitations), smurfsPending) =>
+                Ok(
+                  views.html.teamsystem
+                    .showmyteams(
+                      request.identity,
+                      userDiscordID,
+                      teams,
+                      invitations.flatten,
+                      smurfsPending,
+                      TeamInvitationForm.teamInvitation,
+                      TeamCreationForm.teamCreation,
+                      MemberQueryForm.memberQuery,
+                      socialProviderRegistry
+                    )
+                )
+            }
 
         }
     }

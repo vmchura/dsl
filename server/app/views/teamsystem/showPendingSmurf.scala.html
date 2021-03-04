@@ -1,0 +1,24 @@
+@import play.api.i18n.Messages
+@import play.api.mvc.RequestHeader
+@import controllers.AssetsFinder
+
+
+@import views.html.teamsystem.teamMemberLogged
+@import models.teamsystem.PendingSmurfWithUser
+@(pendingSmurf: PendingSmurfWithUser)(implicit request: RequestHeader, messages: Messages,  assetsFinder: AssetsFinder)
+<div class="pending-smurf-box">
+
+    <ul class="invitation-message">
+        ¿@teamMemberLogged(pendingSmurf.discordUser) tiene el smurf/nick/nombre de <b>@pendingSmurf.smurf.name</b>?,
+    </ul>
+    @helper.form(controllers.teamsystem.routes.TeamSmurfController.acceptSmurf(pendingSmurf.replayTeamID.id)){
+        @helper.CSRF.formField
+
+        <button class="btn btn-primary" type="submit">Sí</button>
+    }
+    @helper.form(controllers.teamsystem.routes.TeamSmurfController.removeSmurf(pendingSmurf.replayTeamID.id)){
+        @helper.CSRF.formField
+        <button class="btn btn-secondary" type="submit">No</button>
+    }
+
+</div>
