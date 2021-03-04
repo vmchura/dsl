@@ -2,7 +2,6 @@ package modules.teamsystem
 
 import akka.actor.typed.{ActorRef, Behavior}
 import akka.actor.typed.scaladsl.{ActorContext, Behaviors}
-import awscala.DateTime
 import models.daos.teamsystem.{
   ReplayTeamDAO,
   TeamReplayDAO,
@@ -90,26 +89,26 @@ object TeamReplaySubmit {
             )
           )
       }.flatMap { tri =>
-          println(tri)
-          replayTeamDAO
-            .save(
-              ReplayTeamRecord(
-                metaInfoReplay.id,
-                ReplayRecord.md5HashString(metaInfoReplay.replay),
-                /* TODO name*/ "???",
-                oneVsOne.startTime,
-                DateTime.now().getMillis,
-                metaInfoReplay.senderID
-              )
+        println(tri)
+        replayTeamDAO
+          .save(
+            ReplayTeamRecord(
+              metaInfoReplay.id,
+              ReplayRecord.md5HashString(metaInfoReplay.replay),
+              /* TODO name*/ "???",
+              oneVsOne.startTime,
+              org.joda.time.DateTime.now().toString("MM/dd/yyyy HH:mm:ss"),
+              metaInfoReplay.senderID
             )
-            .map { res =>
-              if (res) {
-                tri
-              } else {
-                throw new IllegalStateException("Replay info hash no saved")
-              }
+          )
+          .map { res =>
+            if (res) {
+              tri
+            } else {
+              throw new IllegalStateException("Replay info hash no saved")
             }
-        }
+          }
+      }
     ) {
       case Success(teamReplayInfo) => ReplayInfoSaved(teamReplayInfo)
       case Failure(error) =>

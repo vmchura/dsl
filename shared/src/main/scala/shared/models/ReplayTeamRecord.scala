@@ -17,7 +17,7 @@ case class ReplayTeamRecord(
     replayMD5Hash: String,
     nombreOriginal: String,
     dateGame: String,
-    dateUploaded: Long,
+    dateUploaded: String,
     uploader: DiscordID
 )
 object ReplayTeamRecord {
