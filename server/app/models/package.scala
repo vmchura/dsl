@@ -7,7 +7,7 @@ import play.api.libs.json.{
   Json,
   OFormat
 }
-import shared.models.StarCraftModels.{OneVsOne, SCPlayer, SCRace}
+import shared.models.StarCraftModels.{OneVsOne, SCPlayer, SCRace, StringDate}
 import shared.models.{
   DiscordID,
   DiscordPlayerLogged,
@@ -34,8 +34,10 @@ package object models {
   object Smurf {
     implicit val jsonFormat: OFormat[Smurf] = Json.format[Smurf]
   }
+
   object ModelsJsonImplicits {
     import be.venneborg.refined.play.RefinedJsonFormats._
+    implicit val stringDateFormat: OFormat[StringDate] = Json.format[StringDate]
 
     implicit val replayTeamIDJsonImplicit: OFormat[ReplayTeamID] =
       Json.format[ReplayTeamID]

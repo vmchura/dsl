@@ -9,6 +9,7 @@ import controllers.{
 import models.daos.DiscordPlayerLoggedDAO
 import models.daos.teamsystem.{
   InvitationDAO,
+  PointsDAO,
   RequestDAO,
   TeamDAO,
   TeamUserSmurfPendingDAO
@@ -60,7 +61,8 @@ class TeamManagerController @Inject() (
     ex: ExecutionContext,
     discordPlayerLoggedDAO: DiscordPlayerLoggedDAO,
     scheduler: akka.actor.typed.Scheduler,
-    teamDAO: TeamDAO
+    teamDAO: TeamDAO,
+    pointsDAO: PointsDAO
 ) extends AbstractAuthController(scc)
     with I18nSupport {
   implicit val timeOut: Timeout = 10 seconds

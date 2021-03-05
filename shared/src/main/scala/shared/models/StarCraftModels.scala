@@ -5,7 +5,15 @@ import java.text.SimpleDateFormat
 import java.util.Date
 
 object StarCraftModels {
+  case class StringDate(date: String) extends AnyVal {
+    def toDate: Date = new Date(date.toLong)
+  }
+  object StringDate {
+    implicit val rw: RW[StringDate] = macroRW
 
+    implicit def date2StringDate(date: Date): StringDate =
+      StringDate(date.getTime.toString)
+  }
   trait SCRace {
     def str: String
   }
@@ -48,10 +56,10 @@ object StarCraftModels {
 
   trait SCGameMode {
     def mapName: String
-    def startTime: Date
+    def startTime: StringDate
   }
   object SCGameMode {
-    def parseDateFromGameDate(dateStr: Option[String]): Date =
+    def parseDateFromGameDate(dateStr: Option[String]): StringDate =
       dateStr.fold(new Date(0)) { st =>
         new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ssXXX")
           .parse(st)
@@ -62,7 +70,7 @@ object StarCraftModels {
       winner: SCPlayer,
       loser: SCPlayer,
       mapName: String,
-      startTime: Date
+      startTime: StringDate
   ) extends SCGameMode
   object OneVsOne {
     implicit val rwDate: RW[Date] = upickle.default
@@ -78,7 +86,7 @@ object StarCraftModels {
       winners: Seq[SCPlayer],
       losers: Seq[SCPlayer],
       mapName: String,
-      startTime: Date
+      startTime: StringDate
   ) extends SCGameMode
 
   case class InvalidSCGameMode(
@@ -86,7 +94,7 @@ object StarCraftModels {
   ) extends SCGameMode {
     override val mapName: String = "???"
 
-    override val startTime: Date = new Date(0L)
+    override val startTime: StringDate = new Date(0L)
   }
 
   trait SCMatchMode

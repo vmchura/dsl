@@ -1,6 +1,7 @@
 package models.teamsystem
 
 import models.daos.DiscordPlayerLoggedDAO
+import models.daos.teamsystem.PointsDAO
 import play.api.libs.json._
 import shared.models.{DiscordID, DiscordPlayerLogged, ReplayTeamID}
 
@@ -74,6 +75,7 @@ object Team {
 
 case class TeamWithUsers(
     teamID: TeamID,
+    points: Int,
     teamName: String,
     principal: DiscordPlayerLogged,
     officials: Seq[DiscordPlayerLogged],
@@ -83,7 +85,8 @@ object TeamWithUsers {
   import scala.concurrent.Future
   import scala.concurrent.ExecutionContext.Implicits.global
   def apply(team: Team)(implicit
-      discordPlayerLoggedDAO: DiscordPlayerLoggedDAO
+      discordPlayerLoggedDAO: DiscordPlayerLoggedDAO,
+      pointsDAO: PointsDAO
   ): Future[Option[TeamWithUsers]] = {
     val loader: DiscordID => Future[Option[DiscordPlayerLogged]] =
       discordPlayerLoggedDAO.load
@@ -94,6 +97,8 @@ object TeamWithUsers {
     val suplentesFut = Future.traverse(
       team.members.filter(_.memberStatus == MemberStatus.Suplente).map(_.userID)
     )(loader)
+
+    val pointsFut = pointsDAO.load(team.teamID).map(_.map(_.points).sum)
 
     def allAreDefined[T](seq: Seq[Option[T]]): Option[Seq[T]] = {
       if (seq.forall(_.isDefined)) {
@@ -107,6 +112,7 @@ object TeamWithUsers {
       principalOpt <- principalFut
       officialsOpt <- officialsFut
       suplentesOpt <- suplentesFut
+      points <- pointsFut
     } yield {
       for {
         principal <- principalOpt
@@ -115,6 +121,7 @@ object TeamWithUsers {
       } yield {
         TeamWithUsers(
           team.teamID,
+          points,
           team.teamName,
           principal,
           officials,

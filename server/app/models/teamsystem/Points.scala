@@ -2,6 +2,7 @@ package models.teamsystem
 
 import shared.models.{DiscordID, ReplayTeamID}
 import play.api.libs.json._
+import shared.models.StarCraftModels.StringDate
 
 import java.util.Date
 case class Points(
@@ -9,7 +10,7 @@ case class Points(
     replayTeamID: ReplayTeamID,
     points: Int,
     userDiscordID: DiscordID,
-    date: Date,
+    date: StringDate,
     reason: String,
     enabled: Boolean
 )
