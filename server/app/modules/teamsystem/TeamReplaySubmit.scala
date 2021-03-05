@@ -227,7 +227,7 @@ object TeamReplaySubmit {
         case _ => false
       }
     def isLoser(discordID: DiscordID): Boolean =
-      winnersOwner match {
+      loserssOwner match {
         case Right(Some(discordPlayerLogged)) =>
           discordPlayerLogged.discordID == discordID
         case _ => false
@@ -393,6 +393,8 @@ object TeamReplaySubmit {
             newGame.loserssOwner.get,
             newGame.game.get
           )
+          println(completeGame)
+          println(metaInfoReplay.senderID)
           val messageToSend =
             if (completeGame.isAPlayer(metaInfoReplay.senderID)) {
               SmurfSenderValid(

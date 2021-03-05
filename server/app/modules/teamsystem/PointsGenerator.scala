@@ -4,7 +4,7 @@ import akka.actor.typed.{ActorRef, Behavior}
 import akka.actor.typed.scaladsl.{ActorContext, Behaviors}
 import com.google.inject.Provides
 import models.Smurf
-import models.daos.teamsystem.{PointsDAO, TeamDAO}
+import models.daos.teamsystem.{PointsDAO, TeamDAO, TeamReplayDAO}
 import models.teamsystem.{Points, Team, TeamID}
 import modules.teamsystem.UniqueSmurfWatcher
 import play.api.libs.concurrent.ActorModule
@@ -24,6 +24,9 @@ object PointsGenerator extends ActorModule {
       replayTeamID: ReplayTeamID,
       uploader: DiscordID,
       oneVsOne: OneVsOne
+  ) extends Command
+  case class ProcessPointsFromDB(
+      replayTeamID: ReplayTeamID
   ) extends Command
   case class DiscordPlayerFound(user: DiscordPlayerLogged)
       extends InternalCommand
@@ -53,7 +56,8 @@ object PointsGenerator extends ActorModule {
   def apply(
       pointsDAO: PointsDAO,
       uniqueSmurfWatcher: ActorRef[UniqueSmurfWatcher.Command],
-      teamDAO: TeamDAO
+      teamDAO: TeamDAO,
+      teamReplayDAO: TeamReplayDAO
   ): Behavior[Command] = {
 
     def pipeMessageIfInTeam(ctx: ActorContext[InternalCommand])(
@@ -231,6 +235,16 @@ object PointsGenerator extends ActorModule {
                   ReplayReadyToProcess(replayTeamID, oneVsOne, uploader)
                 case _ => IgnoreCommand
               }
+            case ProcessPointsFromDB(replayTeamID) =>
+              ctx.pipeToSelf(teamReplayDAO.load(replayTeamID)) {
+                case Success(Some(replayInfo)) =>
+                  ProcessPoints(
+                    replayTeamID,
+                    replayInfo.senderID,
+                    replayInfo.game
+                  )
+                case _ => IgnoreCommand
+              }
             case initialState @ ReplayReadyToProcess(
                   replayTeamID,
                   oneVsOne,
@@ -241,6 +255,7 @@ object PointsGenerator extends ActorModule {
               )
               worker ! initialState
 
+            case IgnoreCommand =>
             case _ =>
               throw new IllegalArgumentException("Error receiving message")
           }

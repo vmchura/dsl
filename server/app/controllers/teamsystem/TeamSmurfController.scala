@@ -82,6 +82,7 @@ class TeamSmurfController @Inject() (
         removed <- removePending(listPending.head.replayTeamID)
         _ <- removed.withError("Smurf se añadió pero no pudo removerse")
       } yield {
+
         "success" -> "smurf añadido"
       }).recoverWith(error => Future.successful("error" -> error.getMessage))
 
