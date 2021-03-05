@@ -5,12 +5,14 @@ import models.daos.{DiscordPlayerLoggedDAO, DiscordPlayerLoggedDAOImpl}
 import models.daos.teamsystem.{
   InvitationDAO,
   InvitationDAOImpl,
-  TeamMetaReplayTeamDAO,
-  TeamMetaReplayTeamDAOImpl,
+  PointsDAO,
+  PointsDAOImpl,
   RequestDAO,
   RequestDAOImpl,
   TeamDAO,
   TeamDAOImpl,
+  TeamMetaReplayTeamDAO,
+  TeamMetaReplayTeamDAOImpl,
   TeamReplayDAO,
   TeamReplayDAOImpl,
   TeamUserSmurfDAO,
@@ -53,6 +55,8 @@ class TeamSystemModule
     bind[TeamUserSmurfPendingDAO].to[TeamUserSmurfPendingDAOImpl]
     bind[TeamUserSmurfDAO].to[TeamUserSmurfDAOImpl]
     bind[TeamReplayDAO].to[TeamReplayDAOImpl]
+    bind[PointsDAO].to[PointsDAOImpl]
+    bindTypedActor(PointsGenerator, "team-points-generator")
 
   }
 }
