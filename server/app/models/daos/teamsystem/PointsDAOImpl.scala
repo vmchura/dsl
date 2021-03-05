@@ -23,13 +23,14 @@ class PointsDAOImpl @Inject() (val reactiveMongoApi: ReactiveMongoApi)
       )
       .map(_.ok)
 
-  override def load(replayTeamID: ReplayTeamID): Future[Option[Points]] =
+  override def load(replayTeamID: ReplayTeamID): Future[Seq[Points]] =
     collection
       .flatMap(
         _.find(
           Json.obj("replayTeamID" -> replayTeamID),
           Option.empty[Points]
-        ).one[Points]
+        ).cursor[Points](readPreference = ReadPreference.primary)
+          .collect[Seq](-1, Cursor.FailOnError[Seq[Points]]())
       )
 
   override def load(teamID: TeamID, enabled: Boolean): Future[Seq[Points]] =
