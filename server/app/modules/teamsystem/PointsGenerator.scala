@@ -136,9 +136,13 @@ object PointsGenerator extends ActorModule {
         ): Future[Boolean] = {
           (winner, loser) match {
             case (Some(user), None) =>
+              if (user.discordID == uploader)
+                addPointsByUploading(teamID, user)
               addPointsByPlaying(teamID, user)
               addPointsByWinning(teamID, user)
             case (None, Some(user)) =>
+              if (user.discordID == uploader)
+                addPointsByUploading(teamID, user)
               addPointsByPlaying(teamID, user)
             case _ => Future.successful(true)
           }
