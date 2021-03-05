@@ -4,6 +4,7 @@ import akka.actor.typed.scaladsl.Behaviors
 import modules.gameparser.GameParser.{ReplayParsed, Team}
 import akka.actor.typed.{ActorRef, Behavior}
 import shared.models.StarCraftModels._
+
 object GameJudge {
   case class JudgeGame(gameInfo: ReplayParsed, replyTo: ActorRef[SCGameMode])
   def apply(): Behavior[JudgeGame] =
@@ -38,7 +39,7 @@ object GameJudge {
                       winner,
                       loser,
                       replayParsed.mapName.getOrElse("???"),
-                      replayParsed.startTime.getOrElse("???")
+                      SCGameMode.parseDateFromGameDate(replayParsed.startTime)
                     )
                   case _ => InvalidSCGameMode(winners ::: losers)
                 }
@@ -54,7 +55,7 @@ object GameJudge {
                       winners,
                       losers,
                       replayParsed.mapName.getOrElse("???"),
-                      replayParsed.startTime.getOrElse("???")
+                      SCGameMode.parseDateFromGameDate(replayParsed.startTime)
                     )
                   case _ => defaultOnError
                 }

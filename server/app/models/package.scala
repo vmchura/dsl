@@ -1,5 +1,12 @@
-import java.util.UUID
-import play.api.libs.json.{JsObject, JsResult, JsString, Json, OFormat}
+import java.util.{Date, UUID}
+import play.api.libs.json.{
+  JsNumber,
+  JsObject,
+  JsResult,
+  JsString,
+  Json,
+  OFormat
+}
 import shared.models.StarCraftModels.{OneVsOne, SCPlayer, SCRace}
 import shared.models.{
   DiscordID,
@@ -29,6 +36,7 @@ package object models {
   }
   object ModelsJsonImplicits {
     import be.venneborg.refined.play.RefinedJsonFormats._
+
     implicit val replayTeamIDJsonImplicit: OFormat[ReplayTeamID] =
       Json.format[ReplayTeamID]
     implicit val discordIDjsonFormatJsonImplicit: OFormat[DiscordID] =

@@ -96,7 +96,7 @@ object TeamReplaySubmit {
               metaInfoReplay.id,
               ReplayRecord.md5HashString(metaInfoReplay.replay),
               /* TODO name*/ "???",
-              oneVsOne.startTime,
+              oneVsOne.startTime.toString,
               org.joda.time.DateTime.now().toString("MM/dd/yyyy HH:mm:ss"),
               metaInfoReplay.senderID
             )
