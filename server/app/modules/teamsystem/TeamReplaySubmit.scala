@@ -12,7 +12,7 @@ import models.{ReplayRecord, Smurf}
 import models.teamsystem.{PendingSmurf, TeamID, TeamReplayInfo}
 import modules.gameparser.GameJudge
 import modules.gameparser.GameParser.{GameInfo, ImpossibleToParse, ReplayParsed}
-import shared.models.StarCraftModels.OneVsOne
+import shared.models.StarCraftModels.{OneVsOne, SCGameMode}
 import shared.models.{
   DiscordID,
   DiscordPlayerLogged,
@@ -21,8 +21,10 @@ import shared.models.{
 }
 
 import java.io.File
+import java.util.Date
 import scala.util.{Failure, Success}
 import scala.concurrent.ExecutionContext.Implicits.global
+
 object TeamReplaySubmit {
 
   sealed trait InternalCommand
@@ -517,7 +519,30 @@ object TeamReplaySubmit {
             .parseFile(metaInfoReplay.replay)
             .map(GameInfo.apply)
         ) {
-          case Success(parsed: ReplayParsed) => ReplayParsedMessage(parsed)
+          case Success(parsed: ReplayParsed) => {
+            parsed.startTime match {
+              case Some(startTime) =>
+                val dateGame: Date =
+                  SCGameMode.parseDateFromGameDate(Some(startTime)).toDate
+                import java.util.Calendar
+                val cal: Calendar = Calendar.getInstance
+                cal.add(Calendar.MONTH, -1)
+                val monthBefore = cal.getTime
+                if (dateGame.before(monthBefore)) {
+                  ReplayErrorParsing(
+                    s"La replay debe ser reciente (1mes) fecha de la replay ${dateGame.toString}"
+                  )
+
+                } else {
+                  ReplayParsedMessage(parsed)
+                }
+
+              case None =>
+                ReplayErrorParsing("No se pudo obtener la fecha del juego")
+
+            }
+
+          }
           case Success(ImpossibleToParse) =>
             ReplayErrorParsing("Impossible to parse replay")
           case Failure(error) =>
