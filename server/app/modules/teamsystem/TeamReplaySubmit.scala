@@ -290,7 +290,8 @@ object TeamReplaySubmit {
       teamReplayDAO: TeamReplayDAO,
       pusher: ActorRef[FilePusherActor.Command],
       teamUserSmurfPendingDAO: TeamUserSmurfPendingDAO,
-      replayTeamDAO: TeamMetaReplayTeamDAO
+      replayTeamDAO: TeamMetaReplayTeamDAO,
+      pointsGenerator: ActorRef[PointsGenerator.Command]
   ): Behavior[InternalCommand] =
     Behaviors.receive {
       case (_, BothSmurfsFree(oneVsOne)) =>
@@ -299,6 +300,11 @@ object TeamReplaySubmit {
         awaitSmurfOfSender(metaInfoReplay, oneVsOne)
       case (ctx, SmurfSenderValid(oneVsOne, _)) =>
         saveReplayInfo(ctx, metaInfoReplay, oneVsOne)
+        pointsGenerator ! PointsGenerator.ProcessPoints(
+          metaInfoReplay.id,
+          metaInfoReplay.senderID,
+          oneVsOne
+        )
         replayInfoSaving(metaInfoReplay)(replyTo, pusher)
       case (ctx, SmurfSenderToCheck(smurf, oneVsOne)) =>
         sendSmurfToBeChecked(metaInfoReplay, oneVsOne)(smurf, ctx)
@@ -322,7 +328,8 @@ object TeamReplaySubmit {
       teamReplayDAO: TeamReplayDAO,
       pusher: ActorRef[FilePusherActor.Command],
       teamUserSmurfPendingDAO: TeamUserSmurfPendingDAO,
-      replayTeamDAO: TeamMetaReplayTeamDAO
+      replayTeamDAO: TeamMetaReplayTeamDAO,
+      pointsGenerator: ActorRef[PointsGenerator.Command]
   ): Behavior[InternalCommand] = {
 
     Behaviors.receive {
@@ -453,7 +460,8 @@ object TeamReplaySubmit {
       teamReplayDAO: TeamReplayDAO,
       pusher: ActorRef[FilePusherActor.Command],
       teamUserSmurfPendingDAO: TeamUserSmurfPendingDAO,
-      replayTeamDAO: TeamMetaReplayTeamDAO
+      replayTeamDAO: TeamMetaReplayTeamDAO,
+      pointsGenerator: ActorRef[PointsGenerator.Command]
   ): Behavior[InternalCommand] =
     Behaviors.receive {
       case (ctx, ReplayParsedMessage(replayParsed)) =>
@@ -497,7 +505,8 @@ object TeamReplaySubmit {
       teamReplayDAO: TeamReplayDAO,
       pusher: ActorRef[FilePusherActor.Command],
       teamUserSmurfPendingDAO: TeamUserSmurfPendingDAO,
-      replayTeamDAO: TeamMetaReplayTeamDAO
+      replayTeamDAO: TeamMetaReplayTeamDAO,
+      pointsGenerator: ActorRef[PointsGenerator.Command]
   ): Behavior[InternalCommand] = {
     Behaviors.receive {
       case (ctx, Unique()) =>
@@ -535,7 +544,8 @@ object TeamReplaySubmit {
       teamReplayDAO: TeamReplayDAO,
       pusher: ActorRef[FilePusherActor.Command],
       teamUserSmurfPendingDAO: TeamUserSmurfPendingDAO,
-      replayTeamDAO: TeamMetaReplayTeamDAO
+      replayTeamDAO: TeamMetaReplayTeamDAO,
+      pointsGenerator: ActorRef[PointsGenerator.Command]
   ): Behavior[Command] =
     Behaviors
       .receive[InternalCommand] {

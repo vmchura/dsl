@@ -53,7 +53,8 @@ object TeamReplayManager extends ActorModule {
       teamReplayDAO: TeamReplayDAO,
       pusherFileActor: ActorRef[FilePusherActor.Command],
       teamUserSmurfPendingDAO: TeamUserSmurfPendingDAO,
-      replayTeamDAO: TeamMetaReplayTeamDAO
+      replayTeamDAO: TeamMetaReplayTeamDAO,
+      pointsGenerator: ActorRef[PointsGenerator.Command]
   ): Behavior[Command] = {
 
     Behaviors
