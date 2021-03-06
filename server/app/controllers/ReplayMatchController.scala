@@ -13,6 +13,7 @@ import models.daos.{
   UserSmurfDAO
 }
 import models.services.{ReplayActionBuilderService, ReplayDeleterService}
+import modules.teamsystem.TeamReplayManager
 import modules.usertrajectory.GameReplayResumenManager.{
   MessageReplayResumen,
   ReplayAdded
@@ -29,6 +30,7 @@ import shared.models.{
   ChallongePlayerDefined,
   DiscordByHistory,
   DiscordByLogic,
+  DiscordID,
   DiscordIDSource,
   DiscordIDSourceDefined
 }
@@ -47,7 +49,8 @@ class ReplayMatchController @Inject() (
     replayMatchDAO: ReplayMatchDAO,
     ticketReplayDAO: TicketReplayDAO,
     replayActionBuilderService: ReplayActionBuilderService,
-    gameReplayResumenManager: ActorRef[MessageReplayResumen]
+    gameReplayResumenManager: ActorRef[MessageReplayResumen],
+    teamReplayManager: ActorRef[TeamReplayManager.Command]
 )(implicit
     assets: AssetsFinder,
     ex: ExecutionContext
@@ -63,7 +66,8 @@ class ReplayMatchController @Inject() (
       builderIfEmpty: (
           Map[String, Seq[String]],
           ChallongeOneVsOneMatchGameResult
-      ) => Future[ChallongeOneVsOneDefined]
+      ) => Future[ChallongeOneVsOneDefined],
+      sender: Option[DiscordID]
   )(
       request: SecuredRequest[EnvType, MultipartFormData[Files.TemporaryFile]]
   ): Future[Result] = {
@@ -101,6 +105,12 @@ class ReplayMatchController @Inject() (
       } yield {
         val file = replay_file.ref.toFile
         val newReplayMatchID = UUID.randomUUID()
+        sender.foreach { senderID =>
+          teamReplayManager ! TeamReplayManager.SubmitByTournament(
+            senderID,
+            file
+          )
+        }
         val execution = for {
           challongeMatchGameResult <-
             replayActionBuilderService.parseFileAndBuildAction(
@@ -359,7 +369,8 @@ class ReplayMatchController @Inject() (
           discordIDQuerying,
           discordIDRival,
           result,
-          buildFromMySmurf
+          buildFromMySmurf,
+          Some(DiscordID(request.identity.loginInfo.providerKey))
         )(request)
 
     }
@@ -468,7 +479,8 @@ class ReplayMatchController @Inject() (
           discordIDFirst,
           discordIDSecond,
           result,
-          buildFromBothSmurfs
+          buildFromBothSmurfs,
+          None
         )(request)
     }
   def parseReplay(
