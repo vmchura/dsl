@@ -22,6 +22,7 @@ import models.teamsystem.{
   InvitationWithUsers,
   PendingSmurf,
   PendingSmurfWithUser,
+  PointsWithUser,
   RequestJoin,
   RequestJoinWithUsers,
   TeamID,
@@ -42,6 +43,7 @@ import java.util.UUID
 import scala.concurrent.{ExecutionContext, Future}
 import akka.actor.typed.scaladsl.AskPattern._
 import akka.util.Timeout
+import com.mohiva.play.silhouette.impl.providers.SocialProviderRegistry
 import modules.teamsystem.TeamCreator.CreationCommand
 import shared.models.DiscordID
 
@@ -285,4 +287,39 @@ class TeamManagerController @Inject() (
 
       }
     }
+
+  def showTeam(teamUUID: UUID): Action[AnyContent] = {
+    silhouette.UserAwareAction.async { implicit request =>
+      sideBarMenuService.buildUserAwareSideBar().flatMap { implicit menues =>
+        val defaultResult = Redirect(
+          controllers.teamsystem.routes.TeamManagerController.showAllTeams()
+        )
+        teamDAO.loadTeam(TeamID(teamUUID)).flatMap {
+          case Some(team) =>
+            TeamWithUsers(team).flatMap {
+              case Some(teamWithUsers) =>
+                for {
+                  points <- pointsDAO.load(team.teamID)
+                  pointsUsers <-
+                    Future.traverse(points)(PointsWithUser.apply).map(_.flatten)
+                } yield {
+                  implicit val socialRegister: SocialProviderRegistry =
+                    socialProviderRegistry
+                  Ok(
+                    views.html.teamsystem.showTeamDetails(
+                      request.identity,
+                      teamWithUsers,
+                      pointsUsers
+                    )
+                  )
+                }
+
+              case None => Future.successful(defaultResult)
+            }
+          case None => Future.successful(defaultResult)
+        }
+
+      }
+    }
+  }
 }

@@ -12,7 +12,7 @@
 <div class="@classContainer">
     <div class="card text-center">
         <div class="card-header team-name">
-            @team.teamName [@team.points]
+            <a href="@controllers.teamsystem.routes.TeamManagerController.showTeam(team.teamID.id)">@team.teamName</a> [@team.points]
         </div>
         <div class="card-body">
             @teamMemberLogged(team.principal)

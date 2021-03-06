@@ -116,7 +116,7 @@ object PointsGenerator extends ActorModule {
         def addPointsByWinning(
             teamID: TeamID,
             user: DiscordPlayerLogged
-        ): Future[Boolean] = addPoints("Por ganar", 10)(teamID, user)
+        ): Future[Boolean] = addPoints("Por ganar", 15)(teamID, user)
         def addPointsAgainstAMember(
             teamID: TeamID,
             user: DiscordPlayerLogged
