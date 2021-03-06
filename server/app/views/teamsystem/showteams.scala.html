@@ -16,7 +16,7 @@
         </div>
     }
     <div id="teams-list">
-        @for(team <- teams){
+        @for(team <- teams.sortBy(_.points).reverse){
           @showteam(team,userCanRequest,"team-container")
         }
     </div>

@@ -6,10 +6,12 @@
 @import views.html.helper._
 @(user: User)(implicit request: RequestHeader, messages: Messages,  assetsFinder: AssetsFinder,menues: Seq[MenuGroup], socialProviders: SocialProviderRegistry)
 @main("Upload replay",Some(user),socialProviders){
-    <button id="btn-upload-team-replay">Select replays</button>
   <div id="replays-teams-upload"></div>
-    <input type="file" id="input-file-team-replay" multiple>
+    <div class="mb-3">
+        <label for="formFile" class="form-label">Selecciona una o varias replays</label>
+        <input class="form-control" type="file" id="input-file-team-replay" multiple>
+    </div>
     <script @{CSPNonce.attr} type="text/javascript">
-        TeamsReplay.init("btn-upload-team-replay","replays-teams-upload","input-file-team-replay");
+        TeamsReplay.init("replays-teams-upload","input-file-team-replay");
     </script>
 }

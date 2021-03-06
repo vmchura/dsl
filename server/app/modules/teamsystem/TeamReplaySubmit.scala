@@ -403,8 +403,6 @@ object TeamReplaySubmit {
             newGame.loserssOwner.get,
             newGame.game.get
           )
-          println(completeGame)
-          println(metaInfoReplay.senderID)
           val messageToSend =
             if (completeGame.isAPlayer(metaInfoReplay.senderID)) {
               SmurfSenderValid(

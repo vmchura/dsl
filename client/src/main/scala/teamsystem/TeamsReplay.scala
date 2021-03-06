@@ -20,8 +20,6 @@ object TeamsReplay {
     <thead>
       <tr>
         <th scope="col">Replay</th>
-        <th scope="col">Primer jugador</th>
-        <th scope="col">Segundo jugador</th>
         <th scope="col">Estado</th>
       </tr>
     </thead>
@@ -44,16 +42,14 @@ object TeamsReplay {
 
   }
   @JSExport("init")
-  def init(buttonID: String, containerID: String, inputFileID: String): Unit = {
-    val button =
-      dom.document.getElementById(buttonID).asInstanceOf[HTMLButtonElement]
+  def init(containerID: String, inputFileID: String): Unit = {
+
     val container =
       dom.document.getElementById(containerID).asInstanceOf[HTMLDivElement]
     val fileInput =
       dom.document.getElementById(inputFileID).asInstanceOf[HTMLInputElement]
 
     fileInput.onchange = _ => handleUpload(fileInput)
-    button.onclick = _ => fileInput.click()
     html.render(container, tableContent)
 
   }
