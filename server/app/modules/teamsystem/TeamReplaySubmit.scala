@@ -37,6 +37,14 @@ object TeamReplaySubmit {
       replyTo: ActorRef[Response],
       parent: ActorRef[TeamReplayManager.Command]
   ) extends Command
+  case class SubmitByTournament(
+      id: ReplayTeamID,
+      senderID: DiscordID,
+      teamID: TeamID,
+      replay: File,
+      replyTo: ActorRef[Response],
+      parent: ActorRef[TeamReplayManager.Command]
+  ) extends Command
   case class SmurfSelected(
       smurf: Smurf,
       replyTo: ActorRef[Response]
@@ -587,6 +595,16 @@ object TeamReplaySubmit {
                 ReplayErrorParsing(reason)
             }
           )
+          checkDuplicatePending(
+            MetaInfoReplay(id, senderID, teamID, replay),
+            replyTo,
+            parent
+          )
+        case (
+              ctx,
+              SubmitByTournament(id, senderID, teamID, replay, replyTo, parent)
+            ) =>
+          ctx.self ! Unique()
           checkDuplicatePending(
             MetaInfoReplay(id, senderID, teamID, replay),
             replyTo,

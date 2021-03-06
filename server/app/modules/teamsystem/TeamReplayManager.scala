@@ -5,6 +5,7 @@ import akka.actor.typed.{ActorRef, Behavior}
 import com.google.inject.Provides
 import models.Smurf
 import models.daos.teamsystem.{
+  TeamDAO,
   TeamMetaReplayTeamDAO,
   TeamReplayDAO,
   TeamUserSmurfPendingDAO
@@ -17,15 +18,26 @@ import shared.models.{DiscordID, ReplayTeamID}
 import java.io.File
 import scala.concurrent.duration.DurationInt
 import scala.language.postfixOps
-
+import scala.concurrent.ExecutionContext.Implicits.global
+import scala.util.Success
 object TeamReplayManager extends ActorModule {
   sealed trait InternalCommand
   sealed trait Command extends InternalCommand
+  case object IgnoredCommand extends InternalCommand
   case class Submit(
       senderID: DiscordID,
       teamID: TeamID,
       replay: File,
       replyTo: ActorRef[TeamReplaySubmit.Response]
+  ) extends Command
+  case class SubmitByTournament(
+      senderID: DiscordID,
+      replay: File
+  ) extends Command
+  case class SubmitByTournamentWithTeam(
+      senderID: DiscordID,
+      teamID: TeamID,
+      replay: File
   ) extends Command
   case class SmurfSelected(
       replayTeamID: ReplayTeamID,
@@ -54,7 +66,8 @@ object TeamReplayManager extends ActorModule {
       pusherFileActor: ActorRef[FilePusherActor.Command],
       teamUserSmurfPendingDAO: TeamUserSmurfPendingDAO,
       replayTeamDAO: TeamMetaReplayTeamDAO,
-      pointsGenerator: ActorRef[PointsGenerator.Command]
+      pointsGenerator: ActorRef[PointsGenerator.Command],
+      teamDAO: TeamDAO
   ): Behavior[Command] = {
 
     Behaviors
@@ -79,6 +92,35 @@ object TeamReplayManager extends ActorModule {
             )
             ctx.watchWith(worker, WorkerDone(newID))
             ctx.scheduleOnce(3 minutes, ctx.self, SenderTimeOut(newID, replyTo))
+            Behaviors.same
+          case SubmitByTournament(senderID, replay) =>
+            ctx.pipeToSelf(
+              teamDAO.teamsOf(senderID).map(_.find(_.principal == senderID))
+            ) {
+              case Success(Some(team)) =>
+                SubmitByTournamentWithTeam(senderID, team.teamID, replay)
+              case _ => IgnoredCommand
+            }
+            Behaviors.same
+          case SubmitByTournamentWithTeam(senderID, teamID, replay) =>
+            val worker =
+              ctx.spawnAnonymous(TeamReplaySubmit(uniqueReplayWatcher))
+            val newID = ReplayTeamID()
+            current = current + (newID -> worker)
+            worker ! TeamReplaySubmit.SubmitByTournament(
+              newID,
+              senderID,
+              teamID,
+              replay,
+              ctx.system.ignoreRef,
+              ctx.system.ignoreRef
+            )
+            ctx.watchWith(worker, WorkerDone(newID))
+            ctx.scheduleOnce(
+              3 minutes,
+              ctx.self,
+              SenderTimeOut(newID, ctx.system.ignoreRef)
+            )
             Behaviors.same
           case SmurfSelected(replayTeamID, smurf, replyTo) =>
             awaiting.get(replayTeamID) match {
@@ -107,6 +149,7 @@ object TeamReplayManager extends ActorModule {
             awaiting = awaiting - replayTeamID
             current = current - replayTeamID
             Behaviors.same
+          case IgnoredCommand => Behaviors.same
         }
       }
       .narrow
