@@ -95,7 +95,7 @@ object TeamReplayManager extends ActorModule {
             Behaviors.same
           case SubmitByTournament(senderID, replay) =>
             ctx.pipeToSelf(
-              teamDAO.teamsOf(senderID).map(_.find(_.principal == senderID))
+              teamDAO.teamsOf(senderID).map(_.find(_.isOfficial(senderID)))
             ) {
               case Success(Some(team)) =>
                 SubmitByTournamentWithTeam(senderID, team.teamID, replay)
