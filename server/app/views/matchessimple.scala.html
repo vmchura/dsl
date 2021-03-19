@@ -1,7 +1,19 @@
 @import views.html.helper._
 @import com.mohiva.play.silhouette.impl.providers.SocialProviderRegistry
+@import play.twirl.api.TwirlFeatureImports.defining
 @this()(implicit assets: AssetsFinder)
 @(user: Option[models.User],matches: Seq[MatchDiscord],tournament: Tournament,socialProviders: SocialProviderRegistry)(implicit request: RequestHeader, messages: Messages,menues: Seq[MenuGroup])
+@displaySmurfs(userSmurf: UserSmurf) = {
+    @for(smurfDefined <- userSmurf.matchSmurf.distinctBy(_.smurf)) {
+      <span class="bg-primary-700 px-1 text-gray-200 rounded">
+        @smurfDefined.smurf
+      </span>
+    }
+}
+@displayUserAndLink(userSmurf: UserSmurf) = {
+    <a href="@controllers.usertrajectory.routes.UserReplaysController.loadReplaysByUser(userSmurf.discordUser.discordID)">@userSmurf.discordUser.userName</a>
+}
+
 @main("Partidas del torneo",user,socialProviders){
     <div id="container-tournament-info">
         <span id="title-tournament-name">@tournament.tournamentName</span>
@@ -25,52 +37,53 @@
 
     <div id="container-matches-finder"></div>
 
-    <table class="table table-striped">
+    <table class="min-w-full leading-normal">
         <thead>
             <tr>
-                <th>Round</th>
-                <th>Player 1</th>
-                <th>Player 2</th>
-                <th>Replays</th>
+                <th class="px-5 py-3 border-b-2 border-gray-200 bg-gray-100 text-center text-xs font-semibold text-gray-600 uppercase tracking-wider">
+                    Round</th>
+                <th class="px-5 py-3 border-b-2 border-gray-200 bg-gray-100 text-center text-xs font-semibold text-gray-600 uppercase tracking-wider">
+                    Player 1</th>
+                <th class="px-5 py-3 border-b-2 border-gray-200 bg-gray-100 text-center text-xs font-semibold text-gray-600 uppercase tracking-wider">
+                    Player 2</th>
+                <th class="px-5 py-3 border-b-2 border-gray-200 bg-gray-100 text-center text-xs font-semibold text-gray-600 uppercase tracking-wider">
+                    Replays</th>
             </tr>
         </thead>
         <tbody>
         @for(m <- matches){
             <tr id="@m.matchPK.challongeMatchID">
-                <td>@m.round</td>
-                <td>
-                    <a href="@controllers.usertrajectory.routes.UserReplaysController.loadReplaysByUser(m.userSmurf1.discordUser.discordID)">@m.userSmurf1.discordUser.userName</a>
-
-                    @for(smurfDefined <- m.userSmurf1.matchSmurf.distinctBy(_.smurf)){
-                        <span class="badge rounded-pill bg-primary">@smurfDefined.smurf </span>
-                    }
+                <td class="px-5 py-5 border-b border-gray-200 bg-white text-sm">
+                @m.round</td>
+                <td class="px-5 py-5 border-b border-gray-200 bg-white text-sm">
+                    @displayUserAndLink(m.userSmurf1)
+                    @displaySmurfs(m.userSmurf1)
                 </td>
-                <td>
-                    <a href="@controllers.usertrajectory.routes.UserReplaysController.loadReplaysByUser(m.userSmurf2.discordUser.discordID)">@m.userSmurf2.discordUser.userName</a>
-
-                @for(smurfDefined <- m.userSmurf2.matchSmurf.distinctBy(_.smurf)){
-                    <span class="badge rounded-pill bg-primary">@smurfDefined.smurf </span>
-                }
+                <td class="px-5 py-5 border-b border-gray-200 bg-white text-sm">
+                    @displayUserAndLink(m.userSmurf2)
+                    @displaySmurfs(m.userSmurf2)
                 </td>
-                <td>
-                    @if(m.replaysAttached.nonEmpty){
-                        <button type="button" class="btn btn-primary" data-toggle="modal" data-target="@{s"#modal_list_${m.matchPK.challongeMatchID}"}">
-                            <span class="material-icons right">info_outline</span>
-                        </button>
-                    }else{
-                        <button type="button" class="btn btn-primary" disabled>
-                            <span class="material-icons">info_outline</span>
+                <td class="px-5 py-5 border-b border-gray-200 bg-white text-sm">
+                <div class="flex">
+
+                    @defining(if(m.replaysAttached.isEmpty) "400" else "800"){ grayShade =>
+                        <button type="button" class="@{s"block w-6 h-6t text-primary-$grayShade"}" disabled=@m.replaysAttached.isEmpty>
+                            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                            </svg>
                         </button>
                     }
-                </td>
-                @if(user.exists(u => WithAdmin.isModeradorID(u.loginInfo.providerKey))){
-                    <td>
 
-                        <button type="button" class="btn btn-primary" data-toggle="modal" data-target="@{s"#modal_${m.matchPK.challongeMatchID}"}">
-                            <span class="material-icons">cloud_upload</span>
+                    @if(user.exists(u => WithAdmin.isModeradorID(u.loginInfo.providerKey))){
+                        <button type="button" class="block w-8 h-8 text-primary-600" data-toggle="modal" data-target="@{s"#modal_${m.matchPK.challongeMatchID}"}">
+                            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor">
+                                <path d="M5.5 13a3.5 3.5 0 01-.369-6.98 4 4 0 117.753-1.977A4.5 4.5 0 1113.5 13H11V9.413l1.293 1.293a1 1 0 001.414-1.414l-3-3a1 1 0 00-1.414 0l-3 3a1 1 0 001.414 1.414L9 9.414V13H5.5z" />
+                                <path d="M9 13h2v5a1 1 0 11-2 0v-5z" />
+                            </svg>
                         </button>
-                    </td>
-                }
+                    }
+                </div>
+                </td>
 
             </tr>
 
@@ -80,7 +93,7 @@
         </tbody>
     </table>
 
-    @for(m <- matches){
+ @*   @for(m <- matches){
         @listreplayssimple(m.convertToMatch(),
             s"modal_list_${m.matchPK.challongeMatchID}",
             user.fold(false)(u => WithAdmin.isModeradorID(u.loginInfo.providerKey)),
@@ -91,7 +104,7 @@
         }
 
     }
-
+*@
     <script @{CSPNonce.attr}>   MatchFinder.init("container-matches-finder"); </script>
 
 
