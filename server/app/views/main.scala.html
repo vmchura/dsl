@@ -20,24 +20,17 @@
 
         <!-- HTML5 shim and Respond.js IE8 support of HTML5 elements and media queries -->
         <!--[if lt IE 9]>
-        <script @{CSPNonce.attr} src="https://oss.maxcdn.com/libs/html5shiv/3.7.0/html5shiv.js"/>
-        <script @{CSPNonce.attr} src="https://oss.maxcdn.com/libs/respond.js/1.4.2/respond.min.js"/>
+        <script @{CSPNonce.attr} src="https://oss.maxcdn.com/libs/html5shiv/3.7.0/html5shiv.js"></script>
+        <script @{CSPNonce.attr} src="https://oss.maxcdn.com/libs/respond.js/1.4.2/respond.min.js"></script>
         <![endif]-->
 
         <link @{CSPNonce.attr} rel="stylesheet" media="screen" href="@controllers.routes.Assets.versioned("styles/styles.css")">
         <link @{CSPNonce.attr} rel="stylesheet" media="screen" href="@controllers.routes.Assets.versioned("styles/main.css")">
 
+        <script @{CSPNonce.attr} src="https://cdn.jsdelivr.net/gh/alpinejs/alpine@@v2.8.1/dist/alpine.min.js" defer> </script>
         @scalajs.html.scripts("client", controllers.routes.Assets.versioned(_).toString, name => getClass.getResource(s"/public/$name") != null,CSPNonce.attr)
 
         <style @{CSPNonce.attr}>
-                @@font-face {
-                    font-family: atomicAge;
-                    src: url(@controllers.routes.Assets.versioned("fonts/atomic-font/AtomicAge-Regular.ttf"))
-                }
-                @@font-face {
-                    font-family: starCraft;
-                    src: url(@controllers.routes.Assets.versioned("fonts/starcraft.ttf"))
-                }
                 body{
                     background-image: url(@controllers.routes.Assets.versioned("images/fondo_nuevos_torneos.jpg"));
                 }

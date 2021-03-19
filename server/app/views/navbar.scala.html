@@ -3,64 +3,107 @@
 @import controllers.AssetsFinder
 @import com.mohiva.play.silhouette.impl.providers.SocialProviderRegistry
 @(user: Option[models.User] = None,menues: Seq[MenuGroup],socialProviders: SocialProviderRegistry)(implicit request: RequestHeader, messages: Messages, assets: AssetsFinder)
-<nav class="navbar navbar-expand-lg navbar-light">
-    <div class="container-fluid">
+<nav x-data="{mobileMenu: false}" class="bg-primary-900">
+    <div class="max-w-7xl mx-auto px-2 sm:px-6 lg:px-8">
+        <div class="relative flex items-center justify-between h-16">
+            <div class="absolute inset-y-0 left-0 flex items-center sm:hidden">
+                    <!-- Mobile menu button-->
+                <button x-on:click="mobileMenu=!mobileMenu" type="button" class="inline-flex items-center justify-center p-2 rounded-md text-gray-400 hover:text-white hover:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-inset focus:ring-white" aria-controls="mobile-menu" aria-expanded="false">
+                    <span class="sr-only">Open main menu</span>
+                        <!--
+            Icon when menu is closed.
 
-        <a class="navbar-brand" href="#">
-            <img src="@controllers.routes.Assets.versioned("images/favicon.png")" width="30" height="30" class="d-inline-block align-top" alt="" loading="lazy">
-        </a>
-        <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarSupportedContent" aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
-            <span class="navbar-toggler-icon"></span>
-        </button>
-        <div class="collapse navbar-collapse" id="navbarSupportedContent">
+            Heroicon name: outline/menu
+
+            Menu open: "hidden", Menu closed: "block"
+          -->
+                    <svg class="block h-6 w-6" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" aria-hidden="true">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16" />
+                    </svg>
+                        <!--
+            Icon when menu is open.
+
+            Heroicon name: outline/x
+
+            Menu open: "block", Menu closed: "hidden"
+          -->
+                    <svg class="hidden h-6 w-6" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" aria-hidden="true">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+                    </svg>
+                </button>
+            </div>
+            <div class="flex-1 flex items-center justify-center sm:items-stretch sm:justify-start">
+                <div class="flex-shrink-0 flex items-center">
+                    <img class="block lg:hidden h-8 w-auto" src="@controllers.routes.Assets.versioned("images/favicon.png")" alt="DeathFate">
+                    <img class="hidden lg:block h-8 w-auto" src="@controllers.routes.Assets.versioned("images/favicon.png")" alt="DeathFate">
+                </div>
+                <div class="hidden sm:block sm:ml-6">
+                    <div class="flex space-x-4">
+                            <!-- Current: "bg-gray-900 text-white", Default: "text-gray-300 hover:bg-gray-700 hover:text-white" -->
+                        @*<a href="#" class="bg-gray-900 text-white px-3 py-2 rounded-md text-sm font-medium">Dashboard</a>*@
+
+                        @for(menu <- menues){
+                            <a href="#" class="text-gray-300 hover:bg-primary-500 hover:text-black px-3 py-2 rounded-md text-sm font-medium">@menu.tag</a>
+
+                        }
+                    </div>
+                </div>
+            </div>
+            <div class="absolute inset-y-0 right-0 flex items-center pr-2 sm:static sm:inset-auto sm:ml-6 sm:pr-0">
 
 
-            <ul class="navbar-nav  mr-auto mb-2 mb-lg-0">
+                    <!-- Profile dropdown -->
+                <div class="ml-3 relative">
+                  @user.fold{
+                      @if(socialProviders.providers.nonEmpty) {
+                          @for(p <- socialProviders.providers) {
+                              <a class="block px-4 py-2 text-gray-200 border border-solid hover:bg-gray-200 hover:text-gray-800  border-gray-200" href="@controllers.routes.SocialAuthController.authenticate(p.id)" class="provider @p.id" title="@messages(p.id)">Inicia sesión con @p.id.capitalize </a>
 
-                @for(menu <- menues){
-                    <li class="nav-item dropdown">
-                        <a class="nav-link dropdown-toggle" href="#" id="@menu.tag.filter(_.isLetterOrDigit).mkString("")" role="button" data-toggle="dropdown" aria-expanded="false">
-                        @menu.tag
-                        </a>
-                        <div class="dropdown-menu" aria-labelledby="@menu.tag.filter(_.isLetterOrDigit).mkString("")">
-                            @for(action <- menu.primaryActions()){
-                              <a class="dropdown-item" href="@action.url">@action.tag</a>
-                            }
-                            @if(menu.hasSecondaryActions){
-                                <div class="dropdown-divider"></div>
-                                @for(action <- menu.secondaryActions()){
-                                    <a class="dropdown-item" href="@action.url">@action.tag</a>
-                                }
-                            }
+                          }
+                      }
+                  }{ u =>
+                        <div x-data="{open: false}">
+
+                            <div>
+                                <button x-on:click="open = true" type="button" class="flex text-gray-300 hover:bg-primary-500 hover:text-black text-sm rounded-full focus:outline-none focus:c focus:ring-offset-2 focus:ring-offset-gray-800 focus:ring-white" id="user-menu" aria-expanded="false" aria-haspopup="true">
+                                    <span class="p-1 ">Bienvenido @u.fullName.getOrElse("campeón") </span>
+                                    <img class="h-8 w-8 rounded-full" src="@u.avatarURL.getOrElse(assets.path("images/silhouette.png"))" alt="User's image">
+                                </button>
+                            </div>
+                            <div
+                            x-show="open"
+                            x-transition:enter="transition ease-out duration-100"
+                            x-transition:enter-start="opacity-0 transform scale-90"
+                            x-transition:enter-end="opacity-100 transform scale-100"
+                            x-transition:leave="transition ease-in duration-75"
+                            x-transition:leave-start="opacity-100 transform scale-100"
+                            x-transition:leave-end="opacity-0 transform scale-90"
+                            x-on:click.away="open=false"
+                            class="origin-top-right absolute right-0 mt-2 w-48 rounded-md shadow-lg py-1 bg-white ring-1 ring-black ring-opacity-5 focus:outline-none"
+                            role="menu"
+                            aria-orientation="vertical"
+                            aria-labelledby="user-menu">
+                                <a class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100" role="menuitem" href="@controllers.teamsystem.routes.TeamManagerController.showMyTeams()">Mis equipos</a>
+                                <a class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100" role="menuitem" href="@controllers.routes.Application.signOut()">Salir</a>
+                            </div>
                         </div>
-                    </li>
-                }
 
+                  }
 
+                </div>
+            </div>
+        </div>
+    </div>
 
-            </ul>
-            <ul class="navbar-nav">
-                @user.fold{
-                    @if(socialProviders.providers.nonEmpty) {
-                            @for(p <- socialProviders.providers) {
-                               <li><a class="nav-link" href="@controllers.routes.SocialAuthController.authenticate(p.id)" class="provider @p.id" title="@messages(p.id)">Inicia sesión con @p.id.capitalize </a></li>
-                            }
-                    }
-                }{ u =>
-                    <li class="nav-item dropdown">
-                        <a class="nav-link dropdown-toggle" href="#" id="navbarDropdownMenuLink" role="button" data-toggle="dropdown" aria-expanded="false">
-                            <span >Bienvenido @u.fullName.getOrElse("campeón")
-                            <img src="@u.avatarURL.getOrElse(assets.path("images/silhouette.png"))" height="40px" alt="avatar" />
-                            </span>
-                        </a>
-                        <ul class="dropdown-menu" aria-labelledby="navbarDropdownMenuLink">
-                            <li><a class="dropdown-item" href="@controllers.teamsystem.routes.TeamManagerController.showMyTeams()">Mis equipos</a></li>
-                            <li><a class="dropdown-item" href="@controllers.routes.Application.signOut()">Salir</a></li>
-                        </ul>
-                    </li>
-                }
-            </ul>
+        <!-- Mobile menu, show/hide based on menu state. -->
+    <div x-show="mobileMenu" class="sm:hidden" id="mobile-menu">
+        <div class="px-2 pt-2 pb-3 space-y-1">
+                <!-- Current: "bg-gray-900 text-white", Default: "text-gray-300 hover:bg-gray-700 hover:text-white" -->
+            @*<a href="#" class="bg-gray-900 text-white block px-3 py-2 rounded-md text-base font-medium">Dashboard</a>*@
+            @for(menu <- menues){
+                <a href="#" class="text-gray-300 hover:bg-gray-700 hover:text-white block px-3 py-2 rounded-md text-base font-medium">@menu.tag</a>
 
+            }
         </div>
     </div>
 </nav>
