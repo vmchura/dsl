@@ -7,42 +7,86 @@
 @(createTournamentForm: Form[Data],socialProviders: SocialProviderRegistry)(implicit request: RequestHeader, messages: Messages, menues: Seq[MenuGroup])
 
 @main("Crea un torneo: Discord + Challonge",None,socialProviders){
-    <div class="card container-cela-form">
-        <div class="card-content">
-            <div class="card-title">@messages("tournament.create.title")</div>
 
-            @helper.form(action = routes.TournamentController.post()) {
-                @helper.CSRF.formField
+    @helper.form(action = routes.TournamentController.post(),Symbol("class") -> "w-full max-w-sm") {
+        @helper.CSRF.formField
+        <div class="md:flex md:items-center mb-6">
+            <div class="md:w-1/3">
+                <label
+                class="block text-gray-500 font-bold md:text-right mb-1 md:mb-0 pr-4"
+                for="discordGuildID">
+                @messages("discordGuildID")
+                </label>
+            </div>
+            <div class="md:w-2/3">
+                <input
+                class="bg-gray-200 appearance-none border-2 border-gray-200 rounded w-full py-2 px-4 text-gray-700 leading-tight focus:outline-none focus:bg-white focus:border-purple-500"
+                id="discordGuildID"
+                type="text"
+                name="discordGuildID"
+                value="@createTournamentForm.value.fold("")(_.discordGuildID)"
+                required="required"
+                placeholder="Servidor ID">
+            </div>
 
-                <div class="input-field">
-                    <input id="discordGuildID" type="text" class="validate" name="discordGuildID" value="@createTournamentForm.value.fold("")(_.discordGuildID)" required="true">
-                    <label for="discordGuildID">@messages("discordGuildID")</label>
-                </div>
-                <div class="input-field">
-                    <input id="challongeID" type="text" class="validate" name="challongeID" value="@createTournamentForm.value.fold("")(_.challongeID)" required="true">
-                    <label for="challongeID">@messages("challongeID")</label>
-                </div>
-                <div class="input-field">
-                    <input id="discordChannelID" type="text" class="validate" name="discordChannelID" value="@createTournamentForm.value.fold("")(_.discordChannelID)" required="false">
-                    <label for="discordChannelID">@messages("discordChannelID")</label>
-                </div>
-                <div class="input-field">
-                    <input id="channeldID" type="text" class="validate" name="channeldID" value="@createTournamentForm.value.fold("")(_.channeldID)" required="true">
-                    <label for="channeldID">@messages("channeldID")</label>
-                </div>
-                <div class="input-field">
-                    <input id="messageID" type="text" class="validate" name="messageID" value="@createTournamentForm.value.fold("")(_.messageID)" required="true">
-                    <label for="messageID">@messages("messageID")</label>
-                </div>
-                <div class="row">
-                    <div class="col s6 offset-s6 right-align">
-                        <button type="submit" value="submit" class="btn waves-effect waves-light">@messages("tournament.create.submit")
-                            <i class="material-icons right">send</i>
-                        </button>
-                    </div>
-                </div>
-
-            }
         </div>
-    </div>
+
+        <div class="md:flex md:items-center mb-6">
+            <div class="md:w-1/3">
+                <label class="block text-gray-500 font-bold md:text-right mb-1 md:mb-0 pr-4"
+                for="challongeID">
+                @messages("Challonge.url.id")
+                </label>
+            </div>
+            <div class="md:w-2/3">
+                <input
+                class="bg-gray-200 appearance-none border-2 border-gray-200 rounded w-full py-2 px-4 text-gray-700 leading-tight focus:outline-none focus:bg-white focus:border-purple-500"
+                id="challongeID"
+                type="text"
+                name="challongeID"
+                value="@createTournamentForm.value.fold("")(_.challongeID)"
+                required="required"
+                placeholder="Challonge URL ID">
+            </div>
+        </div>
+        <div class="md:flex md:items-center mb-6">
+            <div class="md:w-1/3">
+                <label class="block text-gray-500 font-bold md:text-right mb-1 md:mb-0 pr-4"
+                for="discordChannelID">
+                @messages("discordChannelID")
+                </label>
+            </div>
+            <div class="md:w-2/3">
+                <input
+                class="bg-gray-200 appearance-none border-2 border-gray-200 rounded w-full py-2 px-4 text-gray-700 leading-tight focus:outline-none focus:bg-white focus:border-purple-500"
+                id="discordChannelID"
+                type="text"
+                name="discordChannelID"
+                value="@createTournamentForm.value.fold("")(_.discordChannelID)"
+                placeholder="Channel Replays ID">
+            </div>
+        </div>
+
+
+        <div class="md:flex md:items-center">
+            <div class="md:w-1/3"></div>
+            <div class="md:w-2/3">
+
+                <button
+                type="submit" value="submit"
+                class="shadow bg-primary-500 hover:bg-primary-400 focus:shadow-outline focus:outline-none text-white font-bold py-2 px-4 rounded"
+                >
+                    <svg class="block h-6 w-6"
+                    xmlns="http://www.w3.org/2000/svg"
+                    viewBox="0 0 20 20"
+                    fill="currentColor">
+                        <path d="M10.894 2.553a1 1 0 00-1.788 0l-7 14a1 1 0 001.169 1.409l5-1.429A1 1 0 009 15.571V11a1 1 0 112 0v4.571a1 1 0 00.725.962l5 1.428a1 1 0 001.17-1.408l-7-14z" />
+                    </svg>
+                    @messages("tournament.create.submit")
+                </button>
+            </div>
+        </div>
+
+    }
+
 }
