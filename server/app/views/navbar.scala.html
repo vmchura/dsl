@@ -2,6 +2,7 @@
 @import play.api.mvc.RequestHeader
 @import controllers.AssetsFinder
 @import com.mohiva.play.silhouette.impl.providers.SocialProviderRegistry
+@import play.twirl.api.TwirlFeatureImports.defining
 @(user: Option[models.User] = None,menues: Seq[MenuGroup],socialProviders: SocialProviderRegistry)(implicit request: RequestHeader, messages: Messages, assets: AssetsFinder)
 <nav x-data="{mobileMenu: false}" class="bg-primary-900">
     <div class="max-w-7xl mx-auto px-2 sm:px-6 lg:px-8">
@@ -43,8 +44,33 @@
                         @*<a href="#" class="bg-gray-900 text-white px-3 py-2 rounded-md text-sm font-medium">Dashboard</a>*@
 
                         @for(menu <- menues){
-                            <a href="#" class="text-gray-300 hover:bg-primary-500 hover:text-black px-3 py-2 rounded-md text-sm font-medium">@menu.tag</a>
+                            @defining(menu.tag.filter(_.isLetterOrDigit).mkString){ idMenu =>
+                                <div x-data="{open: false}" class="relative">
+                                        <button x-on:click="open = true"
+                                        type="button"
+                                        class="text-gray-300 hover:bg-primary-500 hover:text-black px-3 py-2 rounded-md text-sm font-medium"
+                                        id="@idMenu"
+                                        aria-expanded="false"
+                                        aria-haspopup="true">
+                                            @menu.tag
+                                        </button>
+                                    <div x-on:click.away="open=false" x-show="open" x-transition:enter="transition ease-out duration-100" x-transition:enter-start="transform opacity-0 scale-95" x-transition:enter-end="transform opacity-100 scale-100" x-transition:leave="transition ease-in duration-75" x-transition:leave-start="transform opacity-100 scale-100" x-transition:leave-end="transform opacity-0 scale-95" class="absolute right-0 w-full mt-2 origin-top-right rounded-md shadow-lg md:w-48 z-30">
+                                        <div class="px-2 py-2 bg-white rounded-md shadow dark-mode:bg-gray-700">
+                                            @for(action <- menu.primaryActions()){
+                                                <a class="block px-4 py-2 mt-2 text-sm font-semibold bg-transparent rounded-lg dark-mode:bg-transparent dark-mode:hover:bg-gray-600 dark-mode:focus:bg-gray-600 dark-mode:focus:text-white dark-mode:hover:text-white dark-mode:text-gray-200 md:mt-0 hover:text-gray-900 focus:text-gray-900 hover:bg-gray-200 focus:bg-gray-200 focus:outline-none focus:shadow-outline"
+                                                href="@action.url">@action.tag</a>
+                                            }
+                                            @if(menu.hasSecondaryActions){
+                                                @for(action <- menu.secondaryActions()){
+                                                    <a class="block px-4 py-2 mt-2 text-sm bg-transparent rounded-lg dark-mode:bg-transparent dark-mode:hover:bg-gray-600 dark-mode:focus:bg-gray-600 dark-mode:focus:text-white dark-mode:hover:text-white dark-mode:text-gray-200 md:mt-0 hover:text-gray-900 focus:text-gray-900 hover:bg-gray-200 focus:bg-gray-200 focus:outline-none focus:shadow-outline"
+                                                    href="@action.url">@action.tag</a>
+                                                }
+                                            }
+                                        </div>
+                                    </div>
+                                </div>
 
+                            }
                         }
                     </div>
                 </div>
@@ -64,12 +90,10 @@
                   }{ u =>
                         <div x-data="{open: false}">
 
-                            <div>
-                                <button x-on:click="open = true" type="button" class="flex text-gray-300 hover:bg-primary-500 hover:text-black text-sm rounded-full focus:outline-none focus:c focus:ring-offset-2 focus:ring-offset-gray-800 focus:ring-white" id="user-menu" aria-expanded="false" aria-haspopup="true">
-                                    <span class="p-1 ">Bienvenido @u.fullName.getOrElse("campeón") </span>
-                                    <img class="h-8 w-8 rounded-full" src="@u.avatarURL.getOrElse(assets.path("images/silhouette.png"))" alt="User's image">
-                                </button>
-                            </div>
+                            <button x-on:click="open = true" type="button" class="flex text-gray-300 hover:bg-primary-500 hover:text-black text-sm rounded-full focus:outline-none focus:c focus:ring-offset-2 focus:ring-offset-gray-800 focus:ring-white" id="user-menu" aria-expanded="false" aria-haspopup="true">
+                                <span class="p-1 ">Bienvenido @u.fullName.getOrElse("campeón") </span>
+                                <img class="h-8 w-8 rounded-full" src="@u.avatarURL.getOrElse(assets.path("images/silhouette.png"))" alt="User's image">
+                            </button>
                             <div
                             x-show="open"
                             x-transition:enter="transition ease-out duration-100"
@@ -101,8 +125,41 @@
                 <!-- Current: "bg-gray-900 text-white", Default: "text-gray-300 hover:bg-gray-700 hover:text-white" -->
             @*<a href="#" class="bg-gray-900 text-white block px-3 py-2 rounded-md text-base font-medium">Dashboard</a>*@
             @for(menu <- menues){
-                <a href="#" class="text-gray-300 hover:bg-gray-700 hover:text-white block px-3 py-2 rounded-md text-base font-medium">@menu.tag</a>
+                @defining(menu.tag.filter(_.isLetterOrDigit).mkString+"mobil"){ idMenu =>
+                    <div x-data="{open: false}" class="relative">
+                        <button x-on:click="open = true"
+                        type="button"
+                        class="text-gray-300 hover:bg-gray-700 hover:text-white block px-3 py-2 rounded-md text-base font-medium"
+                        id="@idMenu"
+                        aria-expanded="false"
+                        aria-haspopup="true">
+                        @menu.tag
+                        </button>
+                        <div x-on:click.away="open=false"
+                        x-show="open"
+                        x-transition:enter="transition ease-out duration-100"
+                        x-transition:enter-start="transform opacity-0 scale-95"
+                        x-transition:enter-end="transform opacity-100 scale-100"
+                        x-transition:leave="transition ease-in duration-75"
+                        x-transition:leave-start="transform opacity-100 scale-100"
+                        x-transition:leave-end="transform opacity-0 scale-95"
+                        class="absolute right-0 w-full mt-2 origin-top-right rounded-md shadow-lg md:w-48 z-30">
+                            <div class="px-2 py-2 bg-white rounded-md shadow dark-mode:bg-gray-700">
+                            @for(action <- menu.primaryActions()){
+                                <a class="block px-4 py-2 mt-2 text-sm font-semibold bg-transparent rounded-lg dark-mode:bg-transparent dark-mode:hover:bg-gray-600 dark-mode:focus:bg-gray-600 dark-mode:focus:text-white dark-mode:hover:text-white dark-mode:text-gray-200 md:mt-0 hover:text-gray-900 focus:text-gray-900 hover:bg-gray-200 focus:bg-gray-200 focus:outline-none focus:shadow-outline"
+                                href="@action.url">@action.tag</a>
+                            }
+                            @if(menu.hasSecondaryActions){
+                                @for(action <- menu.secondaryActions()){
+                                    <a class="block px-4 py-2 mt-2 text-sm bg-transparent rounded-lg dark-mode:bg-transparent dark-mode:hover:bg-gray-600 dark-mode:focus:bg-gray-600 dark-mode:focus:text-white dark-mode:hover:text-white dark-mode:text-gray-200 md:mt-0 hover:text-gray-900 focus:text-gray-900 hover:bg-gray-200 focus:bg-gray-200 focus:outline-none focus:shadow-outline"
+                                    href="@action.url">@action.tag</a>
+                                }
+                            }
+                            </div>
+                        </div>
+                    </div>
 
+                }
             }
         </div>
     </div>
