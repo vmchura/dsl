@@ -2,69 +2,70 @@
 @import play.api.mvc.RequestHeader
 @import controllers.AssetsFinder
 @import models.Match
-@(matchReplay: Match, modalID: String, isAdmin: Boolean, canDownload: Boolean)(implicit request: RequestHeader, messages: Messages,assets: AssetsFinder)
+@(matchReplay: Match, isAdmin: Boolean, canDownload: Boolean)(implicit request: RequestHeader, messages: Messages,assets: AssetsFinder)
+@deleteIcon = {<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor">
+    <path fill-rule="evenodd" d="M9 2a1 1 0 00-.894.553L7.382 4H4a1 1 0 000 2v10a2 2 0 002 2h8a2 2 0 002-2V6a1 1 0 100-2h-3.382l-.724-1.447A1 1 0 0011 2H9zM7 8a1 1 0 012 0v6a1 1 0 11-2 0V8zm5-1a1 1 0 00-1 1v6a1 1 0 102 0V8a1 1 0 00-1-1z" clip-rule="evenodd" />
+</svg>}
+<table class="table">
+    <tr>
+        <th class="header-match">Nombre original</th>
+        @if(isAdmin) {
+            <th class="header-match">Quitar</th>
+        }
+        <th class="header-match">Descargar</th>
+    </tr>
+    @for(m <- matchReplay.replaysAttached){
+        <tr>
+            <td class="item-match">@m.nombreOriginal</td>
 
-<div class="modal fade" id=@modalID tabindex="-1" aria-labelledby="@{modalID+"label"}" aria-hidden="true">
-    <div class="modal-dialog modal-lg">
-        <div class="modal-content">
-            <div class="modal-header">
-                <p class="modal-title" id="@{modalID+"label"}">Replays en este match</p>
-                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
-                    <span aria-hidden="true">&times;</span>
-                </button>
-            </div>
-            <div class="modal-body">
-                <table class="table">
-                    <tr>
-                        <th>Nombre original</th>
-                        @if(isAdmin) {
-                            <th>Quitar</th>
-                        }
-                        <th>Descargar</th>
-                    </tr>
-                    @for(m <- matchReplay.replaysAttached){
-                        <tr class=@if(!m.enabled){"table-danger"}>
-                            <td>@m.nombreOriginal</td>
+            @if(isAdmin) {
+                <td class="item-match text-primary-900">
+                @if(m.enabled) {
+                  <div x-data="{deleteModal: false}">
+                        <button type="button" class="w-6 h-6" x-on:click="deleteModal=true">
+                            @deleteIcon
+                        </button>
+                      @helper.twModal("deleteModal","bg-red-500",20,deleteIcon){
+                          <p>¿Estás seguro de eliminar @{m.nombreOriginal}?</p>
+                      } {
 
-                            @if(isAdmin) {
-                                <td>
-                                @if(m.enabled) {
+                          <a class="w-full inline-flex justify-center rounded-md border border-transparent shadow-sm px-4 py-2 bg-red-600 text-base font-medium text-white hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500 sm:ml-3 sm:w-auto sm:text-sm" href=@controllers.routes.ReplayMatchController.deleteReplay(m.replayID)>Sí, ELIMINAR</a>
+                      }
+                  </div>
 
-                                        <button type="button" class="btn btn-danger btn-small" data-toggle="modal" data-target=@{"#"+modalID+m.replayID.toString}>
-                                            <i class="material-icons left">delete</i>
-                                        </button>
+                }else{
 
-                                }else{
+                        <span>@deleteIcon</span>
 
-                                        <span><i class="material-icons left">delete</i></span>
-
-                                }
-                                </td>
-                            }
+                }
+                </td>
+            }
 
 
-                            <td>
-                                @if(canDownload) {
-                                    <a class="waves-effect waves-light btn-small" href=@controllers.routes.ReplayMatchController.downloadReplay(m.replayID, m.nombreOriginal)>
-                                        <i class="material-icons left">cloud_download</i></a>
+            <td class="item-match">
+                @if(canDownload) {
+                    <a href=@controllers.routes.ReplayMatchController.downloadReplay(m.replayID, m.nombreOriginal)>
+                        <svg class="h-6 w-7 text-primary-900" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor">
+                            <path fill-rule="evenodd" d="M2 9.5A3.5 3.5 0 005.5 13H9v2.586l-1.293-1.293a1 1 0 00-1.414 1.414l3 3a1 1 0 001.414 0l3-3a1 1 0 00-1.414-1.414L11 15.586V13h2.5a4.5 4.5 0 10-.616-8.958 4.002 4.002 0 10-7.753 1.977A3.5 3.5 0 002 9.5zm9 3.5H9V8a1 1 0 012 0v5z" clip-rule="evenodd" />
+                        </svg></a>
 
-                                }else{
-                                    <span><i class="material-icons left">cloud_download</i></span>
-                                }
-                            </td>
-                        </tr>
-                    }
-                </table>
-            </div>
+                }else{
+                    <span><svg class="h-6 w-7 text-primary-900" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor">
+                        <path fill-rule="evenodd" d="M2 9.5A3.5 3.5 0 005.5 13H9v2.586l-1.293-1.293a1 1 0 00-1.414 1.414l3 3a1 1 0 001.414 0l3-3a1 1 0 00-1.414-1.414L11 15.586V13h2.5a4.5 4.5 0 10-.616-8.958 4.002 4.002 0 10-7.753 1.977A3.5 3.5 0 002 9.5zm9 3.5H9V8a1 1 0 012 0v5z" clip-rule="evenodd" />
+                    </svg></span>
+                }
+            </td>
+        </tr>
+    }
+</table>
+            @*
             @if(matchReplay.replaysAttached.length > 1) {
                 <div class="modal-footer">
                     <a class="btn btn-primary" href="@controllers.routes.OrderReplaysController.view(matchReplay.matchPK.challongeID,matchReplay.matchPK.challongeMatchID)">Editar Orden</a>
                     <button type="button" class="btn btn-secondary" data-dismiss="modal">Cerrar</button>
                 </div>
-            }
-        </div>
-    </div>
-</div>
+            }*@
+@*
 @for(m <- matchReplay.replaysAttached){
     <div class="modal fade alert-danger" id="@{modalID+m.replayID.toString}" tabindex="-1" aria-labelledby="@{modalID+m.replayID.toString+"confirm-label"}" aria-hidden="true">
         <div class="modal-dialog">
@@ -87,3 +88,4 @@
         </div>
     </div>
 }
+*@
