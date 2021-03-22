@@ -9,7 +9,11 @@
             user.fold(false)(u => WithAdmin.isModeradorID(u.loginInfo.providerKey)),
             m.complete || user.exists(u => WithAdmin.isModeradorID(u.loginInfo.providerKey) ))
     }{
-        @Html("")
+      @if(m.replaysAttached.length > 1 && user.map(_.loginInfo.providerKey).fold(false)(WithAdmin.isModeradorID)){
+          <a class="btn-continue" href="@controllers.routes.OrderReplaysController.view(m.matchPK.challongeID,m.matchPK.challongeMatchID)">Editar Orden</a>
+
+      }
+
     }
 }
 @uploadBuilder(m: MatchDiscord) = {
