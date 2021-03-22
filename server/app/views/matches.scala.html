@@ -2,73 +2,26 @@
 @import com.mohiva.play.silhouette.impl.providers.SocialProviderRegistry
 @this()(implicit assets: AssetsFinder)
 @(user: models.User,matches: Seq[MatchDiscord],socialProviders: SocialProviderRegistry)(implicit request: RequestHeader, messages: Messages,menues: Seq[MenuGroup])
+
+@infoBuilder(m: MatchDiscord) = {
+@listmatches.showReplayInfoButton(m) {
+    @listreplays(m.convertToMatch(),
+        WithAdmin.isModeradorID(user.loginInfo.providerKey),
+        canDownload = true)
+} {
+    @Html("")
+}
+}
+@uploadBuilder(m: MatchDiscord) = {
+
+    @listmatches.showUploadButton(m){ @uploadfile(m)}
+
+}
 @main("Partidas del torneo",Some(user),socialProviders){
 
     <div id="makePairsID"></div>
-    <table class="table table-striped" >
-        <thead>
-            <tr>
-                <th>Torneo</th>
-                <th>Round</th>
-                <th>Player 1</th>
-                <th>Player 2</th>
-                <th>Replays</th>
-                <th>Upload Replay</th>
-            </tr>
-        </thead>
-        <tbody>
-        @for(m <- matches){
-            <tr>
-                <td>
-                    <a href="#">@m.tournamentName</a>
-                </td>
-                <td>@m.round</td>
-                <td>
-                <a href="@controllers.usertrajectory.routes.UserReplaysController.loadReplaysByUser(m.userSmurf1.discordUser.discordID)">@m.userSmurf1.discordUser.userName</a>
-                    @for(smurfDefined <- m.userSmurf1.matchSmurf.distinctBy(_.smurf)){
-                        <span class="badge rounded-pill bg-primary">@smurfDefined.smurf </span>
-                    }
-                </td>
-                <td>
-                <a href="@controllers.usertrajectory.routes.UserReplaysController.loadReplaysByUser(m.userSmurf2.discordUser.discordID)">@m.userSmurf2.discordUser.userName</a>
-                    @for(smurfDefined <- m.userSmurf2.matchSmurf.distinctBy(_.smurf)){
-                        <span class="badge rounded-pill bg-primary">@smurfDefined.smurf </span>
-                    }
-                </td>
-                <td>
-                    @if(m.replaysAttached.nonEmpty){
-                        <button type="button" class="btn btn-primary" data-toggle="modal" data-target="@{s"#modal_list_${m.matchPK.challongeMatchID}"}">
-                            <span class="material-icons">info_outline</span>
-                        </button>
-                    }else{
-                        <button type="button" class="btn btn-primary" disabled>
-                            <span class="material-icons">info_outline</span>
-                        </button>
-                    }
 
-                </td>
-                <td>
-
-                    <button type="button" class="btn btn-primary" data-toggle="modal" data-target="@{s"#modal_${m.matchPK.challongeMatchID}"}">
-                        <span class="material-icons">cloud_upload</span>
-                    </button>
-                </td>
-
-            </tr>
-
-
-
-        }
-        </tbody>
-    </table>
-
-    @for(m <- matches){
-        @uploadfile(m,s"modal_${m.matchPK.challongeMatchID}")
-    }
-
-    @for(m <- matches){
-        @listreplays(m.convertToMatch())
-    }
+  @listmatches.showDslMatches(matches,showTournamentColumn = true)(infoBuilder)(uploadBuilder)
 
 
 }

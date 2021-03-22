@@ -1,0 +1,10 @@
+@import helper.icons._
+@(matchDiscord:MatchDiscord)(uploadContent: Html)
+<div x-data="{modalOpen: false}">
+    <button type="button" class="block w-6 h-6t text-primary-800"
+    x-on:click="modalOpen=true">
+    @upload()
+    </button>
+    @helper.twModal("modalOpen","bg-gray-500",10,upload()){@uploadContent}{@Html("")}
+</div>
+

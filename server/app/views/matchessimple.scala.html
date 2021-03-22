@@ -1,26 +1,24 @@
 @import views.html.helper._
 @import com.mohiva.play.silhouette.impl.providers.SocialProviderRegistry
-@import play.twirl.api.TwirlFeatureImports.defining
 @this()(implicit assets: AssetsFinder)
 @(user: Option[models.User],matches: Seq[MatchDiscord],tournament: Tournament,socialProviders: SocialProviderRegistry)(implicit request: RequestHeader, messages: Messages,menues: Seq[MenuGroup])
-@displaySmurfs(userSmurf: UserSmurf) = {
-    @for(smurfDefined <- userSmurf.matchSmurf.distinctBy(_.smurf)) {
-      <span class="bg-primary-700 px-1 text-gray-200 rounded">
-        @smurfDefined.smurf
-      </span>
+
+@infoBuilder(m: MatchDiscord) = {
+    @listmatches.showReplayInfoButton(m){
+        @listreplays(m.convertToMatch(),
+            user.fold(false)(u => WithAdmin.isModeradorID(u.loginInfo.providerKey)),
+            m.complete || user.exists(u => WithAdmin.isModeradorID(u.loginInfo.providerKey) ))
+    }{
+        @Html("")
     }
 }
-@displayUserAndLink(userSmurf: UserSmurf) = {
-    <a href="@controllers.usertrajectory.routes.UserReplaysController.loadReplaysByUser(userSmurf.discordUser.discordID)">@userSmurf.discordUser.userName</a>
+@uploadBuilder(m: MatchDiscord) = {
+    @if(user.exists(u => WithAdmin.isModeradorID(u.loginInfo.providerKey))){
+        @listmatches.showUploadButton(m){@uploadfileByAdmin(m)}
+    }else{
+      @Html("")
+    }
 }
-@infoIcon = {
-    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-    </svg>
-}
-@uploadIcon = {<svg class="h-6 w-6 text-primary-800" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor">
-    <path fill-rule="evenodd" d="M4 4a2 2 0 012-2h4.586A2 2 0 0112 2.586L15.414 6A2 2 0 0116 7.414V16a2 2 0 01-2 2H6a2 2 0 01-2-2V4z" clip-rule="evenodd" />
-</svg>}
 
 @main("Partidas del torneo",user,socialProviders){
     <div id="container-tournament-info">
@@ -45,87 +43,7 @@
 
     <div id="container-matches-finder"></div>
 
-    <table class="min-w-full leading-normal">
-        <thead>
-            <tr>
-                <th class="header-match">
-                    Round</th>
-                <th class="header-match">
-                    Player 1</th>
-                <th class="header-match">
-                    Player 2</th>
-                <th class="header-match">
-                    Replays</th>
-            </tr>
-        </thead>
-        <tbody>
-        @for(m <- matches){
-            <tr id="@m.matchPK.challongeMatchID">
-                <td class="item-match">
-                @m.round</td>
-                <td class="item-match">
-                    @displayUserAndLink(m.userSmurf1)
-                    @displaySmurfs(m.userSmurf1)
-                </td>
-                <td class="item-match">
-                    @displayUserAndLink(m.userSmurf2)
-                    @displaySmurfs(m.userSmurf2)
-                </td>
-                <td class="item-match">
-                    <div class="flex">
-                        <div x-data="{modalOpen: false}">
-                            @if(m.replaysAttached.nonEmpty){
-                                <button type="button" class="block w-6 h-6t text-primary-800"
-                                x-on:click="modalOpen=true">
-                                @infoIcon
-                                </button>
-                                @helper.twModal("modalOpen","bg-gray-500",10,infoIcon){@listreplayssimple(m.convertToMatch(),
-                                    user.fold(false)(u => WithAdmin.isModeradorID(u.loginInfo.providerKey)),
-                                    m.complete || user.exists(u => WithAdmin.isModeradorID(u.loginInfo.providerKey) )
-                                )}{@Html("")}
-                            }else{
-                                <span class="block w-6 h-6t text-primary-400">
-                                    @infoIcon
-                                </span>
-                            }
-                        </div>
-
-                        @if(user.exists(u => WithAdmin.isModeradorID(u.loginInfo.providerKey))){
-                            <div x-data="{modalOpen: false}">
-                                <button
-                                x-on:click="modalOpen=true"
-                                type="button" class="block w-8 h-8 text-primary-600" data-toggle="modal" data-target="@{s"#modal_${m.matchPK.challongeMatchID}"}">
-                                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor">
-                                        <path d="M5.5 13a3.5 3.5 0 01-.369-6.98 4 4 0 117.753-1.977A4.5 4.5 0 1113.5 13H11V9.413l1.293 1.293a1 1 0 001.414-1.414l-3-3a1 1 0 00-1.414 0l-3 3a1 1 0 001.414 1.414L9 9.414V13H5.5z" />
-                                        <path d="M9 13h2v5a1 1 0 11-2 0v-5z" />
-                                    </svg>
-                                </button>
-                                @helper.twModal("modalOpen","bg-gray-500",10,uploadIcon){@uploadfileByAdmin(m)}{@Html("")}
-                            </div>
-                        }
-                    </div>
-                </td>
-
-            </tr>
-
-
-
-        }
-        </tbody>
-    </table>
-
- @*   @for(m <- matches){
-        @listreplayssimple(m.convertToMatch(),
-            s"modal_list_${m.matchPK.challongeMatchID}",
-            user.fold(false)(u => WithAdmin.isModeradorID(u.loginInfo.providerKey)),
-            (m.complete) || user.exists(u => WithAdmin.isModeradorID(u.loginInfo.providerKey) )
-        )
-        @if(user.exists(u => WithAdmin.isModeradorID(u.loginInfo.providerKey))){
-            @uploadfileByAdmin(m,s"modal_${m.matchPK.challongeMatchID}")
-        }
-
-    }
-*@
+    @listmatches.showDslMatches(matches,showTournamentColumn = false)(infoBuilder)(uploadBuilder)
     <script @{CSPNonce.attr}>   MatchFinder.init("container-matches-finder"); </script>
 
 

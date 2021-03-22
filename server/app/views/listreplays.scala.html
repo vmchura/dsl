@@ -2,21 +2,57 @@
 @import play.api.mvc.RequestHeader
 @import controllers.AssetsFinder
 @import models.Match
-@(matchReplay: Match)(implicit request: RequestHeader, messages: Messages,assets: AssetsFinder)
+@import helper.icons.delete
+@(matchReplay: Match, isAdmin: Boolean, canDownload: Boolean)(implicit request: RequestHeader, messages: Messages,assets: AssetsFinder)
 
 <table class="table">
     <tr>
         <th class="header-match">Nombre original</th>
+        @if(isAdmin) {
+            <th class="header-match">Quitar</th>
+        }
         <th class="header-match">Descargar</th>
     </tr>
     @for(m <- matchReplay.replaysAttached){
         <tr>
             <td class="item-match">@m.nombreOriginal</td>
+
+            @if(isAdmin) {
+                <td class="item-match text-primary-900">
+                @if(m.enabled) {
+                  <div x-data="{deleteModal: false}">
+                        <button type="button" class="w-6 h-6" x-on:click="deleteModal=true">
+                            @delete()
+                        </button>
+                      @helper.twModal("deleteModal","bg-red-500",20,delete()){
+                          <p>¿Estás seguro de eliminar @{m.nombreOriginal}?</p>
+                      } {
+
+                          <a class="w-full inline-flex justify-center rounded-md border border-transparent shadow-sm px-4 py-2 bg-red-600 text-base font-medium text-white hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500 sm:ml-3 sm:w-auto sm:text-sm" href=@controllers.routes.ReplayMatchController.deleteReplay(m.replayID)>Sí, ELIMINAR</a>
+                      }
+                  </div>
+
+                }else{
+
+                        <span>@delete()</span>
+
+                }
+                </td>
+            }
+
+
             <td class="item-match">
-                <a  href=@controllers.routes.ReplayMatchController.downloadReplay(m.replayID,m.nombreOriginal)>
-                    <svg class="h-6 w-7 text-primary-900" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor">
+                @if(canDownload) {
+                    <a href=@controllers.routes.ReplayMatchController.downloadReplay(m.replayID, m.nombreOriginal)>
+                        <svg class="h-6 w-7 text-primary-900" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor">
+                            <path fill-rule="evenodd" d="M2 9.5A3.5 3.5 0 005.5 13H9v2.586l-1.293-1.293a1 1 0 00-1.414 1.414l3 3a1 1 0 001.414 0l3-3a1 1 0 00-1.414-1.414L11 15.586V13h2.5a4.5 4.5 0 10-.616-8.958 4.002 4.002 0 10-7.753 1.977A3.5 3.5 0 002 9.5zm9 3.5H9V8a1 1 0 012 0v5z" clip-rule="evenodd" />
+                        </svg></a>
+
+                }else{
+                    <span><svg class="h-6 w-7 text-primary-900" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor">
                         <path fill-rule="evenodd" d="M2 9.5A3.5 3.5 0 005.5 13H9v2.586l-1.293-1.293a1 1 0 00-1.414 1.414l3 3a1 1 0 001.414 0l3-3a1 1 0 00-1.414-1.414L11 15.586V13h2.5a4.5 4.5 0 10-.616-8.958 4.002 4.002 0 10-7.753 1.977A3.5 3.5 0 002 9.5zm9 3.5H9V8a1 1 0 012 0v5z" clip-rule="evenodd" />
-                    </svg></a>
+                    </svg></span>
+                }
             </td>
         </tr>
     }

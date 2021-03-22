@@ -1,0 +1,49 @@
+@(matches: Seq[MatchDiscord], showTournamentColumn: Boolean)(infoBuilder: MatchDiscord => Html)(uploadBuilder: MatchDiscord => Html)
+@displaySmurfs(userSmurf: UserSmurf) = {
+    @for(smurfDefined <- userSmurf.matchSmurf.distinctBy(_.smurf)) {
+        <span class="bg-primary-700 px-1 text-gray-200 rounded">
+        @smurfDefined.smurf
+        </span>
+    }
+}
+@displayUserAndLink(userSmurf: UserSmurf) = {
+    <a href="@controllers.usertrajectory.routes.UserReplaysController.loadReplaysByUser(userSmurf.discordUser.discordID)">@userSmurf.discordUser.userName</a>
+}
+
+<table class="min-w-full leading-normal">
+    <thead>
+        <tr>
+            @if(showTournamentColumn) {
+                <th class="header-match">Tournament</th>
+            }
+            <th class="header-match">Round</th>
+            <th class="header-match">Player 1</th>
+            <th class="header-match">Player 2</th>
+            <th class="header-match">Replays</th>
+        </tr>
+    </thead>
+    <tbody>
+        @for(m <- matches){
+            <tr id="@m.matchPK.challongeMatchID">
+                @if(showTournamentColumn) {
+                    <td class="item-match">@m.tournamentName</td>
+                }
+                <td class="item-match">@m.round</td>
+                <td class="item-match">
+                    @displayUserAndLink(m.userSmurf1)
+                    @displaySmurfs(m.userSmurf1)
+                </td>
+                <td class="item-match">
+                    @displayUserAndLink(m.userSmurf2)
+                    @displaySmurfs(m.userSmurf2)
+                </td>
+                <td class="item-match">
+                    <div class="flex">
+                        @infoBuilder(m)
+                        @uploadBuilder(m)
+                    </div>
+                </td>
+            </tr>
+        }
+    </tbody>
+</table>

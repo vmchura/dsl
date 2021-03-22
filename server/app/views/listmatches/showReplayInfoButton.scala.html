@@ -1,0 +1,15 @@
+@import helper.icons._
+@(matchDiscord:MatchDiscord)(replays: Html)(actions: Html)
+@if(matchDiscord.replaysAttached.nonEmpty){
+    <div x-data="{modalOpen: false}">
+        <button type="button" class="block w-6 h-6t text-primary-800"
+        x-on:click="modalOpen=true">
+        @info()
+        </button>
+        @helper.twModal("modalOpen","bg-gray-500",10,info()){@replays}{@actions}
+    </div>
+}else{
+    <span class="block w-6 h-6t text-primary-400">
+    @info()
+    </span>
+}
