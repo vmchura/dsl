@@ -21,7 +21,7 @@ trait ReplayUploader {
   def player2: String
   def discord1: String
   def discord2: String
-
+  def buttonDiv: Div
   private val playerQuerying = PlayerNameDiscordID(player1, DiscordID(discord1))
   private val theOtherPlayer = PlayerNameDiscordID(player2, DiscordID(discord2))
 
@@ -50,7 +50,7 @@ trait ReplayUploader {
       primarySecondaryColor: String
   )(playerName: String, smurf: String) = {
     <p>{playerName}<span class={
-      s"badge rounded-pill bg-$primarySecondaryColor"
+      s"bg-$primarySecondaryColor-700 px-1 text-gray-200 rounded"
     }>{smurf} </span> </p>
   }
 
@@ -85,7 +85,7 @@ trait ReplayUploader {
 
     val loserRelation = createRelationPlayer(oneVsOneDefined.loser)
     <div>
-      <span class="font-weight-bold">Jugadores:</span>
+      <span class="font-bold">Jugadores:</span>
       {winnerRelation}
       {loserRelation}
     </div>
@@ -96,10 +96,10 @@ trait ReplayUploader {
       oneVsOne: ChallongeOneVsOneMatchGameResult
   ) = {
     <div>
-      <span> <span class="font-weight-bold">Mapa:</span> ***</span>
+      <span> <span class="font-bold">Mapa:</span> ***</span>
     </div>
       <div>
-        <span> <span class="font-weight-bold">Ganador:</span> {
+        <span> <span class="font-bold">Ganador:</span> {
       s"${oneVsOne.winner.player.smurf} - ${oneVsOne.winner.player.race}"
     }</span>
       </div>
@@ -109,13 +109,13 @@ trait ReplayUploader {
   def buildContainerSmarter(
       oneVsOne: ChallongeOneVsOneMatchGameResult
   )(content: Binding[Node]): Binding[Node] = {
-    <div class="container emptysmurfcontainer">
+    <div class="container mx-auto">
       {nameAndWinnerSmarter(oneVsOne)}
       <div class="smurfs">
         {content}
       </div>
-      <div class="alert alert-info" data:role="alert">
-        Si consideras que existe un error, comunícate con el admin de la plataforma.
+      <div class="bg-blue-100 border border-blue-400 text-blue-700 px-4 py-3 rounded relative" data:role="alert">
+        <span class="block sm:inline">Si consideras que existe un error, comunícate con el admin de la plataforma.</span>
       </div>
     </div>
   }
@@ -301,7 +301,6 @@ trait ReplayUploader {
           ChallongePlayer(discordIDLoser, playerLoser)
         ) =
           acbrep
-        println(acbrep)
         (discordIDWinner.map(_.isEmpty), discordIDLoser.map(_.isEmpty)) match {
           case (Left(_), _) | (_, Left(_)) =>
             stateUploadProcess.value = ErrorImpossibleMessage(
@@ -320,9 +319,9 @@ trait ReplayUploader {
       .getOrElse(<div></div>)
   }
   @html
-  val buttonSubmit: Binding[Button] = Binding {
+  val buttonSubmit = Binding {
     val button: NodeBinding[Button] =
-      <button class="btn btn-primary" type="submit" name="action">Enviar Replay
+      <button  type="submit" name="action">Enviar Replay
       <i class="material-icons right">send</i>
     </button>
     button.value.disabled = stateUploadProcess.bind != ReadyToSend
@@ -344,7 +343,6 @@ trait ReplayUploader {
           </label>
         {correlateTags}
         {hiddenInputValues}
-        {buttonSubmit.bind}
       </div>
       {
       stateUploadProcess.bind match {
@@ -366,6 +364,7 @@ trait ReplayUploader {
   }
 
   def render(): Unit = {
+    html.render(buttonDiv, buttonSubmit)
     html.render(fieldDiv, content)
   }
 
@@ -474,20 +473,25 @@ object ReplayUploader {
     val length = divs.length
     def initByContext(
         divIDPrefix: String,
-        builder: (Div, String, String, String, String) => ReplayUploader
+        builder: (Div, String, String, String, String, Div) => ReplayUploader
     ): Unit = {
       val divsUpload = (0 until length)
         .map(i => divs.item(i))
         .filter(_.id.startsWith(divIDPrefix))
         .map(_.asInstanceOf[Div])
       divsUpload.foreach { div =>
+        val divButton = document
+          .getElementById(s"btn-${div.id.substring(divIDPrefix.length)}")
+          .asInstanceOf[Div]
         for {
           p1 <- div.dataset.get("player1")
           p2 <- div.dataset.get("player2")
           d1 <- div.dataset.get("discord1")
           d2 <- div.dataset.get("discord2")
+
         } yield {
-          val ru = builder(div, p1, p2, d1, d2)
+          val ru =
+            builder(div, p1, p2, d1, d2, divButton)
           ru.render()
         }
 

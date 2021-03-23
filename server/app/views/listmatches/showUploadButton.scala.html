@@ -5,6 +5,8 @@
     x-on:click="modalOpen=true">
     @upload()
     </button>
-    @helper.twModal("modalOpen","bg-gray-500",10,upload()){@uploadContent}{@Html("")}
+    @helper.twModal("modalOpen","bg-gray-500",10,upload()){@uploadContent}{
+        <div id="btn-@{matchDiscord.matchPK.challongeMatchID}"></div>
+    }
 </div>
 
