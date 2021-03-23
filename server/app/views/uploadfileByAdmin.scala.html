@@ -11,7 +11,7 @@
     @CSRF.formField
 
     <div class="file-field input-field"
-    id=@{s"replay_file_field_admin_${m.matchPK.challongeMatchID}"}
+    id=@{s"admin_replay_file_field_${m.matchPK.challongeMatchID}"}
     data-player1=@{m.userSmurf1.discordUser.userName}
     data-player2=@{m.userSmurf2.discordUser.userName}
     data-discord1=@{m.userSmurf1.discordUser.discordID}

@@ -501,8 +501,8 @@ object ReplayUploader {
 
       }
     }
-    initByContext("replay_file_field_", ReplayUploaderByPlayer.apply)
-    initByContext("replay_file_field_admin_", ReplayUploaderByAdmin.apply)
+    initByContext("player_replay_file_field_", ReplayUploaderByPlayer.apply)
+    initByContext("admin_replay_file_field_", ReplayUploaderByAdmin.apply)
 
   }
 }
