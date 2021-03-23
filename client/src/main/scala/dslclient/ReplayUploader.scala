@@ -114,7 +114,7 @@ trait ReplayUploader {
       <div class="smurfs">
         {content}
       </div>
-      <div class="bg-blue-100 border border-blue-400 text-blue-700 px-4 py-3 rounded relative" data:role="alert">
+      <div class="bg-indigo-100 border border-indigo-400 text-blue-700 px-4 py-3 rounded relative" data:role="alert">
         <span class="block sm:inline">Si consideras que existe un error, comunícate con el admin de la plataforma.</span>
       </div>
     </div>
