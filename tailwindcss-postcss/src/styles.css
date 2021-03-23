@@ -9,10 +9,16 @@
     .item-match {
         @apply px-5 py-5 border-b border-gray-200 bg-white text-sm;
     }
+    .btn-dsl{
+        @apply mt-3 w-full inline-flex justify-center rounded-md shadow-sm px-4 py-2  font-medium hover:bg-gray-50 sm:mt-0 sm:ml-3 sm:w-auto sm:text-sm
+    }
     .btn-cancel{
-        @apply mt-3 w-full inline-flex justify-center rounded-md border border-gray-300 shadow-sm px-4 py-2 bg-white text-base font-medium text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 sm:mt-0 sm:ml-3 sm:w-auto sm:text-sm
+        @apply btn-dsl border border-gray-300 bg-white text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500
     }
     .btn-continue{
-        @apply mt-3 w-full inline-flex justify-center rounded-md border border-gray-300 shadow-sm px-4 py-2 bg-primary-300 text-base font-medium text-gray-700 hover:bg-primary-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 sm:mt-0 sm:ml-3 sm:w-auto sm:text-sm
+        @apply btn-dsl border border-gray-300 bg-primary-700 text-gray-200 hover:text-black hover:bg-primary-500 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500
+    }
+    .btn-continue-disabled{
+        @apply btn-dsl border border-gray-300 bg-primary-50 text-gray-700 opacity-50 cursor-not-allowed
     }
 }

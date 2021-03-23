@@ -321,10 +321,14 @@ trait ReplayUploader {
   @html
   val buttonSubmit = Binding {
     val button: NodeBinding[Button] =
-      <button  type="submit" name="action">Enviar Replay
-      <i class="material-icons right">send</i>
-    </button>
+      <button  type="submit" name="action">
+        <span>Enviar Replay</span>
+      </button>
     button.value.disabled = stateUploadProcess.bind != ReadyToSend
+    button.value.className =
+      if (stateUploadProcess.bind == ReadyToSend) "btn-continue"
+      else "btn-continue-disabled"
+
     button.bind
   }
 
