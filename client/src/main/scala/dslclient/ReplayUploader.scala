@@ -127,9 +127,11 @@ trait ReplayUploader {
       idsSMurfs: Array[String]
   ) = {
     val input: NodeBinding[HTMLInputElement] =
-      <input type="radio" class="form-check-input" name={nameForInput} id={
-        idForInput
-      } autocomplete="off" value={smurf}/>
+      <input type="radio"
+             class="form-radio"
+             name={nameForInput} id={idForInput}
+             autocomplete="off"
+             value={smurf}/>
     input.value.onclick = _ => {
       discordIdsSmurf.value = Some(idsSMurfs)
       stateUploadProcess.value = ReadyToSend
@@ -154,8 +156,9 @@ trait ReplayUploader {
       }</span>,
           ¿Con qué nombre
           {jugarConjugation} esta partida?</span>
-        <div class="form-check">
-          {
+        <div>
+          <label class="inline-flex items-center">
+            {
         buildInputDynamic(
           oneVsOne.winner.player.smurf,
           "firstOptionID1",
@@ -167,11 +170,12 @@ trait ReplayUploader {
           )
         )
       }
-          <label class="form-check-label" for="firstOptionID1">
-            {oneVsOne.winner.player.smurf}
-          </label>
+              <span class="ml-2">{oneVsOne.winner.player.smurf}</span>
+            </label>
+
         </div>
         <div class="form-check">
+          <label class="inline-flex items-center">
           {
         buildInputDynamic(
           oneVsOne.loser.player.smurf,
@@ -184,8 +188,8 @@ trait ReplayUploader {
           )
         )
       }
-          <label class="form-check-label" for="firstOptionID2">
-            {oneVsOne.loser.player.smurf}
+
+            <span class="ml-2">{oneVsOne.loser.player.smurf}</span>
           </label>
         </div>
       </div>
@@ -224,21 +228,29 @@ trait ReplayUploader {
 
   @html
   private val inputFile = {
-    val input: HTMLInputElement = org.scalajs.dom.document
+    val input: NodeBinding[HTMLInputElement] =
+      <input class="w-full text-gray-700 px-3 py-2 border rounded" id="replayFileID" type="file" name="replay_file" />
+
+    /*val input: HTMLInputElement = org.scalajs.dom.document
       .createElement("input")
       .asInstanceOf[HTMLInputElement]
     input.`type` = "file"
     input.name = "replay_file"
-    input.classList.add("form-file-input")
-    input.id = "replayFileID"
+    input.classList.add("cursor-pointer")
+    input.classList.add("block")
+    input.classList.add("opacity-0")
+    input.classList.add("pin-r")
+    input.classList.add("pin-t")
+    input.id = "replayFileID"*/
+
     //<input type="file" accept="text/csv" style="display:none" id="upload-file"/>
 
-    input.onchange = (_: Event) => {
+    input.value.onchange = (_: Event) => {
       replayParsed.value = None
       fileNameSelected.value = None
       val processOnChange = for {
         file <- {
-          val files = input.files
+          val files = input.value.files
           if (files.length == 1) {
             Right(files(0))
           } else
@@ -338,13 +350,7 @@ trait ReplayUploader {
     <div class="container">
 
       <div class="form-file">
-          {inputFile}
-          <label class="form-file-label" for="replayFileID">
-            <span class="form-file-text">{
-      fileNameSelected.bind.getOrElse("Replay ...")
-    }</span>
-            <span class="form-file-button">Seleccionar replay</span>
-          </label>
+        {inputFile}
         {correlateTags}
         {hiddenInputValues}
       </div>
