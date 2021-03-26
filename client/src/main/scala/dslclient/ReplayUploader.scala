@@ -128,7 +128,7 @@ trait ReplayUploader {
   ) = {
     val input: NodeBinding[HTMLInputElement] =
       <input type="radio"
-             class="form-radio"
+             class="form-radio mt-2 mb-1 mx-4"
              name={nameForInput} id={idForInput}
              autocomplete="off"
              value={smurf}/>
@@ -357,11 +357,9 @@ trait ReplayUploader {
       {
       stateUploadProcess.bind match {
         case _: DangerState | _: InfoState =>
-          <div class={s"alert alert-${stateUploadProcess.bind.stateType}"} data:role="alert">
-              {
-            messageState.bind
-          }
-            </div>
+          <div class="bg-red-200 border border-red-600 text-black px-4 py-3 rounded relative" data:role="alert">
+            <span class="block sm:inline">{messageState.bind}</span>
+          </div>
         case _ =>
           <div></div>
       }
