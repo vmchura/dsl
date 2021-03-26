@@ -231,20 +231,6 @@ trait ReplayUploader {
     val input: NodeBinding[HTMLInputElement] =
       <input class="w-full text-gray-700 px-3 py-2 border rounded" id="replayFileID" type="file" name="replay_file" />
 
-    /*val input: HTMLInputElement = org.scalajs.dom.document
-      .createElement("input")
-      .asInstanceOf[HTMLInputElement]
-    input.`type` = "file"
-    input.name = "replay_file"
-    input.classList.add("cursor-pointer")
-    input.classList.add("block")
-    input.classList.add("opacity-0")
-    input.classList.add("pin-r")
-    input.classList.add("pin-t")
-    input.id = "replayFileID"*/
-
-    //<input type="file" accept="text/csv" style="display:none" id="upload-file"/>
-
     input.value.onchange = (_: Event) => {
       replayParsed.value = None
       fileNameSelected.value = None
