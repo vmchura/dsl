@@ -11,6 +11,7 @@ lazy val server = (project in file("server"))
     resolvers += "Sonatype OSS Snapshots" at "https://oss.sonatype.org/content/repositories/snapshots/",
     resolvers += Resolver.sonatypeRepo("snapshots"),
     resolvers += Resolver.jcenterRepo,
+    resolvers += Resolver.JCenterRepository,
     fork := true,
     libraryDependencies ++= Seq(
       "com.vmunier" %% "scalajs-scripts" % "1.1.4",
@@ -50,6 +51,10 @@ lazy val server = (project in file("server"))
       "org.scalatest" %% "scalatest" % "3.2.2" % "test",
       "com.typesafe.akka" %% "akka-actor-testkit-typed" % "2.6.8" % Test,
       "org.scala-lang.modules" %% "scala-parallel-collections" % "1.0.0" % Test,
+      "net.katsstuff" %% "ackcord" % "0.17.1", //For high level API, includes all the other modules
+      "net.katsstuff" %% "ackcord-core" % "0.17.1", //Low level core API
+      "net.katsstuff" %% "ackcord-commands" % "0.17.1", //Low to mid level Commands API
+      "net.katsstuff" %% "ackcord-lavaplayer-core" % "0.17.1", //Low level lavaplayer API,
       ehcache,
       guice,
       filters,
