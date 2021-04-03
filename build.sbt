@@ -50,6 +50,8 @@ lazy val server = (project in file("server"))
       "org.scalactic" %% "scalactic" % "3.2.2",
       "org.scalatest" %% "scalatest" % "3.2.2" % "test",
       "com.typesafe.akka" %% "akka-actor-testkit-typed" % "2.6.8" % Test,
+      "com.typesafe.akka" %% "akka-actor-typed" % "2.6.8",
+      "com.typesafe.akka" %% "akka-stream-typed" % "2.6.8",
       "org.scala-lang.modules" %% "scala-parallel-collections" % "1.0.0" % Test,
       "net.katsstuff" %% "ackcord" % "0.17.1", //For high level API, includes all the other modules
       "net.katsstuff" %% "ackcord-core" % "0.17.1", //Low level core API
