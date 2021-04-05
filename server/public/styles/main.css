@@ -264,6 +264,11 @@ TOURNAMENT DISTRIBUTION
     line-height: 2;
 }
 
+.team-leader{
+    font-family: "Times New Roman", serif;
+    text-align: center;
+}
+
 #form-select-invite-member{
     display: flex;
     flex-direction: column;
