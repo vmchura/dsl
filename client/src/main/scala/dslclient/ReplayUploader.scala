@@ -114,7 +114,7 @@ trait ReplayUploader {
       <div class="smurfs">
         {content}
       </div>
-      <div class="bg-indigo-100 border border-indigo-400 text-blue-700 px-4 py-3 rounded relative" data:role="alert">
+      <div class="alert-box info-context" data:role="alert">
         <span class="block sm:inline">Si consideras que existe un error, comunícate con el admin de la plataforma.</span>
       </div>
     </div>
@@ -343,7 +343,7 @@ trait ReplayUploader {
       {
       stateUploadProcess.bind match {
         case _: DangerState | _: InfoState =>
-          <div class="bg-red-200 border border-red-600 text-black px-4 py-3 rounded relative" data:role="alert">
+          <div class="alert-box danger-context" data:role="alert">
             <span class="block sm:inline">{messageState.bind}</span>
           </div>
         case _ =>
