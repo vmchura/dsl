@@ -21,18 +21,18 @@
             @teamMemberLogged(team.principal)
             </div>
             <ul class="list-disco divide-y divide-primary-500">
-            @for(official <- team.officials.filterNot(_.discordID == team.principal.discordID) ++ team.suplentes){
-                <li>
-                    <span class="font-semibold object-left">@{official.username}</span>
-                    <span class="font-thin object-right">#@{official.discriminator}</span>
-                </li>
-            }
+                @for(official <- team.officials.filterNot(_.discordID == team.principal.discordID) ++ team.suplentes){
+                    <li>
+                        <span class="font-semibold object-left">@{official.username}</span>
+                        <span class="font-thin object-right">#@{official.discriminator}</span>
+                    </li>
+                }
             </ul>
             @if(userCanRequest) {
-                <div class="">
+                <div class="px-6 pt-4 pb-2">
                 @helper.form(controllers.teamsystem.routes.RequestController.doRequest(team.teamID.id)) {
                     @helper.CSRF.formField
-                    <button class="" type="submit">Solicitar unirme al equipo</button>
+                    <button class="btn-continue" type="submit">Solicitar unirme al equipo</button>
                 }
                 </div>
             }
