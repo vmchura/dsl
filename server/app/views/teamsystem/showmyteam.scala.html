@@ -103,7 +103,7 @@
     <div class="team-quit">
         @helper.form(action = controllers.teamsystem.routes.TeamManagerController.quitTeam(team.teamID.id)) {
             @helper.CSRF.formField
-            <button  class="btn btn-danger"  type="submit">Retirarme del equipo @{team.teamName}</button>
+            <button  class="btn-danger"  type="submit">Retirarme del equipo @{team.teamName}</button>
         }
 
         @if(userID == team.principal.discordID){
