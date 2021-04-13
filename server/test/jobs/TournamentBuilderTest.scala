@@ -47,8 +47,12 @@ class TournamentBuilderTest
 
     "build correctly a tournament" in {
       val queryExecution = for {
-        creation <-
-          job.buildTournament("736004357866389584", "DeathfateStarLeague")
+        creation <- job.buildTournament(
+          "736004357866389584",
+          "DeathfateStarLeague",
+          "",
+          ""
+        )
         tournament <- creation.withFailure
         tournamentLoadedOpt <-
           tournamentService.loadTournament(tournament.challongeID)
@@ -83,8 +87,12 @@ class TournamentBuilderTest
     }
     "throw tournament created" in {
       val queryExecution = for {
-        creation <-
-          job.buildTournament("736004357866389584", "DeathfateStarLeague")
+        creation <- job.buildTournament(
+          "736004357866389584",
+          "DeathfateStarLeague",
+          "",
+          ""
+        )
         tournamentLoaded <- creation match {
           case Left(_) => Future.successful(None)
           case Right(tournament) =>
@@ -110,8 +118,12 @@ class TournamentBuilderTest
               )
               .map(_.forall(q => q))
         }
-        creation2 <-
-          job.buildTournament("736004357866389584", "DeathfateStarLeague")
+        creation2 <- job.buildTournament(
+          "736004357866389584",
+          "DeathfateStarLeague",
+          "",
+          ""
+        )
         tournamentRemove <- creation match {
           case Left(_) => Future.successful(false)
           case Right(tournament) =>
@@ -134,7 +146,8 @@ class TournamentBuilderTest
     }
     "throw discord error" in {
       val queryExecution = for {
-        creation <- job.buildTournament("randomID", "DeathfateStarLeague")
+        creation <-
+          job.buildTournament("randomID", "DeathfateStarLeague", "", "")
       } yield {
         creation
       }
@@ -149,8 +162,12 @@ class TournamentBuilderTest
     }
     "throw challonge error" in {
       val queryExecution = for {
-        creation <-
-          job.buildTournament("728442814832312372", "DeathfateStarLeague_")
+        creation <- job.buildTournament(
+          "728442814832312372",
+          "DeathfateStarLeague_",
+          "",
+          ""
+        )
       } yield {
         creation
       }

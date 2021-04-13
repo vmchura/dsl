@@ -14,7 +14,7 @@
     <div id="makePairsID"></div>
     <script
         @{CSPNonce.attr} >
-    ts = new dslclient.RelateChaDisUsers("@{UtilParser.safeJson2String(write(first))}","@{UtilParser.safeJson2String(write(second))}","makePairsID");
+    ts = new RelateChaDisUsers("@{UtilParser.safeJson2String(write(first))}","@{UtilParser.safeJson2String(write(second))}","makePairsID");
             ts.showPanel();
     </script>
 

@@ -26,6 +26,14 @@
                     <input id="discordChannelID" type="text" class="validate" name="discordChannelID" value="@createTournamentForm.value.fold("")(_.discordChannelID)" required="false">
                     <label for="discordChannelID">@messages("discordChannelID")</label>
                 </div>
+                <div class="input-field">
+                    <input id="channeldID" type="text" class="validate" name="channeldID" value="@createTournamentForm.value.fold("")(_.channeldID)" required="true">
+                    <label for="channeldID">@messages("channeldID")</label>
+                </div>
+                <div class="input-field">
+                    <input id="messageID" type="text" class="validate" name="messageID" value="@createTournamentForm.value.fold("")(_.messageID)" required="true">
+                    <label for="messageID">@messages("messageID")</label>
+                </div>
                 <div class="row">
                     <div class="col s6 offset-s6 right-align">
                         <button type="submit" value="submit" class="btn waves-effect waves-light">@messages("tournament.create.submit")

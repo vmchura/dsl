@@ -17,7 +17,7 @@ POST        /tournament/create                  controllers.TournamentController
 POST        /participant/update                 controllers.ParticipantController.buildRelation()
 
 # TOURNAMENT
-GET         /tournament/showparticipantscorrelation/:tournamentID       controllers.TournamentController.showparticipantscorrelation(tournamentID: Long)
+GET         /tournament/showparticipantscorrelation/:tournamentID/:channelID/:messageID       controllers.TournamentController.showparticipantscorrelation(tournamentID: Long, channelID: String, messageID: String)
 GET         /tournament/showmatches/:challongeTournamentID              controllers.TournamentController.showMatchesToUploadReplay(challongeTournamentID: Long)
 GET         /tournament/showmatchessimple/:challongeTournamentID              controllers.TournamentController.showMatches(challongeTournamentID: Long)
 # STATICS
