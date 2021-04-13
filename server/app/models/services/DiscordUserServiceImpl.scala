@@ -162,4 +162,44 @@ class DiscordUserServiceImpl @Inject() (configuration: Configuration)
       }
     }
   }
+
+  override def findMembersOnPost(
+      channelID: String,
+      messageID: String
+  ): Future[Option[Seq[DiscordUser]]] = {
+    val responseFut = basicRequest
+      .header("Authorization", s"Bot $bot_token")
+      .get(
+        uri"https://discord.com/api/channels/$channelID/messages/$messageID"
+      )
+      .send()
+    responseFut.map {
+      _.body match {
+        case Left(errorMessage) =>
+          logger.error(s"Error on findMembersOnPost: $errorMessage")
+          None
+
+        case Right(body) =>
+          try {
+            val mentions = (Json.parse(body) \ "mentions").as[JsArray]
+
+            Some(
+              mentions.value.map { m =>
+                DiscordUser(
+                  (m \ "id").as[JsString].value,
+                  (m \ "username").as[JsString].value,
+                  (m \ "discriminator").asOpt[JsString].map(_.value)
+                )
+              }.toSeq
+            )
+          } catch {
+            case _: Throwable =>
+              logger.error(
+                s"Error on findMembersOnPost: $body is not a json of message"
+              )
+              None
+          }
+      }
+    }
+  }
 }
