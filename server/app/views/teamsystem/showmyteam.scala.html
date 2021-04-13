@@ -24,7 +24,7 @@
                     Symbol("id") -> "input-query-id",
                     Symbol("class") -> "form-control",
                     Symbol("_label") -> "Buscar miembro para invitarlo: ")
-                <button id="search-member-button" class="btn btn-primary">Buscar</button>
+                <button id="search-member-button" class="btn-continue">Buscar</button>
             </div>
 
 
@@ -42,7 +42,7 @@
                     Symbol("id") -> "members-status-id",
                     Symbol("_label") -> "¿Oficial o Suplente?: ")
 
-                <button type="submit" id="members-invite-id" class="btn btn-primary">Invitar</button>
+                <button type="submit" id="members-invite-id" class="btn-continue">Invitar</button>
             }
             <script @{CSPNonce.attr}>
                     Main.initMemberFinder();
@@ -50,19 +50,19 @@
 
             <div class="container-fluid" id="invitation-results-id">
                 @request.flash.get("invitation-error").map { msg =>
-                    <div class="alert alert-danger" role="alert">
+                    <div class="alert-box danger-context" role="alert">
                         ¡Error!: @msg
                     </div>
                 }
                 @request.flash.get("invitation-success").map { msg =>
-                    <div class="alert alert-success" role="alert">
+                    <div class="alert-box info-context" role="alert">
                         !Hecho! @msg
                     </div>
                 }
             </div>
             <div class="smurfs-pending-box">
                 @if(pendingSmurfs.nonEmpty) {
-                    <div class="alert alert-info" role="alert">
+                    <div class="alert-box info-context" role="alert">
                         Se requiere confirmar los siguientes smurfs, por favor sé cuidado y responsable como líder del equipo, ya que cualquier error perjudica a otros jugadores.
                     </div>
                 }
@@ -80,13 +80,13 @@
                 <li class="list-group-item d-flex justify-content-between align-items-center">
                 @helper.form(action = controllers.teamsystem.routes.RequestController.acceptRequest(req.requestID.id)) {
                     @helper.CSRF.formField
-                    <button class="btn btn-primary" type="submit">Aceptar a @{
+                    <button class="btn-continue" type="submit">Aceptar a @{
                         req.from.username
                     }</button>
                 }
                     @helper.form(action = controllers.teamsystem.routes.RequestController.removeRequest(req.requestID.id)) {
                         @helper.CSRF.formField
-                        <button class="btn btn-danger" type="submit">Rechazar a @{
+                        <button class="btn-danger" type="submit">Rechazar a @{
                             req.from.username
                         }</button>
                     }
