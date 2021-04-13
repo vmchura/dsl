@@ -25,21 +25,27 @@ class GameJudgeTest
           "/home/vmchura/Games/screp/cmd/screp/R_G19P----_ChesterP_83402431.rep",
           OneVsOne(
             winner = SCPlayer("G19", Protoss),
-            loser = SCPlayer(".Chester", Protoss)
+            loser = SCPlayer(".Chester", Protoss),
+            "",
+            StringDate("")
           )
         ),
         (
           "/home/vmchura/Games/screp/cmd/screp/DSL5_AdarizvsCanzitog2.rep",
           OneVsOne(
             winner = SCPlayer("Aldarizzz", Zerg),
-            loser = SCPlayer("cafirdo", Zerg)
+            loser = SCPlayer("cafirdo", Zerg),
+            "",
+            StringDate("")
           )
         ),
         (
           "/home/vmchura/Games/screp/cmd/screp/R_IzaaP---_ReyAzucarZ_14240114.rep",
           OneVsOne(
             winner = SCPlayer("ReyAzucar", Zerg),
-            loser = SCPlayer("I.zA.a", Protoss)
+            loser = SCPlayer("I.zA.a", Protoss),
+            "",
+            StringDate("")
           )
         )
       )
