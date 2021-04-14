@@ -1,11 +1,18 @@
 package modules.kishibot
 
 import ackcord.APIMessage.{MessageCreate, MessageUpdate}
-import ackcord.data.{Guild, TextChannelId, UserId, Message => DMessage}
+import ackcord.data.{
+  Guild,
+  MessageId,
+  TextChannelId,
+  UserId,
+  Message => DMessage
+}
 import ackcord._
 import ackcord.requests.{AddGuildMemberRole, RemoveGuildMemberRole}
 import ackcord.syntax._
 import ackcord.{ClientSettings, DiscordClient}
+import akka.NotUsed
 import akka.actor.typed.{Behavior, PostStop}
 import akka.actor.typed.scaladsl.Behaviors
 import com.google.inject.Provides
@@ -13,6 +20,8 @@ import play.api.Configuration
 import play.api.libs.concurrent.ActorModule
 import utils.Logger
 
+import scala.concurrent.ExecutionContext.Implicits.global
+import scala.concurrent.Future
 import scala.util.{Failure, Success}
 object KishibotActor extends ActorModule with Logger {
   sealed trait InternalCommand
@@ -52,6 +61,7 @@ object KishibotActor extends ActorModule with Logger {
         c: CacheSnapshot
     ): Unit = {
       if (checkMessage(message)) {
+
         val roleName = channelRole(message.channelId)
         val otherRoleNames =
           channelRole.values.filterNot(_.equals(roleName)).toList
@@ -59,21 +69,123 @@ object KishibotActor extends ActorModule with Logger {
           otherRoleNames.flatMap(rn => guild.rolesByName(rn).headOption)
 
         guild.rolesByName(roleName).headOption.foreach { role =>
-          val membersMentioned = message.mentions
-            .filter(u => message.content.contains(u.toString))
+          val postID = message.content
+            .substring(message.content.indexOf(':'))
+            .filter(_.isDigit)
+            .mkString
 
-          for {
-            userId <- membersMentioned
-            roleRemove <- otherRoles
-          } yield {
-            discordClient.requestsHelper
-              .run(RemoveGuildMemberRole(guild.id, userId, roleRemove.id))
+          val messageInscription = discordClient.requestsHelper.run(
+            ackcord.requests
+              .GetChannelMessage(message.channelId, MessageId(postID))
+          )
+
+          val membersMentionedFut = messageInscription.map(m => {
+
+            def getUsersID(prev: List[UserId], line: String, origin: Int)
+                : List[UserId] = {
+              val u = line.indexOf("<@!", origin)
+
+              if (u >= 0) {
+                val v = line.indexOf(">", u)
+
+                if (v >= 0 && v - u == (3 + 18 + 1 - 1)) {
+                  if (
+                    v + 1 < line.length && (line.charAt(v + 1) == 'P' ||
+                    line.charAt(v + 1) == 'T' ||
+                    line.charAt(v + 1) == 'Z')
+                  )
+                    getUsersID(
+                      UserId(line.substring(u + 3, v)) :: prev,
+                      line,
+                      v + 1
+                    )
+                  else
+                    getUsersID(prev, line, v + 1)
+                } else {
+                  prev
+                }
+              } else {
+                prev
+              }
+            }
+            val usersID =
+              getUsersID(Nil, m.content.replace(" ", "").toUpperCase, 0)
+
+            usersID
+          })
+
+          val rolesRequest = membersMentionedFut.map { membersMentioned =>
+            /*val removals = for {
+              userId <- membersMentioned
+              roleRemove <- otherRoles
+            } yield {
+              RemoveGuildMemberRole(guild.id, userId, roleRemove.id)
+            }*/
+
+            val insertions = membersMentioned.map(userId => {
+
+              AddGuildMemberRole(guild.id, userId, role.id)
+
+            })
+            insertions
+          }
+          rolesRequest.map { x =>
+            val u = x.foldLeft(
+              Future.successful(Nil): Future[List[Option[String]]]
+            )((prevResult, insertion) => {
+              for {
+                prev <- prevResult
+                guildMember <-
+                  discordClient.requestsHelper
+                    .run(
+                      ackcord.requests
+                        .GetGuildMember(guild.id, insertion.userId)
+                    )
+                    .value
+                _ <- Future {
+                  println("...")
+                  Thread.sleep(5000)
+                }
+                roleInsertion <- (
+                    guildMember
+                      .fold(OptFuture.pure("Not GM"))(gm =>
+                        if (gm.roles.contains(insertion.roleId)) {
+                          OptFuture.pure("Already has the role")
+                        } else {
+                          discordClient.requestsHelper
+                            .run(
+                              gm.toGuildMember(guild.id)
+                                .addRole(insertion.roleId)
+                            )
+                            .map(_ => "Request sent")
+                        }
+                      )
+                  )
+                  .value
+              } yield {
+                println(
+                  s"${guildMember.map(_.user.username)} =>  $roleInsertion"
+                )
+                roleInsertion :: prev
+              }
+            })
+            println(s"Requests to run sequentially: ${x.length}")
+            u.onComplete {
+              case Success(value) =>
+                println(s"All requests done")
+              case Failure(exception) =>
+                println(
+                  s"Request failed ${exception.getMessage}"
+                )
+            }
+            u
           }
 
-          membersMentioned.foreach(userId => {
-            discordClient.requestsHelper
-              .run(AddGuildMemberRole(guild.id, userId, role.id))
-          })
+          rolesRequest.value.onComplete {
+            case Success(value) => println(s"Roles requests ${value.isDefined}")
+            case Failure(error) =>
+              println(s"Roles requests error ${error.getMessage}")
+          }
 
         }
       }
