@@ -4,9 +4,10 @@
 @import com.mohiva.play.silhouette.impl.providers.SocialProviderRegistry
 @import modules.winnersgeneration.WinnersInformation
 @import modules.winnersgeneration.GatheredInformation
-@(user: models.User, winnerForm: Form[WinnersInformation], gatheredInfo: GatheredInformation,socialProviders: SocialProviderRegistry)(implicit request: RequestHeader, messages: Messages, menues: Seq[MenuGroup],assets: AssetsFinder)
+@import shared.models.DiscordDiscriminator
+@(user: models.User, discriminator: Option[DiscordDiscriminator], winnerForm: Form[WinnersInformation], gatheredInfo: GatheredInformation)(implicit request: RequestHeader, messages: Messages, menues: Seq[MenuGroup],assets: AssetsFinder,socialProviders: SocialProviderRegistry)
 
-@main("Ganadores",Some(user),socialProviders) {
+@main("Ganadores",Some(user), discriminator) {
   @helper.form(action = controllers.winnersgeneration.routes.WinnersGenerationController.post){
     @helper.CSRF.formField
     @helper.select(winnerForm("tournamentID"),options = gatheredInfo.tournaments.map(t => (t.challongeID.toString, t.tournamentName)))
