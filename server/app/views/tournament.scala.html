@@ -4,9 +4,10 @@
 @import com.mohiva.play.silhouette.impl.providers.SocialProviderRegistry
 @import views.util.TournamentSeriesUtil
 @import play.twirl.api.TwirlFeatureImports.defining
+@import shared.models.DiscordDiscriminator
 @this()(implicit assets: AssetsFinder)
-@(user: Option[User], tournamentSeries: Seq[TournamentSeriesFilled],socialProviders: SocialProviderRegistry)(implicit request: RequestHeader, messages: Messages, menues: Seq[MenuGroup])
-@main("Torneos",user,socialProviders){
+@(user: Option[User], discriminator: Option[DiscordDiscriminator], tournamentSeries: Seq[TournamentSeriesFilled])(implicit request: RequestHeader, messages: Messages, menues: Seq[MenuGroup], socialProviders: SocialProviderRegistry)
+@main("Torneos",user,discriminator){
     <div class="tournaments-container">
     <img src="@controllers.routes.Assets.versioned("images/DeathFate_Title.png")" id="deathfatelogo" alt="DeathFateLogo"/>
     @for(ts <- tournamentSeries) {
