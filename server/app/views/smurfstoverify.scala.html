@@ -1,8 +1,9 @@
 
 @import com.mohiva.play.silhouette.impl.providers.SocialProviderRegistry
+@import shared.models.DiscordDiscriminator
 @this()(implicit assets: AssetsFinder)
-@(user: Option[models.User],smurfsToUpdate: Seq[UserSmurf],socialProviders: SocialProviderRegistry)(implicit request: RequestHeader, messages: Messages,menues: Seq[MenuGroup])
-@main("Update Smurfs",user,socialProviders){
+@(user: models.User,discriminator: Option[DiscordDiscriminator],smurfsToUpdate: Seq[UserSmurf])(implicit request: RequestHeader, messages: Messages,menues: Seq[MenuGroup],socialProviders: SocialProviderRegistry)
+@main("Update Smurfs",Some(user), discriminator){
     <ul class="list-group">
     @for(smurftou <- smurfsToUpdate){
 

@@ -5,7 +5,8 @@
 @import views.html.helper._
 
 @import com.mohiva.play.silhouette.impl.providers.SocialProviderRegistry
-@(title: String,user: Option[models.User] = None,socialProviders: SocialProviderRegistry)(content: Html)(implicit request: RequestHeader, messages: Messages, assets: AssetsFinder, menues: Seq[MenuGroup])
+@import shared.models.DiscordDiscriminator
+@(title: String,user: Option[models.User] = None, discriminator: Option[DiscordDiscriminator] = None)(content: Html)(implicit request: RequestHeader, messages: Messages, assets: AssetsFinder, menues: Seq[MenuGroup], socialProviders: SocialProviderRegistry)
 
 <!doctype html>
 <html lang="en">
@@ -38,7 +39,7 @@
 
     </head>
     <body>
-        @navbar(user,menues,socialProviders)
+        @navbar(user,discriminator)
 
         <div class="container-fluid">
             @request.flash.get("error").map { msg =>

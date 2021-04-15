@@ -1,13 +1,13 @@
 package controllers
 
 import java.util.UUID
-
 import javax.inject.Inject
-import models.daos.{UserHistoryDAO, UserSmurfDAO}
+import models.daos.{DiscordPlayerLoggedDAO, UserHistoryDAO, UserSmurfDAO}
 import models.services.{SideBarMenuService, SmurfService}
 import play.api.i18n.I18nSupport
 import play.api.libs.json.Json
 import play.api.mvc.{Action, AnyContent}
+import shared.models.DiscordID
 
 import scala.concurrent.ExecutionContext
 
@@ -17,7 +17,8 @@ class SmurfController @Inject() (
     userSmurfDAO: UserSmurfDAO,
     smurfService: SmurfService,
     sideBarMenuService: SideBarMenuService,
-    userHistoryDAO: UserHistoryDAO
+    userHistoryDAO: UserHistoryDAO,
+    discordPlayerLoggedDAO: DiscordPlayerLoggedDAO
 )(implicit
     assets: AssetsFinder,
     ex: ExecutionContext
@@ -29,14 +30,16 @@ class SmurfController @Inject() (
       sideBarMenuService.buildLoggedSideBar().flatMap { implicit menues =>
         for {
           usersNotDefined <- userSmurfDAO.findUsersNotCompletelyDefined()
-
+          userRequestLogged <- discordPlayerLoggedDAO.load(
+            DiscordID(request.identity.loginInfo.providerKey)
+          )
         } yield {
-
+          implicit val socialProviders = socialProviderRegistry
           Ok(
             smurfsToCheck(
-              Some(request.identity),
-              usersNotDefined,
-              socialProviderRegistry
+              request.identity,
+              userRequestLogged.map(_.discriminator),
+              usersNotDefined
             )
           )
         }
