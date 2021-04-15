@@ -4,8 +4,9 @@
 
 @import com.mohiva.play.silhouette.impl.providers.SocialProviderRegistry
 @import views.html.helper._
-@(user: User)(implicit request: RequestHeader, messages: Messages,  assetsFinder: AssetsFinder,menues: Seq[MenuGroup], socialProviders: SocialProviderRegistry)
-@main("Upload replay",Some(user),socialProviders){
+@import shared.models.DiscordDiscriminator
+@(user: User, discriminator: Option[DiscordDiscriminator])(implicit request: RequestHeader, messages: Messages,  assetsFinder: AssetsFinder,menues: Seq[MenuGroup], socialProviders: SocialProviderRegistry)
+@main("Upload replay",Some(user), discriminator){
   <div id="replays-teams-upload"></div>
     <div class="mb-3">
         <label for="formFile" class="form-label">Selecciona una o varias replays</label>
