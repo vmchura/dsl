@@ -1,7 +1,8 @@
 @import views.html.helper._
 @import com.mohiva.play.silhouette.impl.providers.SocialProviderRegistry
+@import shared.models.DiscordDiscriminator
 @this()(implicit assets: AssetsFinder)
-@(user: Option[models.User],matches: Seq[MatchDiscord],tournament: Tournament,socialProviders: SocialProviderRegistry)(implicit request: RequestHeader, messages: Messages,menues: Seq[MenuGroup])
+@(user: Option[models.User], discriminator: Option[DiscordDiscriminator],matches: Seq[MatchDiscord],tournament: Tournament)(implicit request: RequestHeader, messages: Messages,menues: Seq[MenuGroup], socialProviders: SocialProviderRegistry)
 
 @infoBuilder(m: MatchDiscord) = {
     @listmatches.showReplayInfoButton(m){
@@ -24,7 +25,7 @@
     }
 }
 
-@main("Partidas del torneo",user,socialProviders){
+@main("Partidas del torneo",user,discriminator){
     <div id="container-tournament-info">
         <span id="title-tournament-name">@tournament.tournamentName</span>
         <div id="container-tournament-links">
