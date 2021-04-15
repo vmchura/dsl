@@ -2,9 +2,10 @@
 @import play.api.mvc.RequestHeader
 @import controllers.AssetsFinder
 @import com.mohiva.play.silhouette.impl.providers.SocialProviderRegistry
+@import shared.models.DiscordDiscriminator
 @this()(implicit assets: AssetsFinder)
-@(user: models.User,socialProviders: SocialProviderRegistry)(implicit request: RequestHeader, messages: Messages,menues: Seq[MenuGroup])
-@main("Participante",Some(user),socialProviders) {
+@(user: models.User, discriminator: Option[DiscordDiscriminator])(implicit request: RequestHeader, messages: Messages,menues: Seq[MenuGroup],socialProviders: SocialProviderRegistry)
+@main("Participante",Some(user),discriminator) {
     <h2>Hola</h2>
     <div class="row">
         <hr class="col-md-12" />
