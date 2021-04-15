@@ -7,8 +7,9 @@
 @import models.teamsystem.TeamWithUsers
 @import views.html.teamsystem.teamMemberLogged
 @import models.teamsystem.PointsWithUser
-@(user: Option[User],team: TeamWithUsers, points: Seq[PointsWithUser])(implicit request: RequestHeader, messages: Messages,  assetsFinder: AssetsFinder,socialProviderRegistry: SocialProviderRegistry, menus: Seq[MenuGroup])
-@main(team.teamName,user,socialProviderRegistry){
+@import shared.models.DiscordDiscriminator
+@(user: Option[User], discriminator: Option[DiscordDiscriminator],team: TeamWithUsers, points: Seq[PointsWithUser])(implicit request: RequestHeader, messages: Messages,  assetsFinder: AssetsFinder,socialProviderRegistry: SocialProviderRegistry, menus: Seq[MenuGroup])
+@main(team.teamName,user,discriminator){
     <div class="box-teamdetails">
         <div class="card text-center">
             <div class="card-header team-name">
