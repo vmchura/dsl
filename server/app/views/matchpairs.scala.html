@@ -8,8 +8,8 @@
 @import views.html.helper._
 @import com.mohiva.play.silhouette.impl.providers.SocialProviderRegistry
 @this()(implicit assets: AssetsFinder)
-@(tournament: Tournament, first: Seq[BasicComparableByLabel], second: Seq[BasicComparableByLabel],socialProviders: SocialProviderRegistry)(implicit request: RequestHeader, messages: Messages,menues: Seq[MenuGroup])
-@main(tournament.tournamentName,None,socialProviders){
+@(tournament: Tournament, first: Seq[BasicComparableByLabel], second: Seq[BasicComparableByLabel])(implicit request: RequestHeader, messages: Messages,menues: Seq[MenuGroup],socialProviders: SocialProviderRegistry)
+@main(tournament.tournamentName){
 
     <div id="makePairsID"></div>
     <script
