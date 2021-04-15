@@ -31,14 +31,10 @@
         <script @{CSPNonce.attr} src="https://cdn.jsdelivr.net/gh/alpinejs/alpine@@v2.8.1/dist/alpine.min.js" defer> </script>
         @scalajs.html.scripts("client", controllers.routes.Assets.versioned(_).toString, name => getClass.getResource(s"/public/$name") != null,CSPNonce.attr)
 
-        <style @{CSPNonce.attr}>
-                body{
-                    background-image: url(@controllers.routes.Assets.versioned("images/fondo_nuevos_torneos.jpg"));
-                }
-        </style>
+
 
     </head>
-    <body>
+    <body class="bg-gradient-to-r from-primary-300 via-primary-100 to-primary-300">
         @navbar(user,discriminator)
 
         <div class="container-fluid">
