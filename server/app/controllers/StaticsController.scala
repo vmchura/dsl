@@ -28,53 +28,56 @@ class StaticsController @Inject() (
   def view(): Action[AnyContent] =
     silhouette.UserAwareAction.async {
       implicit request: UserAwareRequest[EnvType, AnyContent] =>
-        sideBarMenuService.buildUserAwareSideBar().flatMap { implicit menues =>
-          for {
-            tournamentSeries <- tournamentSeriesService.allSeries()
-            users <-
-              Future
-                .traverse(
-                  tournamentSeries.flatMap(
-                    _.seasons
-                      .flatMap(_.winners)
-                      .map(_._2)
-                      .map(DiscordID.apply)
+        sideBarMenuService.buildUserAwareSideBar().flatMap {
+          case (menues, discriminator) =>
+            implicit val menuesImplicit = menues
+            implicit val socialProviders = socialProviderRegistry
+            for {
+              tournamentSeries <- tournamentSeriesService.allSeries()
+              users <-
+                Future
+                  .traverse(
+                    tournamentSeries.flatMap(
+                      _.seasons
+                        .flatMap(_.winners)
+                        .map(_._2)
+                        .map(DiscordID.apply)
+                    )
+                  )(
+                    userHistoryDAO.load
                   )
-                )(
-                  userHistoryDAO.load
-                )
-                .map(_.flatten)
-          } yield {
-            Ok(
-              tournamentView(
-                request.identity,
-                tournamentSeries.map(x => {
-                  TournamentSeriesFilled(
-                    x.id,
-                    x.name,
-                    x.seasons
-                      .sortBy(_.season)
-                      .map(y => {
-                        val newWinners = y.winners.flatMap { z =>
-                          val (order, userID) = z
-                          users.find(_.discordID.id.equals(userID)).map { u =>
-                            (order, u)
+                  .map(_.flatten)
+            } yield {
+              Ok(
+                tournamentView(
+                  request.identity,
+                  discriminator,
+                  tournamentSeries.map(x => {
+                    TournamentSeriesFilled(
+                      x.id,
+                      x.name,
+                      x.seasons
+                        .sortBy(_.season)
+                        .map(y => {
+                          val newWinners = y.winners.flatMap { z =>
+                            val (order, userID) = z
+                            users.find(_.discordID.id.equals(userID)).map { u =>
+                              (order, u)
+                            }
+
                           }
-
-                        }
-                        TournamentSeasonFilled(
-                          y.challongeID,
-                          y.season,
-                          newWinners
-                        )
-                      })
-                  )
-                }),
-                socialProviderRegistry
+                          TournamentSeasonFilled(
+                            y.challongeID,
+                            y.season,
+                            newWinners
+                          )
+                        })
+                    )
+                  })
+                )
               )
-            )
 
-          }
+            }
         }
 
     }

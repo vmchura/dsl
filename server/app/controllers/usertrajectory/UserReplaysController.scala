@@ -26,18 +26,21 @@ class UserReplaysController @Inject() (
   def loadReplaysByUser(discordUserID: String): Action[AnyContent] =
     silhouette.UserAwareAction.async {
       implicit request: UserAwareRequest[EnvType, AnyContent] =>
-        sideBarMenuService.buildUserAwareSideBar().flatMap { implicit menues =>
-          replayRecordResumenDAO
-            .load(ReplayRecordResumenDAO.ByPlayer(discordUserID))
-            .map { records =>
-              Ok(
-                replaysUserViewer(
-                  request.identity,
-                  records,
-                  socialProviderRegistry
+        sideBarMenuService.buildUserAwareSideBar().flatMap {
+          case (menues, discriminator) =>
+            replayRecordResumenDAO
+              .load(ReplayRecordResumenDAO.ByPlayer(discordUserID))
+              .map { records =>
+                implicit val menuesImplicit = menues
+                implicit val socialProviders = socialProviderRegistry
+                Ok(
+                  replaysUserViewer(
+                    request.identity,
+                    discriminator,
+                    records
+                  )
                 )
-              )
-            }
+              }
         }
     }
 }

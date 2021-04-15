@@ -27,8 +27,9 @@ class Application @Inject() (
   def index(): Action[AnyContent] =
     silhouette.UserAwareAction.async {
       implicit request: UserAwareRequest[EnvType, AnyContent] =>
-        sideBarMenuService.buildUserAwareSideBar().map { implicit menues =>
-          Redirect(routes.StaticsController.view())
+        sideBarMenuService.buildUserAwareSideBar().map {
+          case (menues, discriminator) =>
+            Redirect(routes.StaticsController.view())
         }
     }
 

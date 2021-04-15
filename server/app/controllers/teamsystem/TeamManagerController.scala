@@ -179,145 +179,157 @@ class TeamManagerController @Inject() (
   def showMyTeams(): Action[AnyContent] =
     silhouette.SecuredAction.async {
       implicit request: SecuredRequest[EnvType, AnyContent] =>
-        sideBarMenuService.buildLoggedSideBar().flatMap { implicit menues =>
-          val userDiscordID =
-            DiscordID(request.authenticator.loginInfo.providerKey)
-          val teamsFut = teamDAO.teamsOf(userDiscordID)
-          val teamsWithUsers =
-            teamsFut
-              .flatMap(teams => Future.traverse(teams)(TeamWithUsers.apply))
-              .map(_.flatten)
-              .flatMap(teams =>
-                Future.traverse(teams)(team => {
-                  if (team.principal.discordID == userDiscordID) {
-                    requestDAO
-                      .requestsToTeam(team.teamID)
-                      .map(requests => (team, requests))
-                  } else {
-                    Future.successful((team, Nil))
+        sideBarMenuService.buildLoggedSideBar().flatMap {
+          case (menues, discriminator) =>
+            implicit val menuesImplicit = menues
+            implicit val socialProviders = socialProviderRegistry
+
+            val userDiscordID =
+              DiscordID(request.authenticator.loginInfo.providerKey)
+            val teamsFut = teamDAO.teamsOf(userDiscordID)
+            val teamsWithUsers =
+              teamsFut
+                .flatMap(teams => Future.traverse(teams)(TeamWithUsers.apply))
+                .map(_.flatten)
+                .flatMap(teams =>
+                  Future.traverse(teams)(team => {
+                    if (team.principal.discordID == userDiscordID) {
+                      requestDAO
+                        .requestsToTeam(team.teamID)
+                        .map(requests => (team, requests))
+                    } else {
+                      Future.successful((team, Nil))
+                    }
+                  })
+                )
+                .flatMap { teams =>
+                  Future.traverse(teams) {
+                    case (team, requests) =>
+                      Future
+                        .traverse(requests) { req =>
+                          RequestJoinWithUsers(req)
+                        }
+                        .map(requestsOpt => (team, requestsOpt.flatten))
+
                   }
-                })
-              )
-              .flatMap { teams =>
-                Future.traverse(teams) {
-                  case (team, requests) =>
-                    Future
-                      .traverse(requests) { req =>
-                        RequestJoinWithUsers(req)
-                      }
-                      .map(requestsOpt => (team, requestsOpt.flatten))
 
                 }
 
-              }
+            val invitationsWithusers = invitationDAO
+              .invitationsToUser(userDiscordID)
+              .flatMap(invitations =>
+                Future.traverse(invitations)(InvitationWithUsers.apply)
+              )
 
-          val invitationsWithusers = invitationDAO
-            .invitationsToUser(userDiscordID)
-            .flatMap(invitations =>
-              Future.traverse(invitations)(InvitationWithUsers.apply)
-            )
-
-          val smurfsPendingWithUsers = for {
-            responsableTeam <-
-              teamsFut.map(_.find(_.principal == userDiscordID))
-            pending <- responsableTeam.fold(
-              Future.successful(Seq.empty[PendingSmurf])
-            )(team => teamUserSmurfPendingDAO.loadFromTeam(team.teamID))
-            pendingWithUsers <-
-              Future.traverse(pending)(PendingSmurfWithUser.apply)
-          } yield {
-            pendingWithUsers.flatten
-          }
-
-          teamsWithUsers
-            .zip(invitationsWithusers)
-            .zip(smurfsPendingWithUsers)
-            .map {
-              case ((teams, invitations), smurfsPending) =>
-                Ok(
-                  views.html.teamsystem
-                    .showmyteams(
-                      request.identity,
-                      userDiscordID,
-                      teams,
-                      invitations.flatten,
-                      smurfsPending,
-                      TeamInvitationForm.teamInvitation,
-                      TeamCreationForm.teamCreation,
-                      MemberQueryForm.memberQuery,
-                      socialProviderRegistry
-                    )
-                )
+            val smurfsPendingWithUsers = for {
+              responsableTeam <-
+                teamsFut.map(_.find(_.principal == userDiscordID))
+              pending <- responsableTeam.fold(
+                Future.successful(Seq.empty[PendingSmurf])
+              )(team => teamUserSmurfPendingDAO.loadFromTeam(team.teamID))
+              pendingWithUsers <-
+                Future.traverse(pending)(PendingSmurfWithUser.apply)
+            } yield {
+              pendingWithUsers.flatten
             }
+
+            teamsWithUsers
+              .zip(invitationsWithusers)
+              .zip(smurfsPendingWithUsers)
+              .map {
+                case ((teams, invitations), smurfsPending) =>
+                  Ok(
+                    views.html.teamsystem
+                      .showmyteams(
+                        request.identity,
+                        discriminator,
+                        userDiscordID,
+                        teams,
+                        invitations.flatten,
+                        smurfsPending,
+                        TeamInvitationForm.teamInvitation,
+                        TeamCreationForm.teamCreation,
+                        MemberQueryForm.memberQuery
+                      )
+                  )
+              }
 
         }
     }
   def showAllTeams(): Action[AnyContent] =
     silhouette.UserAwareAction.async { implicit request =>
-      sideBarMenuService.buildUserAwareSideBar().flatMap { implicit menues =>
-        val teamsFut = teamDAO.loadTeams()
-        val teamsWithUsers =
-          teamsFut
-            .flatMap(teams => Future.traverse(teams)(TeamWithUsers.apply))
+      sideBarMenuService.buildUserAwareSideBar().flatMap {
+        case (menues, discriminator) =>
+          implicit val menuesImplicit = menues
+          implicit val socialProviders = socialProviderRegistry
 
-        val userCanRequestFut = request.identity
-          .fold(Future.successful(false))(id =>
-            teamDAO.isOfficial(DiscordID(id.loginInfo.providerKey)).map(!_)
-          )
+          val teamsFut = teamDAO.loadTeams()
+          val teamsWithUsers =
+            teamsFut
+              .flatMap(teams => Future.traverse(teams)(TeamWithUsers.apply))
 
-        val requestsPendingFut = request.identity
-          .fold(Future.successful(Seq.empty[RequestJoin])) { id =>
-            requestDAO.requestsFromUser(DiscordID(id.loginInfo.providerKey))
-          }
-          .flatMap(seq => Future.traverse(seq)(RequestJoinWithUsers.apply))
-
-        teamsWithUsers.zip(userCanRequestFut).zip(requestsPendingFut).map {
-          case ((teams, userCanRequest), requestsPending) =>
-            Ok(
-              views.html.teamsystem
-                .showteams(
-                  request.identity,
-                  teams.flatten,
-                  userCanRequest,
-                  requestsPending.flatten,
-                  socialProviderRegistry
-                )
+          val userCanRequestFut = request.identity
+            .fold(Future.successful(false))(id =>
+              teamDAO.isOfficial(DiscordID(id.loginInfo.providerKey)).map(!_)
             )
-        }
+
+          val requestsPendingFut = request.identity
+            .fold(Future.successful(Seq.empty[RequestJoin])) { id =>
+              requestDAO.requestsFromUser(DiscordID(id.loginInfo.providerKey))
+            }
+            .flatMap(seq => Future.traverse(seq)(RequestJoinWithUsers.apply))
+
+          teamsWithUsers.zip(userCanRequestFut).zip(requestsPendingFut).map {
+            case ((teams, userCanRequest), requestsPending) =>
+              Ok(
+                views.html.teamsystem
+                  .showteams(
+                    request.identity,
+                    discriminator,
+                    teams.flatten,
+                    userCanRequest,
+                    requestsPending.flatten
+                  )
+              )
+          }
 
       }
     }
 
   def showTeam(teamUUID: UUID): Action[AnyContent] = {
     silhouette.UserAwareAction.async { implicit request =>
-      sideBarMenuService.buildUserAwareSideBar().flatMap { implicit menues =>
-        val defaultResult = Redirect(
-          controllers.teamsystem.routes.TeamManagerController.showAllTeams()
-        )
-        teamDAO.loadTeam(TeamID(teamUUID)).flatMap {
-          case Some(team) =>
-            TeamWithUsers(team).flatMap {
-              case Some(teamWithUsers) =>
-                for {
-                  points <- pointsDAO.load(team.teamID)
-                  pointsUsers <-
-                    Future.traverse(points)(PointsWithUser.apply).map(_.flatten)
-                } yield {
-                  implicit val socialRegister: SocialProviderRegistry =
-                    socialProviderRegistry
-                  Ok(
-                    views.html.teamsystem.showTeamDetails(
-                      request.identity,
-                      teamWithUsers,
-                      pointsUsers
+      sideBarMenuService.buildUserAwareSideBar().flatMap {
+        case (menues, discriminator) =>
+          val defaultResult = Redirect(
+            controllers.teamsystem.routes.TeamManagerController.showAllTeams()
+          )
+          teamDAO.loadTeam(TeamID(teamUUID)).flatMap {
+            case Some(team) =>
+              TeamWithUsers(team).flatMap {
+                case Some(teamWithUsers) =>
+                  for {
+                    points <- pointsDAO.load(team.teamID)
+                    pointsUsers <-
+                      Future
+                        .traverse(points)(PointsWithUser.apply)
+                        .map(_.flatten)
+                  } yield {
+                    implicit val menuesImplicit = menues
+                    implicit val socialProviders = socialProviderRegistry
+                    Ok(
+                      views.html.teamsystem.showTeamDetails(
+                        request.identity,
+                        discriminator,
+                        teamWithUsers,
+                        pointsUsers
+                      )
                     )
-                  )
-                }
+                  }
 
-              case None => Future.successful(defaultResult)
-            }
-          case None => Future.successful(defaultResult)
-        }
+                case None => Future.successful(defaultResult)
+              }
+            case None => Future.successful(defaultResult)
+          }
 
       }
     }

@@ -127,10 +127,15 @@ class TeamReplayController @Inject() (
 
   def view(): Action[AnyContent] =
     silhouette.SecuredAction.async { implicit request =>
-      implicit val socialRegisters: SocialProviderRegistry =
-        socialProviderRegistry
-      sideBarMenuService.buildLoggedSideBar().map { implicit menues =>
-        Ok(views.html.teamsystem.showformuploadreplays(request.identity))
+      sideBarMenuService.buildLoggedSideBar().map {
+        case (menues, discriminator) => {
+          implicit val menuesImplicit = menues
+          implicit val socialProviders = socialProviderRegistry
+          Ok(
+            views.html.teamsystem
+              .showformuploadreplays(request.identity, discriminator)
+          )
+        }
       }
     }
 }

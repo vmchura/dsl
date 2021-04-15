@@ -2,7 +2,7 @@
 @import com.mohiva.play.silhouette.impl.providers.SocialProviderRegistry
 @import shared.models.DiscordDiscriminator
 @this()(implicit assets: AssetsFinder)
-@(user: models.User,matches: Seq[MatchDiscord],discriminator: Option[DiscordDiscriminator])(implicit request: RequestHeader, messages: Messages,menues: Seq[MenuGroup],socialProviders: SocialProviderRegistry)
+@(user: models.User,discriminator: Option[DiscordDiscriminator],matches: Seq[MatchDiscord])(implicit request: RequestHeader, messages: Messages,menues: Seq[MenuGroup],socialProviders: SocialProviderRegistry)
 
 @infoBuilder(m: MatchDiscord) = {
 @listmatches.showReplayInfoButton(m) {

@@ -9,18 +9,22 @@ import play.api.mvc.{Action, AnyContent}
 import scala.concurrent.{ExecutionContext, Future}
 
 class SignInController @Inject() (
-                                   scc: SilhouetteControllerComponents,
-                                   signIn: views.html.signIn,
-                                    sideBarMenuService: SideBarMenuService
-                                 )(
-                                   implicit
-                                   assets: AssetsFinder,
-                                   ex: ExecutionContext
-                                 ) extends  AbstractAuthController(scc)with I18nSupport {
+    scc: SilhouetteControllerComponents,
+    signIn: views.html.signIn,
+    sideBarMenuService: SideBarMenuService
+)(implicit
+    assets: AssetsFinder,
+    ex: ExecutionContext
+) extends AbstractAuthController(scc)
+    with I18nSupport {
 
-  def view(): Action[AnyContent] = silhouette.UnsecuredAction.async { implicit request =>
-    sideBarMenuService.buildGuestSideBar().map{ implicit menues =>
-      Ok(signIn(socialProviderRegistry))
+  def view(): Action[AnyContent] =
+    silhouette.UnsecuredAction.async { implicit request =>
+      sideBarMenuService.buildGuestSideBar().map {
+        case (menues, discriminator) =>
+          implicit val menuesImplicit = menues
+          implicit val socialProviders = socialProviderRegistry
+          Ok(signIn())
+      }
     }
-  }
 }
