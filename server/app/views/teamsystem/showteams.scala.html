@@ -8,8 +8,9 @@
 @import views.html.teamsystem.showteam
 @import models.teamsystem.RequestJoinWithUsers
 @import views.html.teamsystem.showrequestpending
-@(user: Option[models.User], teams: Seq[TeamWithUsers],userCanRequest: Boolean,requestsPending: Seq[RequestJoinWithUsers], socialProviders: SocialProviderRegistry)(implicit request: RequestHeader, messages: Messages, menues: Seq[MenuGroup], assetsFinder: AssetsFinder)
-@main("Equipos registrados",user,socialProviders){
+@import shared.models.DiscordDiscriminator
+@(user: Option[models.User],discriminator: Option[DiscordDiscriminator], teams: Seq[TeamWithUsers],userCanRequest: Boolean,requestsPending: Seq[RequestJoinWithUsers])(implicit request: RequestHeader, messages: Messages, menues: Seq[MenuGroup], assetsFinder: AssetsFinder, socialProviders: SocialProviderRegistry)
+@main("Equipos registrados",user,discriminator){
     @if(user.isDefined && requestsPending.nonEmpty) {
         <div id="requests-pending">
             @showrequestpending(requestsPending)
