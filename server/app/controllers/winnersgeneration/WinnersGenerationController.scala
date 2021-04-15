@@ -58,19 +58,22 @@ class WinnersGenerationController @Inject() (
   def view() =
     silhouette.SecuredAction(WithAdmin()).async {
       implicit request: SecuredRequest[EnvType, AnyContent] =>
-        sideBarMenuService.buildLoggedSideBar.flatMap { implicit menues =>
-          (informationGathe ? Gather).mapTo[WinnersGatheringResponse].map {
-            case GatheringSucess(gatheredInformation) =>
-              Ok(
-                views.html.winnersgeneration.selectwinners(
-                  request.identity,
-                  WinnersForm.winnerForm,
-                  gatheredInformation,
-                  socialProviderRegistry
+        sideBarMenuService.buildLoggedSideBar.flatMap {
+          case (menues, discriminator) =>
+            (informationGathe ? Gather).mapTo[WinnersGatheringResponse].map {
+              case GatheringSucess(gatheredInformation) =>
+                implicit val menuesImplicit = menues
+                implicit val socialProviders = socialProviderRegistry
+                Ok(
+                  views.html.winnersgeneration.selectwinners(
+                    request.identity,
+                    discriminator,
+                    WinnersForm.winnerForm,
+                    gatheredInformation
+                  )
                 )
-              )
-            case GatheringFail() => Ok("Failed")
-          }
+              case GatheringFail() => Ok("Failed")
+            }
 
         }
 
@@ -78,37 +81,40 @@ class WinnersGenerationController @Inject() (
 
   def post() =
     silhouette.SecuredAction(WithAdmin()).async { implicit request =>
-      sideBarMenuService.buildLoggedSideBar.flatMap { implicit menues =>
-        WinnersForm.winnerForm.bindFromRequest.fold(
-          formWithErrors => {
-            (informationGathe ? Gather).mapTo[WinnersGatheringResponse].map {
-              case GatheringSucess(gatheredInformation) =>
-                Ok(
-                  views.html.winnersgeneration.selectwinners(
-                    request.identity,
-                    formWithErrors,
-                    gatheredInformation,
-                    socialProviderRegistry
+      sideBarMenuService.buildLoggedSideBar.flatMap {
+        case (menues, discriminator) =>
+          WinnersForm.winnerForm.bindFromRequest.fold(
+            formWithErrors => {
+              (informationGathe ? Gather).mapTo[WinnersGatheringResponse].map {
+                case GatheringSucess(gatheredInformation) =>
+                  implicit val menuesImplicit = menues
+                  implicit val socialProviders = socialProviderRegistry
+                  Ok(
+                    views.html.winnersgeneration.selectwinners(
+                      request.identity,
+                      discriminator,
+                      formWithErrors,
+                      gatheredInformation
+                    )
                   )
-                )
-              case GatheringFail() => Ok("Failed")
-            }
-          },
-          dataFilled => {
-            informationSaver
-              .ask(ref => WinnersSaving.SaveWinners(dataFilled, ref))
-              .mapTo[WinnersSaving.WinnersSavingResponse]
-              .map {
-                case WinnersSavingFailed() =>
-                  Redirect(controllers.routes.Application.index())
-                    .flashing("success" -> "Winners saved")
-                case WinnersSavedSuccessfully() =>
-                  Redirect(controllers.routes.Application.index())
-                    .flashing("error" -> "Winners not saved")
+                case GatheringFail() => Ok("Failed")
               }
+            },
+            dataFilled => {
+              informationSaver
+                .ask(ref => WinnersSaving.SaveWinners(dataFilled, ref))
+                .mapTo[WinnersSaving.WinnersSavingResponse]
+                .map {
+                  case WinnersSavingFailed() =>
+                    Redirect(controllers.routes.Application.index())
+                      .flashing("success" -> "Winners saved")
+                  case WinnersSavedSuccessfully() =>
+                    Redirect(controllers.routes.Application.index())
+                      .flashing("error" -> "Winners not saved")
+                }
 
-          }
-        )
+            }
+          )
       }
 
     }
