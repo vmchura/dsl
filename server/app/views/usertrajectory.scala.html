@@ -1,8 +1,9 @@
 @import views.html.helper._
 @import com.mohiva.play.silhouette.impl.providers.SocialProviderRegistry
+@import shared.models.DiscordDiscriminator
 @this()(implicit assets: AssetsFinder)
-@(user: Option[models.User],matches: Seq[ReplayRecordResumen],socialProviders: SocialProviderRegistry)(implicit request: RequestHeader, messages: Messages,menues: Seq[MenuGroup])
-@main("Partidas del jugador",user,socialProviders){
+@(user: Option[models.User], discriminator: Option[DiscordDiscriminator],matches: Seq[ReplayRecordResumen])(implicit request: RequestHeader, messages: Messages,menues: Seq[MenuGroup],socialProviders: SocialProviderRegistry)
+@main("Partidas del jugador",user, discriminator ){
     <table class="table table-striped">
         <thead>
             <tr>
