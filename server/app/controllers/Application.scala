@@ -2,10 +2,13 @@ package controllers
 
 import com.mohiva.play.silhouette.api.LogoutEvent
 import com.mohiva.play.silhouette.api.actions.{SecuredRequest, UserAwareRequest}
+import models.daos.DiscordPlayerLoggedDAO
+
 import javax.inject._
 import models.services.SideBarMenuService
 import play.api.mvc._
 import play.api.i18n.I18nSupport
+import shared.models.DiscordID
 import utils.route.Calls
 
 import scala.concurrent.ExecutionContext
@@ -32,8 +35,17 @@ class Application @Inject() (
   def welcomeAuthenticated(): Action[AnyContent] =
     silhouette.SecuredAction.async {
       implicit request: SecuredRequest[EnvType, AnyContent] =>
-        sideBarMenuService.buildLoggedSideBar().map { implicit menues =>
-          Ok(welcomeauthenticated(request.identity, socialProviderRegistry))
+        sideBarMenuService.buildLoggedSideBar().map {
+          case (menues, discriminator) =>
+            implicit val menuesImplicit = menues
+            implicit val socialProviders = socialProviderRegistry
+            Ok(
+              welcomeauthenticated(
+                request.identity,
+                discriminator
+              )
+            )
+
         }
     }
   def signOut(): Action[AnyContent] =
