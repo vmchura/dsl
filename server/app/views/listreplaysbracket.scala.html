@@ -7,10 +7,11 @@
 @import com.mohiva.play.silhouette.impl.providers.SocialProviderRegistry
 @import helper._
 @import forms.OrderGamesForm.Data
+@import shared.models.DiscordDiscriminator
 @this()(implicit assets: AssetsFinder)
-@(user: models.User,tournament: String,tournamentID: Long, matchID: Long, replays: Seq[ReplayRecord], myForm: Form[Data],socialProviders: SocialProviderRegistry)(implicit request: RequestHeader, messages: Messages,menues: Seq[MenuGroup])
+@(user: models.User,discriminator: Option[DiscordDiscriminator],tournament: String,tournamentID: Long, matchID: Long, replays: Seq[ReplayRecord], myForm: Form[Data])(implicit request: RequestHeader, messages: Messages,menues: Seq[MenuGroup],socialProviders: SocialProviderRegistry)
 
-@main("Ordenar bracket",Some(user),socialProviders){
+@main("Ordenar bracket",Some(user), discriminator){
 
     <div>
         @helper.form(action = routes.OrderReplaysController.submit(tournamentID, matchID),Symbol("id") -> "formOrderGames") {
