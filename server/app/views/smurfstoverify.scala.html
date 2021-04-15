@@ -6,19 +6,33 @@
     <ul class="list-group">
     @for(smurftou <- smurfsToUpdate){
 
-            <li class="list-group-item list-group-item-primary collection-header-discorduser">@smurftou.discordUser.userName</li>
-
+        <li class="border-t-2 border-l-2 border-primary-900 border-solid p-2 m-1 text-black">@smurftou.discordUser.userName</li>
+        <ul>
             @for(matchSmurf <- smurftou.notCheckedSmurf){
-                <li class="list-group-item d-flex justify-content-between align-items-center">
+            <li class="flex ml-16">
+                <span class="border-b-2 border-primary-900 border-solid p-2 m-1 text-black rounded">
+                @matchSmurf.smurf
+                </span>
 
-                        @matchSmurf.smurf
-                        <div>
-                        <a class="btn btn-outline-success" href="@controllers.routes.SmurfController.accept(smurftou.discordUser.discordID,matchSmurf.resultID)">Aceptar<i class="material-icons right">check_circle</i></a>
-                        <a class="btn btn-outline-danger"  href="@controllers.routes.SmurfController.decline(smurftou.discordUser.discordID,matchSmurf.resultID)">Cancelar<i class="material-icons right">cancel</i></a>
-                        </div>
+            <div>
+                <a href="@controllers.routes.SmurfController.accept(smurftou.discordUser.discordID,matchSmurf.resultID)" class="bg-primary-300 hover:bg-primary-400 text-gray-800 font-bold py-2 px-4 rounded inline-flex items-center">
+                    <svg class="fill-current w-4 h-4 mr-2" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor">
+                        <path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd" />
+                    </svg>
+                    <span>Aceptar</span>
+                </a>
+                <a href="@controllers.routes.SmurfController.decline(smurftou.discordUser.discordID,matchSmurf.resultID)" class="bg-red-300 hover:bg-red-400 text-gray-800 font-bold py-2 px-4 rounded inline-flex items-center">
+                    <svg class="fill-current w-4 h-4 mr-2" xmlns="http://www.w3.org/2000/svg"  viewBox="0 0 20 20" fill="currentColor">
+                        <path fill-rule="evenodd" d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z" clip-rule="evenodd" />
+                    </svg>
+                    <span>Cancelar</span>
+                </a>
+            </div>
 
-                </li>
-            }
+            </li>
+        }
+        </ul>
+
     }
     </ul>
 
