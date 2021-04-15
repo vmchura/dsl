@@ -5,10 +5,10 @@
 @import com.mohiva.play.silhouette.impl.providers.SocialProviderRegistry
 @import views.html.helper.FieldConstructor
 @this()(implicit assets: AssetsFinder)
-@(createTournamentForm: Form[Data],socialProviders: SocialProviderRegistry)(implicit request: RequestHeader, messages: Messages, menues: Seq[MenuGroup])
+@(createTournamentForm: Form[Data])(implicit request: RequestHeader, messages: Messages, menues: Seq[MenuGroup], socialProviders: SocialProviderRegistry)
 @implicitFieldConstructor = @{FieldConstructor(helper.twInlineFieldConstructor.f)}
 
-@main("Crea un torneo: Discord + Challonge",None,socialProviders){
+@main("Crea un torneo: Discord + Challonge"){
     @helper.form(action = routes.TournamentController.post(),Symbol("class") -> "w-full max-w-sm") {
             @helper.CSRF.formField
             @helper.twInputText(createTournamentForm("discordGuildID"),
