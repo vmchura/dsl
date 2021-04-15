@@ -41,7 +41,9 @@ class SideBarMenuService @Inject() (
           "Mis Partidas",
           registered.map(torneo =>
             MenuActionDefined(
-              torneo.tournamentName,
+              torneo.tournamentName
+                .replace("Deathfate StarLeague", "DSL")
+                .replace("Deathfate SuperStarLeague", "DSSL "),
               routes.TournamentController
                 .showMatchesToUploadReplay(torneo.challongeID)
                 .url
@@ -54,7 +56,9 @@ class SideBarMenuService @Inject() (
         torneos
           .map(torneo =>
             MenuActionDefined(
-              torneo.tournamentName,
+              torneo.tournamentName
+                .replace("Deathfate StarLeague", "DSL")
+                .replace("Deathfate SuperStarLeague", "DSSL "),
               routes.TournamentController.showMatches(torneo.challongeID).url
             )
           )
