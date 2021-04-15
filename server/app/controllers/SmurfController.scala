@@ -17,8 +17,7 @@ class SmurfController @Inject() (
     userSmurfDAO: UserSmurfDAO,
     smurfService: SmurfService,
     sideBarMenuService: SideBarMenuService,
-    userHistoryDAO: UserHistoryDAO,
-    discordPlayerLoggedDAO: DiscordPlayerLoggedDAO
+    userHistoryDAO: UserHistoryDAO
 )(implicit
     assets: AssetsFinder,
     ex: ExecutionContext
@@ -27,23 +26,21 @@ class SmurfController @Inject() (
 
   def view(): Action[AnyContent] =
     silhouette.SecuredAction(WithAdmin()).async { implicit request =>
-      sideBarMenuService.buildLoggedSideBar().flatMap { implicit menues =>
-        for {
-          usersNotDefined <- userSmurfDAO.findUsersNotCompletelyDefined()
-          userRequestLogged <- discordPlayerLoggedDAO.load(
-            DiscordID(request.identity.loginInfo.providerKey)
+      for {
+        usersNotDefined <- userSmurfDAO.findUsersNotCompletelyDefined()
+        (menues, discriminator) <- sideBarMenuService.buildLoggedSideBar()
+      } yield {
+        implicit val socialProviders = socialProviderRegistry
+        implicit val menuesImplicit = menues
+        Ok(
+          smurfsToCheck(
+            request.identity,
+            discriminator,
+            usersNotDefined
           )
-        } yield {
-          implicit val socialProviders = socialProviderRegistry
-          Ok(
-            smurfsToCheck(
-              request.identity,
-              userRequestLogged.map(_.discriminator),
-              usersNotDefined
-            )
-          )
-        }
+        )
       }
+
     }
   def accept(discordUserID: String, matchID: UUID): Action[AnyContent] =
     silhouette.SecuredAction(WithAdmin()).async { implicit request =>
