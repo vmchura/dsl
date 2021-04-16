@@ -7,7 +7,7 @@
 
 @form(routes.ReplayMatchController.addReplayToMatch(m.matchPK.challongeID,m.matchPK.challongeMatchID,m.querying.discordUser.discordID,m.rival.discordUser.discordID),
     Symbol("enctype") -> "multipart/form-data",
-    Symbol("_id") -> s"form_${m.matchPK.challongeMatchID}") {
+    Symbol("id") -> s"form_${m.matchPK.challongeMatchID}") {
     @CSRF.formField
 
     <div class="file-field input-field"
