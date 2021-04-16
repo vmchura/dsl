@@ -39,12 +39,12 @@
 
         <div class="container-fluid">
             @request.flash.get("error").map { msg =>
-                <div class="alert alert-danger" role="alert">
+                <div class="alert-box danger-context" role="alert">
                     ¡Error!: @msg
                 </div>
             }
             @request.flash.get("success").map { msg =>
-                <div class="alert alert-success" role="alert">
+                <div class="alert-box info-context" role="alert">
                     !Hecho! @msg
                 </div>
             }
