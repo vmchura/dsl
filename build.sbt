@@ -1,4 +1,6 @@
 import NativePackagerKeys._
+Global / scalaJSStage := FullOptStage
+
 lazy val server = (project in file("server"))
   .settings(commonSettings)
   .settings(
