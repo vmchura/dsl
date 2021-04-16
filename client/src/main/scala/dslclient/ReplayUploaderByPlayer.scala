@@ -11,7 +11,8 @@ class ReplayUploaderByPlayer(
     val player2: String,
     val discord1: String,
     val discord2: String,
-    val buttonDiv: Div
+    val buttonDiv: Div,
+    val formID: String
 ) extends ReplayUploader {
   import ReplayUploader._
 
@@ -31,7 +32,8 @@ object ReplayUploaderByPlayer {
       player2: String,
       discord1: String,
       discord2: String,
-      buttonDiv: Div
+      buttonDiv: Div,
+      formID: String
   ): ReplayUploaderByPlayer =
     new ReplayUploaderByPlayer(
       fieldDiv,
@@ -39,6 +41,7 @@ object ReplayUploaderByPlayer {
       player2,
       discord1,
       discord2,
-      buttonDiv
+      buttonDiv,
+      formID
     )
 }

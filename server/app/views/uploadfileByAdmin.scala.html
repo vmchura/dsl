@@ -7,7 +7,8 @@
 
 
 @form(routes.ReplayMatchController.addReplayToMatchByAdmin(m.matchPK.challongeID,m.matchPK.challongeMatchID,m.userSmurf1.discordUser.discordID,m.userSmurf2.discordUser.discordID),
-    Symbol("enctype") -> "multipart/form-data") {
+    Symbol("enctype") -> "multipart/form-data",
+    Symbol("id") -> s"form_${m.matchPK.challongeMatchID}")  {
     @CSRF.formField
 
     <div class="file-field input-field"
@@ -16,6 +17,8 @@
     data-player2=@{m.userSmurf2.discordUser.userName}
     data-discord1=@{m.userSmurf1.discordUser.discordID}
     data-discord2=@{m.userSmurf2.discordUser.discordID}
+    data-formid=@{s"form_${m.matchPK.challongeMatchID}"}
+
     >
 
     </div>

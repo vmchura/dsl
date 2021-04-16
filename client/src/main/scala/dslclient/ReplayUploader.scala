@@ -8,6 +8,7 @@ import org.lrng.binding.html.NodeBinding
 import org.scalajs.dom.html.{Button, Div}
 import org.scalajs.dom.raw.{FormData, HTMLInputElement}
 import org.scalajs.dom.{Event, Node, document}
+
 import shared.models._
 import upickle.default.read
 
@@ -22,6 +23,7 @@ trait ReplayUploader {
   def discord1: String
   def discord2: String
   def buttonDiv: Div
+  def formID: String
   private val playerQuerying = PlayerNameDiscordID(player1, DiscordID(discord1))
   private val theOtherPlayer = PlayerNameDiscordID(player2, DiscordID(discord2))
 
@@ -319,14 +321,19 @@ trait ReplayUploader {
   @html
   val buttonSubmit = Binding {
     val button: NodeBinding[Button] =
-      <button  type="submit" name="action">
+      <button>
         <span>Enviar Replay</span>
       </button>
     button.value.disabled = stateUploadProcess.bind != ReadyToSend
     button.value.className =
       if (stateUploadProcess.bind == ReadyToSend) "btn-continue"
       else "btn-continue-disabled"
-
+    button.value.onclick = _ => {
+      val form = document
+        .getElementById(formID)
+        .asInstanceOf[org.scalajs.dom.raw.HTMLFormElement]
+      form.submit()
+    }
     button.bind
   }
 
@@ -467,7 +474,9 @@ object ReplayUploader {
     val length = divs.length
     def initByContext(
         divIDPrefix: String,
-        builder: (Div, String, String, String, String, Div) => ReplayUploader
+        builder: (
+            Div, String, String, String, String, Div, String
+        ) => ReplayUploader
     ): Unit = {
       val divsUpload = (0 until length)
         .map(i => divs.item(i))
@@ -482,10 +491,11 @@ object ReplayUploader {
           p2 <- div.dataset.get("player2")
           d1 <- div.dataset.get("discord1")
           d2 <- div.dataset.get("discord2")
+          fi <- div.dataset.get("formid")
 
         } yield {
           val ru =
-            builder(div, p1, p2, d1, d2, divButton)
+            builder(div, p1, p2, d1, d2, divButton, fi)
           ru.render()
         }
 

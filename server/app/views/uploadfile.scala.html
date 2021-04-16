@@ -6,7 +6,8 @@
 @(m: MatchDiscord)(implicit request: RequestHeader, messages: Messages,assets: AssetsFinder)
 
 @form(routes.ReplayMatchController.addReplayToMatch(m.matchPK.challongeID,m.matchPK.challongeMatchID,m.querying.discordUser.discordID,m.rival.discordUser.discordID),
-    Symbol("enctype") -> "multipart/form-data") {
+    Symbol("enctype") -> "multipart/form-data",
+    Symbol("_id") -> s"form_${m.matchPK.challongeMatchID}") {
     @CSRF.formField
 
     <div class="file-field input-field"
@@ -15,6 +16,7 @@
     data-player2=@{m.rival.discordUser.userName}
     data-discord1=@{m.querying.discordUser.discordID}
     data-discord2=@{m.rival.discordUser.discordID}
+    data-formid=@{s"form_${m.matchPK.challongeMatchID}"}
     >
 
     </div>
