@@ -26,7 +26,7 @@ class TeamDAOImpl @Inject() (val reactiveMongoApi: ReactiveMongoApi)
     val id = TeamID(UUID.randomUUID())
     collection
       .flatMap(
-        _.insert(ordered = true).one(Team(id, teamName, userID, Nil))
+        _.insert(ordered = true).one(Team(id, teamName, userID, Nil, None))
       )
       .map(_ => id)
 

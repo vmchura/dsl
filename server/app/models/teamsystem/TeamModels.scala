@@ -56,7 +56,8 @@ case class Team(
     teamID: TeamID,
     teamName: String,
     principal: DiscordID,
-    members: Seq[Member]
+    members: Seq[Member],
+    logo: Option[String]
 ) {
   import MemberStatus._
   def canBeAdded(userID: DiscordID): Boolean = !isMember(userID)
