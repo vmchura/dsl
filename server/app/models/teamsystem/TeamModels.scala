@@ -80,7 +80,8 @@ case class TeamWithUsers(
     teamName: String,
     principal: DiscordPlayerLogged,
     officials: Seq[DiscordPlayerLogged],
-    suplentes: Seq[DiscordPlayerLogged]
+    suplentes: Seq[DiscordPlayerLogged],
+    logoUrl: String
 )
 object TeamWithUsers {
   import scala.concurrent.Future
@@ -126,7 +127,10 @@ object TeamWithUsers {
           team.teamName,
           principal,
           officials,
-          suplentes
+          suplentes,
+          team.logo.getOrElse(
+            controllers.routes.Assets.versioned("images/logoDF.jpg").url
+          )
         )
       }
     }
