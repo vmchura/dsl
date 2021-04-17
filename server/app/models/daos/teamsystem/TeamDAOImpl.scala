@@ -77,4 +77,16 @@ class TeamDAOImpl @Inject() (val reactiveMongoApi: ReactiveMongoApi)
     collection.flatMap(
       _.find(Json.obj("teamID" -> teamID), Option.empty[Team]).one[Team]
     )
+
+  override def updateTeamLogo(teamID: TeamID, newURL: String): Future[Boolean] =
+    collection
+      .flatMap(
+        _.update(ordered = true)
+          .one(
+            Json.obj("teamID" -> teamID),
+            Json.obj("$set" -> Json.obj("logo" -> Some(newURL))),
+            upsert = true
+          )
+      )
+      .map(_.ok)
 }

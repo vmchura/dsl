@@ -62,5 +62,7 @@ POST    /teamsystem/smurfselected/:replayID/:smurf                      controll
 GET    /teamsystem/viewform        controllers.teamsystem.TeamReplayController.view()
 POST    /teamsystem/acceptSmurf/:teamReplayID        controllers.teamsystem.TeamSmurfController.acceptSmurf(teamReplayID: java.util.UUID)
 POST    /teamsystem/denySmurf/:teamReplayID        controllers.teamsystem.TeamSmurfController.removeSmurf(teamReplayID: java.util.UUID)
+GET     /teamsystem/updatelogo                     controllers.teamsystem.TeamManagerController.selectTeamLogo()
+POST    /teamsystem/updatelogo                     controllers.teamsystem.TeamManagerController.updateTeamLogo()
 
 GET     /javascriptRoutes                       controllers.JavaScriptRouter.javascriptRoutes

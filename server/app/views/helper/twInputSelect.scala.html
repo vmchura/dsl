@@ -1,0 +1,23 @@
+@import views.html.helper.FieldConstructor
+@import views.html.helper.input
+@import play.twirl.api.TwirlFeatureImports.defining
+@(field: play.api.data.Field,options: Seq[(String,String)], args: (Symbol,Any)*)(implicit handler: FieldConstructor, messages: play.api.i18n.MessagesProvider)
+@inputType = @{ args.toMap.get(Symbol("type")).map(_.toString).getOrElse("text") }
+@input(field, args:_*) { (id, name, value, htmlArgs) =>
+    @defining( if( htmlArgs.contains(Symbol("multiple")) ) "%s[]".format(name) else name ) { selectName =>
+        @defining( field.indexes.nonEmpty && htmlArgs.contains(Symbol("multiple")) match {
+        case true => field.indexes.map( i => field("[%s]".format(i)).value ).flatten.toSet
+        case _ => field.value.toSet
+        }){ selectedValues =>
+            <select id="@id" name="@selectName" class="w-full border bg-white rounded px-3 py-2 outline-none" @toHtmlArgs(htmlArgs)>
+                @args.toMap.get(Symbol("_default")).map { defaultValue =>
+                    <option class="blank" value="">@translate(defaultValue)</option>
+                }
+                @options.map { case (k, v) =>
+                    @defining( selectedValues.contains(k) ) { selected =>
+                        @defining( args.toMap.get(Symbol("_disabled")).exists { case s: Seq[_] => s.asInstanceOf[Seq[String]].contains(k) }){ disabled =>
+                            <option value="@k"@if(selected){ selected="selected"}@if(disabled){ disabled}>@v</option>
+                        }}}
+            </select>
+        }}
+}

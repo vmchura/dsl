@@ -44,6 +44,7 @@ import scala.concurrent.{ExecutionContext, Future}
 import akka.actor.typed.scaladsl.AskPattern._
 import akka.util.Timeout
 import com.mohiva.play.silhouette.impl.providers.SocialProviderRegistry
+import forms.UpdateLogoForm
 import modules.teamsystem.TeamCreator.CreationCommand
 import shared.models.DiscordID
 
@@ -334,4 +335,43 @@ class TeamManagerController @Inject() (
       }
     }
   }
+
+  def selectTeamLogo(): Action[AnyContent] =
+    silhouette.SecuredAction.async { implicit request =>
+      for {
+        (menues, discriminator) <- sideBarMenuService.buildLoggedSideBar()
+        teams <- teamDAO.loadTeams()
+      } yield {
+        implicit val menuesImplicit = menues
+        implicit val socialProviders = socialProviderRegistry
+        Ok(
+          views.html.teamsystem.updateteamlogo(
+            request.identity,
+            discriminator,
+            UpdateLogoForm.form,
+            teams
+          )
+        )
+      }
+
+    }
+
+  def updateTeamLogo(): Action[AnyContent] =
+    silhouette.SecuredAction.async { implicit request =>
+      UpdateLogoForm.form.bindFromRequest.fold(
+        form =>
+          Future.successful(
+            Redirect(
+              controllers.teamsystem.routes.TeamManagerController
+                .selectTeamLogo()
+            )
+          ),
+        data =>
+          teamDAO.updateTeamLogo(TeamID(data.teamID), data.urlImage).map { _ =>
+            Redirect(
+              controllers.teamsystem.routes.TeamManagerController.showAllTeams()
+            )
+          }
+      )
+    }
 }

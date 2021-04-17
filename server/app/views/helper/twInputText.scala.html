@@ -1,15 +1,3 @@
-@**
-* Generate an HTML input text.
-*
-* Example:
-* {{{
-* @inputText(field = myForm("name"), args = Symbol("size") -> 10, Symbol("placeholder") -> "Your name")
-* }}}
-*
-* @param field The form field.
-* @param args Set of extra attributes.
-* @param handler The field constructor.
-*@
 @import views.html.helper.FieldConstructor
 @import views.html.helper.input
 @(field: play.api.data.Field, args: (Symbol,Any)*)(implicit handler: FieldConstructor, messages: play.api.i18n.MessagesProvider)

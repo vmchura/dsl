@@ -33,4 +33,6 @@ trait TeamDAO {
     )
   def teamsOf(userID: DiscordID): Future[Seq[Team]] =
     loadTeams().map(_.filter(_.isMember(userID)))
+
+  def updateTeamLogo(teamID: TeamID, newURL: String): Future[Boolean]
 }
