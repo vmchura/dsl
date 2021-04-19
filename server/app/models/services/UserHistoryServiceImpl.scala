@@ -1,7 +1,7 @@
 package models.services
 import scala.concurrent.ExecutionContext.Implicits.global
 import javax.inject.Inject
-import models.DiscordUserData
+import models.{DiscordUserData, UserGuild}
 import models.daos.{UserGuildDAO, UserHistoryDAO}
 
 import scala.concurrent.Future
@@ -23,20 +23,36 @@ class UserHistoryServiceImpl @Inject() (
   }
   override def update(): Future[Int] = {
     for {
+      guildUser <- userGuild.all()
 
-      guilds <- userGuild.guilds()
-      guildUser <-
-        Future
-          .traverse(guilds.toList)(g =>
-            discordUserService
-              .findMembersOnGuildData(g)
-              .map(r => r.map(x => g -> x))
-          )
-          .map(_.flatten)
+      historyUsers <- userHistory.all()
+
+      notHistoriedGuildUsers <- Future.successful(
+        guildUser.filterNot(gu =>
+          historyUsers.exists(_.discordID == gu.discordID)
+        )
+      )
+      requestGuildData <- traverse(
+        notHistoriedGuildUsers
+          .flatMap(ug => ug.guilds.toList.map(g => (ug.discordID, g)))
+          .toList
+      ) {
+        case (userDiscordID, guildID) =>
+          discordUserService
+            .findMemberOnGuildData(guildID, userDiscordID)
+            .map { _.map(gd => (gd, guildID)) }
+
+      }
+
       singleUpdates <- {
         traverse(
-          guildUser.flatMap { case (g, users) => users.map(u => g -> u) }
-        ) { case (g, u) => update(u, g) }
+          requestGuildData
+        ) { rg =>
+          rg.fold(Future.successful(0)) {
+            case (gd, g) =>
+              update(gd, g)
+          }
+        }
       }
 
     } yield {

@@ -59,7 +59,8 @@ class TournamentBuilderTest
         tournamentLoaded <- tournamentLoadedOpt.withFailure(
           TournamentNotBuild(tournament.challongeID)
         )
-        participantsJob <- job.getParticipantsUsers(tournament.challongeID)
+        participantsJob <-
+          job.getParticipantsUsers(tournament.challongeID, "", "")
         (_, participants, _) <- participantsJob.withFailure
         participantsRemove <- Future.sequence(
           participants
@@ -104,7 +105,7 @@ class TournamentBuilderTest
               Left(UnknowTournamentBuilderError("error creation tournament"))
             )
           case Right(tournament) =>
-            job.getParticipantsUsers(tournament.challongeID)
+            job.getParticipantsUsers(tournament.challongeID, "", "")
         }
 
         participantsRemove <- participants match {

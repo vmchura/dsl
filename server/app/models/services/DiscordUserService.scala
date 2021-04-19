@@ -16,4 +16,8 @@ trait DiscordUserService {
       guildID: GuildID
   ): Future[Option[Seq[DiscordUserData]]]
   def findMember(discordID: DiscordID): Future[Option[DiscordPlayerLogged]]
+  def findMemberOnGuildData(
+      guildID: GuildID,
+      discordID: DiscordID
+  ): Future[Option[DiscordUserData]]
 }

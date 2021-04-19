@@ -202,4 +202,35 @@ class DiscordUserServiceImpl @Inject() (configuration: Configuration)
       }
     }
   }
+
+  override def findMemberOnGuildData(
+      guildID: GuildID,
+      discordID: DiscordID
+  ): Future[Option[DiscordUserData]] = {
+    val responseFut = basicRequest
+      .header("Authorization", s"Bot $bot_token")
+      .get(
+        uri"https://discord.com/api/guilds/${guildID.id}/members/${discordID.id}"
+      )
+      .send()
+
+    responseFut.map {
+      _.body match {
+        case Left(errorMessage) =>
+          logger.error(s"Error on single findMemberOnGuild: $errorMessage")
+          None
+
+        case Right(body) =>
+          try {
+            parseDiscordUserData(Json.parse(body))
+          } catch {
+            case _: Throwable =>
+              logger.error(
+                s"Error on findMembersOnGuild: $body is not a json or an array of users"
+              )
+              None
+          }
+      }
+    }
+  }
 }

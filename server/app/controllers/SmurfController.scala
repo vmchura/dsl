@@ -80,8 +80,6 @@ class SmurfController @Inject() (
         usuarios <- smurfService.loadValidSmurfs()
         usersHistory <- userHistoryDAO.all()
       } yield {
-        println(usersHistory.mkString("\n"))
-        println("--")
         val usersWithHistory = usuarios.flatMap(u =>
           usersHistory.find(_.discordID == u.discordID).map(h => (u, h))
         )
