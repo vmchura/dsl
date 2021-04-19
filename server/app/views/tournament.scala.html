@@ -17,21 +17,21 @@
                 <div class="tournament-display">
                     <img src="@assets.path(tr.logo)" class="tournament-logo" alt="tournament-logo">
                     <div class="tournament-winners">
-                    <table class="table table-sm">
+                    <table class="table-auto">
                         <thead>
                             <tr>
                                 <th></th>
-                                <th>1st</th>
-                                <th class="column-priority-low">2nd</th>
-                                <th class="column-priority-low">3rd</th>
+                                <th class="border-b-2 border-l-2 border-r-2 border-primary-600 border-solid">1st</th>
+                                <th class="border-b-2 border-primary-600 border-solid column-priority-low">2nd</th>
+                                <th class="border-b-2 border-l-2 border-primary-600 border-solid column-priority-low">3rd</th>
                             </tr>
                         </thead>
                         <tbody>
-                            @for(season <- ts.seasons){
+                            @for(season <- ts.seasons.reverse){
                                 <tr>
-                                    <td><a href="@routes.TournamentController.showMatches(season.challongeID)">Season @season.season</a></td>
+                                    <td class="border-t-2 border-r-2 border-primary-600 border-solid px-8"><a href="@routes.TournamentController.showMatches(season.challongeID)">Season @season.season</a></td>
                                     @for(i <- 1 to 3){
-                                        <td class=@{if (i>1) "column-priority-low" else ""}>@season.winners.find(_._1 == i).map(_._2).map(_.lastUserName).getOrElse("-")</td>
+                                        <td class="@{s"${if (i>1) "column-priority-low" else ""} border-t-2 border-l-2 border-primary-600 border-solid px-6"}" >@season.winners.find(_._1 == i).map(_._2).map(_.lastUserName).getOrElse("-")</td>
                                     }
                                 </tr>
                             }
