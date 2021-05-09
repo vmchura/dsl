@@ -4,15 +4,15 @@ import ackcord.APIMessage.{MessageCreate, MessageUpdate}
 import ackcord.data.{
   Guild,
   MessageId,
+  RoleId,
   TextChannelId,
   UserId,
   Message => DMessage
 }
 import ackcord._
-import ackcord.requests.{AddGuildMemberRole, RemoveGuildMemberRole}
+import ackcord.requests.CreateMessage
 import ackcord.syntax._
 import ackcord.{ClientSettings, DiscordClient}
-import akka.NotUsed
 import akka.actor.typed.{Behavior, PostStop}
 import akka.actor.typed.scaladsl.Behaviors
 import com.google.inject.Provides
@@ -25,6 +25,16 @@ import scala.concurrent.Future
 import scala.util.{Failure, Success}
 object KishibotActor extends ActorModule with Logger {
   sealed trait InternalCommand
+  val allRolesRegistered = Seq(
+    "BroncePlayer",
+    "PlataPlayer",
+    "OroPlayer",
+    "DSSLPlayer",
+    "RedemBroncePlayer",
+    "RedemPlataPlayer",
+    "RedemOroPlayer",
+    "RedemDSSLPlayer"
+  )
   val channelRole: Map[TextChannelId, String] = Map(
     TextChannelId(703361614107246632L) -> "BroncePlayer",
     TextChannelId(785594196336574494L) -> "PlataPlayer",
@@ -37,6 +47,13 @@ object KishibotActor extends ActorModule with Logger {
     TextChannelId(736015708701589556L) -> "Zerg",
     TextChannelId(736009485310754898L) -> "Protoss"
   )*/
+  sealed trait RoleChange {
+    def roleID: RoleId
+    def userID: UserId
+  }
+  case class AddRoleChange(userID: UserId, roleID: RoleId) extends RoleChange
+  case class RemoveRoleChange(userID: UserId, roleID: RoleId) extends RoleChange
+
   override type Message = InternalCommand
   case class ClientCreated(discordClient: DiscordClient) extends InternalCommand
   case class ClientCreationFailed(reason: String) extends InternalCommand
@@ -62,9 +79,10 @@ object KishibotActor extends ActorModule with Logger {
     ): Unit = {
       if (checkMessage(message)) {
 
-        val roleName = channelRole(message.channelId)
+        val roleName = (if (message.content.contains("REDEMPTION")) "Redem"
+                        else "") + channelRole(message.channelId)
         val otherRoleNames =
-          channelRole.values.filterNot(_.equals(roleName)).toList
+          allRolesRegistered.filterNot(_.equals(roleName)).toList
         val otherRoles =
           otherRoleNames.flatMap(rn => guild.rolesByName(rn).headOption)
 
@@ -114,62 +132,73 @@ object KishibotActor extends ActorModule with Logger {
             usersID
           })
 
-          val rolesRequest = membersMentionedFut.map { membersMentioned =>
-            /*val removals = for {
-              userId <- membersMentioned
-              roleRemove <- otherRoles
-            } yield {
-              RemoveGuildMemberRole(guild.id, userId, roleRemove.id)
-            }*/
+          val rolesRequest: OptFuture[List[RoleChange]] =
+            membersMentionedFut.map { membersMentioned =>
+              val removals = for {
+                userId <- membersMentioned
+                roleRemove <- otherRoles
+              } yield {
+                RemoveRoleChange(userId, roleRemove.id)
+              }
 
-            val insertions = membersMentioned.map(userId => {
+              val insertions = membersMentioned.map(userId => {
 
-              AddGuildMemberRole(guild.id, userId, role.id)
+                AddRoleChange(userId, role.id)
 
-            })
-            insertions
-          }
+              })
+              insertions ++ removals
+            }
           rolesRequest.map { x =>
             val u = x.foldLeft(
               Future.successful(Nil): Future[List[Option[String]]]
-            )((prevResult, insertion) => {
+            )((prevResult, roleChange) => {
               for {
                 prev <- prevResult
                 guildMember <-
                   discordClient.requestsHelper
                     .run(
                       ackcord.requests
-                        .GetGuildMember(guild.id, insertion.userId)
+                        .GetGuildMember(guild.id, roleChange.userID)
                     )
                     .value
-                _ <- Future {
-                  println("...")
-                  Thread.sleep(5000)
-                }
+                /*_ <- Future {
+                  print(". ")
+                  Thread.sleep(1000)
+                }*/
                 roleInsertion <- (
                     guildMember
                       .fold(OptFuture.pure("Not GM"))(gm =>
-                        if (gm.roles.contains(insertion.roleId)) {
-                          OptFuture.pure("Already has the role")
-                        } else {
-                          discordClient.requestsHelper
-                            .run(
-                              gm.toGuildMember(guild.id)
-                                .addRole(insertion.roleId)
-                            )
-                            .map(_ => "Request sent")
+                        (
+                          roleChange,
+                          gm.roles.contains(roleChange.roleID)
+                        ) match {
+                          case (AddRoleChange(_, _), true) =>
+                            OptFuture.pure("Already has the role")
+                          case (AddRoleChange(_, roleID), false) =>
+                            discordClient.requestsHelper
+                              .run(
+                                gm.toGuildMember(guild.id)
+                                  .addRole(roleID)
+                              )
+                              .map(_ => "Request sent")
+                          case (RemoveRoleChange(_, roleID), true) =>
+                            discordClient.requestsHelper
+                              .run(
+                                gm.toGuildMember(guild.id)
+                                  .removeRole(roleID)
+                              )
+                              .map(_ => "Request sent")
+                          case (RemoveRoleChange(_, _), false) =>
+                            OptFuture.pure("Already has NOT the role")
                         }
                       )
                   )
                   .value
               } yield {
-                println(
-                  s"${guildMember.map(_.user.username)} =>  $roleInsertion"
-                )
+
                 roleInsertion :: prev
               }
             })
-            println(s"Requests to run sequentially: ${x.length}")
             u.onComplete {
               case Success(value) =>
                 println(s"All requests done")
@@ -188,6 +217,17 @@ object KishibotActor extends ActorModule with Logger {
           }
 
         }
+        println(s"Adding $roleName")
+        discordClient.requestsHelper.run(
+          CreateMessage.mkContent(message.channelId, s"Adding $roleName")
+        )
+        println(s"Removing ${otherRoleNames.mkString(", ")}")
+        discordClient.requestsHelper.run(
+          CreateMessage.mkContent(
+            message.channelId,
+            s"Removing ${otherRoleNames.mkString(", ")}"
+          )
+        )
       }
     }
     def checkMessage(message: DMessage): Boolean = {
@@ -197,7 +237,7 @@ object KishibotActor extends ActorModule with Logger {
       channelRole.contains(message.channelId) &&
       (message.authorUserId
         .contains(admingID) || message.authorUserId.contains(dfID)) &&
-      message.content.contains("SOLO PARA APUNTARSE AL TORNEO")
+      message.content.contains("ROLES")
 
     }
 
@@ -228,6 +268,7 @@ object KishibotActor extends ActorModule with Logger {
   @Provides
   def apply(configuration: Configuration): Behavior[InternalCommand] =
     Behaviors.setup { ctx =>
+      println(s"Kishibot ready")
       val token: String = configuration.get[String]("kishibot.token")
       val clientSettings = ClientSettings(token)
       ctx.pipeToSelf(clientSettings.createClient()) {
