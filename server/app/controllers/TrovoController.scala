@@ -37,7 +37,7 @@ class TrovoController @Inject() (
           "https://open.trovo.live/page/login.html",
           Map(
             "response_type" -> Seq("token"),
-            "scope" -> Seq("user_details_self+channel_subscriptions"),
+            "scope" -> Seq("user_details_self"),
             "client_id" -> Seq(configuration.get[String]("trovo.clientID")),
             "state" -> Seq(token.id.toString),
             "redirect_uri" -> Seq(
