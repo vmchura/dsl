@@ -108,9 +108,10 @@ object KishibotActor extends ActorModule with Logger {
 
                 if (v >= 0 && v - u == (3 + 18 + 1 - 1)) {
                   if (
-                    v + 1 < line.length && (line.charAt(v + 1) == 'P' ||
+                    v + 1 < line.length
+                    /*&& (line.charAt(v + 1) == 'P' ||
                     line.charAt(v + 1) == 'T' ||
-                    line.charAt(v + 1) == 'Z')
+                    line.charAt(v + 1) == 'Z')*/
                   )
                     getUsersID(
                       UserId(line.substring(u + 3, v)) :: prev,
@@ -138,11 +139,12 @@ object KishibotActor extends ActorModule with Logger {
                 userId <- membersMentioned
                 roleRemove <- otherRoles
               } yield {
+                println(s"To remove $userId / ${roleRemove.name}")
                 RemoveRoleChange(userId, roleRemove.id)
               }
 
               val insertions = membersMentioned.map(userId => {
-
+                println(s"To add $userId / ${role.name}")
                 AddRoleChange(userId, role.id)
 
               })
