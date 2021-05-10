@@ -8,6 +8,7 @@ GET        /                                    controllers.Application.index
 GET        /signin                              controllers.SignInController.view
 GET        /authenticate/:provider              controllers.SocialAuthController.authenticate(provider: String)
 GET        /welcome                             controllers.Application.welcomeAuthenticated
+
 # SIGNOUT
 GET        /signout                             controllers.Application.signOut
 
@@ -65,4 +66,8 @@ POST    /teamsystem/denySmurf/:teamReplayID        controllers.teamsystem.TeamSm
 GET     /teamsystem/updatelogo                     controllers.teamsystem.TeamManagerController.selectTeamLogo()
 POST    /teamsystem/updatelogo                     controllers.teamsystem.TeamManagerController.updateTeamLogo()
 
+# TROVO
+GET        /trovo/callback                      controllers.TrovoController.trovoCallBack(access_token: String,expires_in: Int, state: String)
+GET        /trovo/login                         controllers.TrovoController.login()
+GET         /trovo/users                        controllers.TrovoController.allTrovoUsers()
 GET     /javascriptRoutes                       controllers.JavaScriptRouter.javascriptRoutes
