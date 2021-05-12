@@ -55,7 +55,7 @@ class TrovoUserDAOImpl @Inject() (val reactiveMongoApi: ReactiveMongoApi)
   override def remove(discordID: String): Future[Boolean] =
     collection
       .flatMap(
-        _.insert(ordered = true)
+        _.delete(ordered = true)
           .one(
             Json.obj("discordID" -> discordID)
           )
