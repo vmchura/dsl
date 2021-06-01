@@ -2,6 +2,7 @@
 # This file defines all application routes (Higher priority routes first)
 # ~~~~
 
+POST    /prismaris/:clientID/:actionType  controllers.Application.helloPrismaris(clientID: java.util.UUID, actionType: String)
 # Home page
 GET        /                                    controllers.Application.index
 # SINGIN / LOGIN

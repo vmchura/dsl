@@ -16,6 +16,11 @@ lazy val server = (project in file("server"))
     resolvers += Resolver.JCenterRepository,
     fork := true,
     libraryDependencies ++= Seq(
+      "com.amazonaws" % "aws-lambda-java-core" % "1.2.1",
+      "com.amazonaws" % "aws-lambda-java-events" % "3.8.0",
+      "com.amazonaws" % "aws-lambda-java-events-sdk-transformer" % "3.0.3",
+      "com.amazonaws" % "aws-lambda-java-log4j2" % "1.2.0",
+      "com.amazonaws" % "aws-lambda-java-runtime-interface-client" % "1.0.0",
       "com.vmunier" %% "scalajs-scripts" % "1.1.4",
       // https://mvnrepository.com/artifact/org.reactivemongo/play2-reactivemongo
       "org.reactivemongo" %% "play2-reactivemongo" % "0.20.11-play28",
