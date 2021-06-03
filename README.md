@@ -88,6 +88,15 @@ Para este paso se debe ser Admin en la aplicación y haber realizado el paso Opc
 6.  El torneo se creó, pero falta relacionar a los participantes de Challonge con los integrantes del canal de Discord.
 7.  En el panel que se redirecciona realizar las mencionadas relaciones, se implementó un algoritmo para que el emparejamiento sea simple, pero en caso de ser necesario buscar en la lista de opciones al integrante de discord adecuado.
 
+## Agregar bot al servidor
+clientid = 728055666610274325
+permisos = 592896
+Permisos de View Server insights
+View Channels
+Send Messages
+Read Messsage History
+
+https://discord.com/api/oauth2/authorize?client_id=728055666610274325&scope=bot&permissions=592896
 
 ## Licencia
 
