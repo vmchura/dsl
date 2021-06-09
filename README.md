@@ -98,6 +98,11 @@ Read Messsage History
 
 https://discord.com/api/oauth2/authorize?client_id=728055666610274325&scope=bot&permissions=592896
 
+## Add roles based on tournaments
+
+ROLES: UUID message
+ROLES REDEMPTION: UUID message
+
 ## Licencia
 
 La licencia está bajo los términos de  Apache License, Version 2.0, January 2004
