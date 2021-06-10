@@ -1,14 +1,15 @@
 package models.services
 import scala.concurrent.ExecutionContext.Implicits.global
 import javax.inject.Inject
-import models.{DiscordUserData, UserGuild}
-import models.daos.{UserGuildDAO, UserHistoryDAO}
+import models.{DiscordUserData, GuildID, UserGuild, UserLeftGuild}
+import models.daos.{UserGuildDAO, UserHistoryDAO, UserLeftGuildDAO}
 
 import scala.concurrent.Future
 class UserHistoryServiceImpl @Inject() (
     userHistory: UserHistoryDAO,
     userGuild: UserGuildDAO,
-    discordUserService: DiscordUserService
+    discordUserService: DiscordUserService,
+    userLeftGuildDAO: UserLeftGuildDAO
 ) extends UserHistoryService {
   def traverse[A, R](a: List[A])(f: A => Future[R]): Future[List[R]] = {
     a.foldLeft(Future.successful(List.empty[R])) {
@@ -32,16 +33,25 @@ class UserHistoryServiceImpl @Inject() (
           historyUsers.exists(_.discordID == gu.discordID)
         )
       )
-      requestGuildData <- traverse(
+
+      notHistoriedButNotMarked <- traverse(
         notHistoriedGuildUsers
           .flatMap(ug => ug.guilds.toList.map(g => (ug.discordID, g)))
           .toList
       ) {
         case (userDiscordID, guildID) =>
+          userLeftGuildDAO
+            .userIsGone(UserLeftGuild(userDiscordID, guildID))
+            .map { isGone =>
+              if (!isGone) Some((userDiscordID, guildID)) else None
+            }
+      }
+
+      requestGuildData <- traverse(notHistoriedButNotMarked.flatten) {
+        case (userDiscordID, guildID) =>
           discordUserService
             .findMemberOnGuildData(guildID, userDiscordID)
             .map { _.map(gd => (gd, guildID)) }
-
       }
 
       singleUpdates <- {
