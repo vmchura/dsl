@@ -1,5 +1,5 @@
 package models.services
-import models.{DiscordUser, DiscordUserData, GuildID}
+import models.{DiscordUser, DiscordUserData, GuildID, UserLeftGuild}
 
 import scala.concurrent.Future
 import sttp.client._
@@ -11,11 +11,14 @@ import play.api.libs.json._
 import javax.inject.Inject
 import play.api.Configuration
 import eu.timepit.refined.api.RefType
+import models.daos.UserLeftGuildDAO
 import shared.models.{DiscordDiscriminator, DiscordID, DiscordPlayerLogged}
 
 import scala.concurrent.ExecutionContext.Implicits.global
-class DiscordUserServiceImpl @Inject() (configuration: Configuration)
-    extends DiscordUserService
+class DiscordUserServiceImpl @Inject() (
+    configuration: Configuration,
+    userLeftGuildDAO: UserLeftGuildDAO
+) extends DiscordUserService
     with Logger {
   implicit val sttpBackend: SttpBackend[Future, Nothing, WebSocketHandler] =
     AsyncHttpClientFutureBackend()
@@ -218,6 +221,9 @@ class DiscordUserServiceImpl @Inject() (configuration: Configuration)
       _.body match {
         case Left(errorMessage) =>
           logger.error(s"Error on single findMemberOnGuild: $errorMessage")
+          if (errorMessage.contains("Unknown Member")) {
+            userLeftGuildDAO.userLeft(UserLeftGuild(discordID, guildID))
+          }
           None
 
         case Right(body) =>
