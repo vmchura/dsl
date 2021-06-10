@@ -16,6 +16,8 @@ import models.daos.{
   UserGuildDAOImpl,
   UserHistoryDAO,
   UserHistoryDAOImpl,
+  UserLeftGuildDAO,
+  UserLeftGuildDAOImpl,
   UserSmurfDAO,
   UserSmurfDAOImpl,
   ValidUserSmurfDAO,
@@ -73,6 +75,7 @@ class DSLModule extends AbstractModule with ScalaModule {
     bind[UserGuildDAO].to[UserGuildDAOImpl]
     bind[UserHistoryDAO].to[UserHistoryDAOImpl]
     bind[UserHistoryService].to[UserHistoryServiceImpl]
+    bind[UserLeftGuildDAO].to[UserLeftGuildDAOImpl]
 
     bind[TournamentSeriesService].to[TournamentSeriesServiceImpl]
     bind[ReplayActionBuilderService].to[ReplayActionBuilderServiceImpl]
