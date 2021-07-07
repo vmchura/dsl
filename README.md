@@ -103,6 +103,12 @@ https://discord.com/api/oauth2/authorize?client_id=728055666610274325&scope=bot&
 ROLES: UUID message
 ROLES REDEMPTION: UUID message
 
+## database management
+# dump
+mongodump --uri="" --out="/home/vmchura/Documents/006.ExtraCurriculares/DSL_DB_BU/FECHA"
+# restore
+mongorestore --uri="mongodb://localhost:27017/?readPreference=primary&appname=MongoDB%20Compass&ssl=false" --drop "/home/vmchura/Documents/006.ExtraCurriculares/DSL_DB_BU/FECHA"
+
 ## Licencia
 
 La licencia está bajo los términos de  Apache License, Version 2.0, January 2004
