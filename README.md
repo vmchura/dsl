@@ -120,3 +120,8 @@ Cualquier aporte a este software es bienvenido, pero ese aporte tambi√©n se har√
 
  
                              
+# Crear torneos
+/tournament/create
+
+DSSL 9
+http://www.deathfate.net/tournament/showparticipantscorrelation/10086769/722170993371775067/866364844999180318
