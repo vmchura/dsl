@@ -25,7 +25,8 @@ object WithAdmin {
     "578353624699109435", //krakatoa
     "689947856488235015", //Fenixito
     "445943955952107550", //Miky CC
-    "705804884045463583" //Richard
+    "705804884045463583", //Richard
+    "277854224795172868" // DeathFate
   )
   def isModeradorID(discordID: String): Boolean =
     moderadoresID.exists(_.equals(discordID))
