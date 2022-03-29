@@ -37,7 +37,8 @@ trait TemporalDB
     new FakeEnvironment[DefaultEnv](
       Seq(first_user.loginInfo -> first_user, adminUser.loginInfo -> adminUser)
     )
-  class FakeModule extends AbstractModule with ScalaModule {
+  class FakeModule extends AbstractModule with ScalaModule
+  {
     private val challongeTournamentService = new ChallongeTournamentService {
       override protected def challongeApiKey: String =
         throw new NotImplementedError("challongeApiKey is not defined")
