@@ -17,6 +17,7 @@ class TournamentSeriesServiceTest
     extends PlaySpec
     with GuiceOneAppPerSuite
     with ScalaFutures {
+  System.setProperty("config.resource", "test-modules-disabled-application.conf")
   implicit override val patienceConfig: PatienceConfig =
     PatienceConfig(timeout = Span(100, Seconds), interval = Span(1, Seconds))
 
@@ -141,8 +142,6 @@ class TournamentSeriesServiceTest
         service.allSeries().futureValue
       implicit val tournaments: Seq[Tournament] =
         tournamentService.findAllTournaments().futureValue
-      println(tournaments.mkString("\n"))
-      println(series.mkString("\n"))
 
       whenReady(
         initWinners(
